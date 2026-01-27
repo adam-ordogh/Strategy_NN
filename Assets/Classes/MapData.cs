@@ -1,0 +1,51 @@
+using UnityEngine;
+using System.Collections.Generic;
+
+public class MapData
+{
+    //-------------------------
+    //Lehet at lesz dolgozva
+    public enum TileType
+    {
+        Grass,
+        Forest,
+        Mountain,
+        Gold,     
+        MovementHighlight,
+        UnitType_Soldier,
+        UnitType_Archer,
+        UnitType_Cavalry,
+        Building
+    };
+
+    [System.Serializable]
+    public struct TileData
+    {
+        public TileType type;
+        public bool isPassable;
+    }
+    //-------------------------
+
+    public int mapWidth;
+    public int mapHeight;
+    public TileData[,] mapTiles;
+    public Dictionary<Vector2Int, Unit> units = new Dictionary<Vector2Int, Unit>();
+    public Dictionary<Vector2Int, Building> buildings = new Dictionary<Vector2Int, Building>();
+
+    public MapData(int width, int height)
+    {
+        this.mapWidth = width;
+        this.mapHeight = height;
+        mapTiles = new TileData[mapWidth, mapHeight];
+    }
+
+    public TileData GetTileData(int x, int y)
+    {
+        return mapTiles[x, y];
+    }
+
+    public void SetTileData(int x, int y, TileData data)
+    {
+        mapTiles[x, y] = data;
+    }    
+}

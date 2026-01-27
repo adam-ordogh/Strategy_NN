@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ed773f1678157a4b8adf652627812d6, type: 3}
+  m_Name: TileRegistry
+  m_EditorClassIdentifier: Assembly-CSharp::TileRegistry
+  tiles:
+  - type: 1
+    tile: {fileID: 11400000, guid: 72a74b267794747448d989b952ea3be6, type: 2}
+  - type: 0
+    tile: {fileID: 11400000, guid: f4a9ce87e34b2bb419eb98292cc35f8b, type: 2}
+  - type: 2
+    tile: {fileID: 11400000, guid: 304acc82377dfc543ba5270d787864cb, type: 2}
+  - type: 3
+    tile: {fileID: 11400000, guid: 901440130b9655144813bc096b4e65dd, type: 2}
+  - type: 4
+    tile: {fileID: 11400000, guid: 9a5560f6c63a8af4fb1615c11ab19daf, type: 2}
+  - type: 5
+    tile: {fileID: 11400000, guid: e357876dbc84fdf4484b4c3814469f93, type: 2}
+  - type: 6
+    tile: {fileID: 11400000, guid: 4b392001588b4514e9c4522a824ff820, type: 2}
+  - type: 7
+    tile: {fileID: 11400000, guid: 5d85fbf478952894695d3a5a80c55323, type: 2}
+  - type: 8
+    tile: {fileID: 11400000, guid: 771b8d4bceaec4e439b2fff91ca8d016, type: 2}
