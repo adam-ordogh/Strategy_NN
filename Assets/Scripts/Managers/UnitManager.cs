@@ -5,8 +5,11 @@ public class UnitManager : MonoBehaviour
 {
     public MapData mapData;
 
-    public event System.Action<Unit, Vector2Int, Vector2Int> OnUnitMoved;
+    //public event System.Action<Unit, Vector2Int, Vector2Int> OnUnitMoved;
     public event System.Action<Vector2Int> OnUnitDestroyed;
+
+    // Define the event with a List
+    public event System.Action<Unit, List<Vector2Int>> OnUnitMoved;
 
     public void Initialize(MapData mapData)
     {
@@ -40,32 +43,8 @@ public class UnitManager : MonoBehaviour
     }
 
     // Mozgás függvények ----------------------------
-    public void TryMoveUnit(Vector2Int fromPos, Vector2Int toPos)
-    {
-        if (!mapData.units.TryGetValue(fromPos, out Unit unit))
-        {
-            Debug.Log("Nincs egység a kiinduló pozíción.");
-            return;
-        }
 
-        var reachable = GetReachableTilesWithCost(unit);
-
-        if (!reachable.ContainsKey(toPos))
-        {
-            Debug.Log("A célpozíció nem elérhető a megadott mozgáspontokkal.");
-            return;
-        }
-
-        int moveCost = reachable[toPos];
-        unit.remainingMovementPoints -= moveCost;
-
-        unit.Move(toPos);
-        mapData.units.Remove(fromPos);
-        mapData.units[toPos] = unit;
-
-        OnUnitMoved?.Invoke(unit, fromPos, toPos);
-    }
-
+    // BFS alapú elérhető mezők keresése
     public Dictionary<Vector2Int, int> GetReachableTilesWithCost(Unit unit)
     {
         var reachable = new Dictionary<Vector2Int, int>();
@@ -97,6 +76,75 @@ public class UnitManager : MonoBehaviour
         }
 
         return reachable;
+    }
+
+    public void TryMoveUnit(Vector2Int fromPos, Vector2Int toPos)
+    {
+        if (!mapData.units.TryGetValue(fromPos, out Unit unit)) return;
+
+        // 1. Get the specific path
+        List<Vector2Int> path = GetPathToTarget(unit, toPos);
+        if (path == null) return; // Logic check failed
+
+        // 2. Update Logic (Instant)
+        int moveCost = path.Count - 1; // Simple cost calc
+        unit.remainingMovementPoints -= moveCost;
+        unit.Move(toPos);
+
+        mapData.units.Remove(fromPos);
+        mapData.units[toPos] = unit;
+
+        // 3. Notify Visualizer with the full path
+        OnUnitMoved?.Invoke(unit, path);
+    }
+
+    // Helper to reconstruct path from the 'cameFrom' map
+    private List<Vector2Int> ReconstructPath(Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int current)
+    {
+        List<Vector2Int> path = new List<Vector2Int> { current };
+        while (cameFrom.ContainsKey(current))
+        {
+            current = cameFrom[current];
+            path.Add(current);
+        }
+        path.Reverse(); // Flip it so it goes Start -> End
+        return path;
+    }
+
+    // Overload or update your existing method to return the path
+    public List<Vector2Int> GetPathToTarget(Unit unit, Vector2Int targetPos)
+    {
+        var queue = new Queue<Vector2Int>();
+        var cameFrom = new Dictionary<Vector2Int, Vector2Int>(); // Tracks the path
+        var costSoFar = new Dictionary<Vector2Int, int>();
+
+        queue.Enqueue(unit.position);
+        costSoFar[unit.position] = 0;
+
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+
+            if (current == targetPos)
+                return ReconstructPath(cameFrom, current);
+
+            foreach (var dir in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
+            {
+                var next = current + dir;
+                if (!IsTileValidForMovement(next)) continue;
+
+                int newCost = costSoFar[current] + 1;
+                if (newCost > unit.remainingMovementPoints) continue;
+
+                if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
+                {
+                    costSoFar[next] = newCost;
+                    cameFrom[next] = current; // Remember where we came from!
+                    queue.Enqueue(next);
+                }
+            }
+        }
+        return null; // No path found
     }
 
     private bool IsTileValidForMovement(Vector2Int pos)

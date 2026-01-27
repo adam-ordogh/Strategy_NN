@@ -19,6 +19,7 @@ public class InputController : MonoBehaviour
     {
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
+            if(unitVisualizer.IsBusy()) return;
             HandleClick();
         }
 

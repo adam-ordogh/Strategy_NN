@@ -22,6 +22,7 @@ public class GameInitializer : MonoBehaviour
     public BuildingManager buildingManager;
     public UnitManager unitManager;
     public GameManager gameManager;
+    public VisualsManager visualsManager;
 
     // async volt eddig
     void Start()
@@ -57,6 +58,8 @@ public class GameInitializer : MonoBehaviour
 
         if (!isTrainingMode)
         {
+            unitVisualizer.SetAnimationRunner(visualsManager);
+
             AddVisualEventListeners();
 
             inputController.unitVisualizer = unitVisualizer;
