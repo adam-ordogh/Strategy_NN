@@ -36,4 +36,14 @@ public class MapManager : MonoBehaviour
             Debug.Log($"Unit at ({pos.x},{pos.y}): Type={unit.unitType}, Player={unit.ownerId}, Health={unit.health}, Attack={unit.attackPower}, Movement range={unit.movementPoints}");
         }
     }
+
+    public void ListBuildings()
+    {
+        foreach (var kvp in mapData.buildings)
+        {
+            Vector2Int pos = kvp.Key;
+            Building building = kvp.Value;
+            Debug.Log($"Building at ({pos.x},{pos.y}): Type={building.buildingType}, Player={building.ownerId}");
+        }
+    }
 }

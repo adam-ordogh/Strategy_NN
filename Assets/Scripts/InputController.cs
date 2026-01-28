@@ -11,25 +11,42 @@ public class InputController : MonoBehaviour
     public MapManager mapManager;
     public GameManager gameManager;
     public UnitManager unitManager;
+    public BuildingManager buildingManager;
     public UnitVisualizer unitVisualizer;
+    public BuildingVisualizer buildingVisualizer;
 
     private Vector2Int? selectedUnitPos;
-
+    public Building.BuildingType? activeBuildingType; // Null if not building
     void Update()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            if (unitVisualizer.IsBusy())
-            {
-                unitVisualizer.FastForward();
-                return;
-            }
-            HandleClick();
-        }
 
-        if(Mouse.current.rightButton.wasPressedThisFrame && selectedUnitPos!=null)
+        if (activeBuildingType.HasValue)
         {
-            DeselectUnit();
+            HandleBuildingPreview();
+
+            if (Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                TryPlaceBuilding();
+            }
+            if (Mouse.current.rightButton.wasPressedThisFrame)
+                CancelBuildMode();
+        }
+        else
+        {
+            if (Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                if (unitVisualizer.IsBusy())
+                {
+                    unitVisualizer.FastForward();
+                    return;
+                }
+                HandleClick();
+            }
+
+            if (Mouse.current.rightButton.wasPressedThisFrame && selectedUnitPos != null)
+            {
+                DeselectUnit();
+            }
         }
     }
 
@@ -102,6 +119,41 @@ public class InputController : MonoBehaviour
     public void DeselectUnit()
     {
         selectedUnitPos = null;
+        unitVisualizer.ClearHighlights();
+    }
+
+    private void HandleBuildingPreview()
+    {
+        Vector2Int mousePos = GetGridPositionFromMouse();
+
+        // Create a temporary object to get the footprint (does not affect MapData)
+        Building ghost = new Building(activeBuildingType.Value, gameManager.currentPlayerId, mousePos);
+        var footprint = ghost.GetOccupiedTiles();
+
+        // Check legality via Manager
+        bool isValid = buildingManager.CanPlaceBuilding(mousePos, ghost.size);
+
+        // Use UnitVisualizer to show the ghost footprint
+        unitVisualizer.ClearHighlights();
+        Color ghostColor = isValid ? new Color(0, 1f, 0, 0.5f) : new Color(1f, 0, 0, 0.5f);
+        unitVisualizer.ShowHighlights(footprint, ghostColor);
+    }
+
+    private void TryPlaceBuilding()
+    {
+        Vector2Int mousePos = GetGridPositionFromMouse();
+        Building placed = buildingManager.PlaceBuilding(activeBuildingType.Value, mousePos, gameManager.currentPlayerId);
+
+        if (placed != null)
+        {
+            buildingVisualizer.ShowBuilding(placed);
+            CancelBuildMode();
+        }
+    }
+
+    private void CancelBuildMode()
+    {
+        activeBuildingType = null;
         unitVisualizer.ClearHighlights();
     }
 }

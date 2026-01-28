@@ -56,6 +56,8 @@ public class GameInitializer : MonoBehaviour
         unitManager.Initialize(mapManager.mapData);
         buildingManager.Initialize(mapManager.mapData);
 
+        unitManager.IsTileBlockedByBuilding = (pos) => buildingManager.GetBuildingAtTile(pos) != null;
+
         if (!isTrainingMode)
         {
             unitVisualizer.SetAnimationRunner(visualsManager);
@@ -63,6 +65,8 @@ public class GameInitializer : MonoBehaviour
             AddVisualEventListeners();
 
             inputController.unitVisualizer = unitVisualizer;
+            inputController.buildingVisualizer = buildingVisualizer;
+            inputController.buildingManager = buildingManager;
             inputController.gameManager = gameManager;
         }
     }

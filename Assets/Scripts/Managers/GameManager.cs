@@ -46,9 +46,14 @@ public class GameManager
         mapManager.ListUnits();
 
 
-        Building building;
-        buildingManager.CreateBuilding(building = new Building(Building.BuildingType.Barracks, 1, new Vector2Int(25, 25)));
-        buildingVisualizer.ShowBuilding(building);
+        //Building building;
+        //buildingVisualizer.ShowBuilding(buildingManager.PlaceBuilding(Building.BuildingType.TownHall, new Vector2Int(25, 25), 1));
+
+        
+        //buildingVisualizer.ShowBuilding(buildingManager.PlaceBuilding(Building.BuildingType.Barracks, new Vector2Int(29, 25), 1));
+
+        
+        //buildingVisualizer.ShowBuilding(buildingManager.PlaceBuilding(Building.BuildingType.House, new Vector2Int(33, 25), 1));
     }
 
     public void Update()

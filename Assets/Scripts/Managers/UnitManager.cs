@@ -8,6 +8,8 @@ public class UnitManager : MonoBehaviour
     public event System.Action<Unit, List<Vector2Int>> OnUnitMoved;
     public event System.Action<Vector2Int> OnUnitDestroyed;
 
+    public System.Func<Vector2Int, bool> IsTileBlockedByBuilding;
+
     public void Initialize(MapData mapData)
     {
         this.mapData = mapData;
@@ -171,6 +173,8 @@ public class UnitManager : MonoBehaviour
         if (!mapData.mapTiles[pos.x, pos.y].isPassable)
             return false;
         if (mapData.units.ContainsKey(pos))
+            return false;
+        if (IsTileBlockedByBuilding != null && IsTileBlockedByBuilding(pos))
             return false;
         return true;
     }
