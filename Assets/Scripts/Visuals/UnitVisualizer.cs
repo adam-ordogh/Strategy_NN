@@ -131,7 +131,7 @@ public class UnitVisualizer
 
     private IEnumerator AnimateDeath(Vector2Int pos)
     {
-        // Optional: Add a small delay or a "flash" effect here later
+        // Később egy rövid késleltetésetést vagy "villanás" effektust is hozzáadhatunk ide
         // yield return new WaitForSeconds(0.2f);
 
         RemoveUnit(pos);

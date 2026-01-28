@@ -76,15 +76,12 @@ public class Unit
             Debug.Log($"Unit at {this.position} attacked unit at {target.position} for {totalAttack} damage.");
 
 
-            if (target.health > 0)
+            if (target.health > 0 && target.unitType != UnitType.Archer)
             {
-                // Check distance for retaliation (e.g., Archers can't hit back at melee range if you want that rule, 
-                // but for now let's assume simple adjacent retaliation)
                 int dist = Mathf.Max(Mathf.Abs(this.position.x - target.position.x), Mathf.Abs(this.position.y - target.position.y));
 
                 if (dist <= target.attackRange)
                 {
-                    // Retaliation is usually weaker (e.g., 50% damage)
                     int returnDamage = Mathf.FloorToInt(target.attackPower * 0.5f);
                     if (returnDamage < 1) returnDamage = 1;
 
