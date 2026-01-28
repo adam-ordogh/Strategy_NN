@@ -528,6 +528,7 @@ MonoBehaviour:
   mapManager: {fileID: 580468270}
   buildingManager: {fileID: 489162583}
   unitManager: {fileID: 751502175}
+  visualsManager: {fileID: 1220192043}
 --- !u!4 &394709871
 Transform:
   m_ObjectHideFlags: 0

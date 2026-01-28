@@ -19,7 +19,11 @@ public class InputController : MonoBehaviour
     {
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
-            if(unitVisualizer.IsBusy()) return;
+            if (unitVisualizer.IsBusy())
+            {
+                unitVisualizer.FastForward();
+                return;
+            }
             HandleClick();
         }
 

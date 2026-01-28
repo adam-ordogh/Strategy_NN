@@ -25,23 +25,23 @@ public class GameManager
     {
         Unit unit;
         unitManager.CreateUnit(unit = new Unit(Unit.UnitType.Soldier, 1, 8, 2, 1, 5, new Vector2Int(2, 2)));
-        unitVisualizer.ShowUnit(unit);
+        unitVisualizer.ShowUnitAt(unit, unit.position);
 
         unitManager.CreateUnit(unit = new Unit(Unit.UnitType.Archer, 1, 6, 2, 4, 3, new Vector2Int(3, 3)));
-        unitVisualizer.ShowUnit(unit);
+        unitVisualizer.ShowUnitAt(unit, unit.position);
 
         unitManager.CreateUnit(unit = new Unit(Unit.UnitType.Cavalry, 1, 12, 2, 1, 8, new Vector2Int(4, 4)));
-        unitVisualizer.ShowUnit(unit);
+        unitVisualizer.ShowUnitAt(unit, unit.position);
 
 
         unitManager.CreateUnit(unit = new Unit(Unit.UnitType.Soldier, 2, 8, 2, 1, 5, new Vector2Int(2, 1)));
-        unitVisualizer.ShowUnit(unit);
+        unitVisualizer.ShowUnitAt(unit, unit.position);
 
         unitManager.CreateUnit(unit = new Unit(Unit.UnitType.Archer, 2, 6, 2, 4, 3, new Vector2Int(3, 2)));
-        unitVisualizer.ShowUnit(unit);
+        unitVisualizer.ShowUnitAt(unit, unit.position);
 
         unitManager.CreateUnit(unit = new Unit(Unit.UnitType.Cavalry, 2, 12, 2, 1, 8, new Vector2Int(4, 3)));
-        unitVisualizer.ShowUnit(unit);
+        unitVisualizer.ShowUnitAt(unit, unit.position);
 
         mapManager.ListUnits();
 
