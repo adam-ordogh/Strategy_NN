@@ -42,33 +42,91 @@ public class UnitManager : MonoBehaviour
     // ---------------------------- MOZGÁS FÜGGVÉNYEK ----------------------------
 
     // BFS alapú elérhető mezők keresése
+    //public Dictionary<Vector2Int, int> GetReachableTilesWithCost(Unit unit)
+    //{
+    //    var reachable = new Dictionary<Vector2Int, int>();
+    //    var visited = new HashSet<Vector2Int>();
+    //    var queue = new Queue<(Vector2Int pos, int cost)>();
+
+    //    queue.Enqueue((unit.position, 0));
+    //    visited.Add(unit.position);
+
+    //    while (queue.Count > 0)
+    //    {
+    //        var (currentPos, currentCost) = queue.Dequeue();
+
+    //        if (currentPos != unit.position)
+    //            reachable[currentPos] = currentCost;
+
+    //        foreach (var dir in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
+    //        {
+
+    //            var nextPos = currentPos + dir;
+    //            if (visited.Contains(nextPos)) continue;
+    //            if (!IsTileValidForMovement(nextPos)) continue;
+
+    //            int moveCost = 1;
+
+    //            if (IsTileThreatened(nextPos, unit.ownerId))
+    //            {
+    //                moveCost = 3; 
+    //            }
+
+    //            int nextCost = currentCost + moveCost; // Kicserélni ha különböző mozgási költségek vannak
+    //            if (nextCost > unit.remainingMovementPoints) continue;
+
+    //            visited.Add(nextPos);
+    //            queue.Enqueue((nextPos, nextCost));
+    //        }
+    //    }
+
+    //    return reachable;
+    //}
     public Dictionary<Vector2Int, int> GetReachableTilesWithCost(Unit unit)
     {
         var reachable = new Dictionary<Vector2Int, int>();
-        var visited = new HashSet<Vector2Int>();
+        // Use a Dictionary for 'visited' to store the lowest cost to reach that tile
+        var minCostToReach = new Dictionary<Vector2Int, int>();
+
         var queue = new Queue<(Vector2Int pos, int cost)>();
 
         queue.Enqueue((unit.position, 0));
-        visited.Add(unit.position);
+        minCostToReach[unit.position] = 0;
 
         while (queue.Count > 0)
         {
             var (currentPos, currentCost) = queue.Dequeue();
+
+            // If we already found a cheaper way to get here, skip this path
+            if (currentCost > minCostToReach[currentPos]) continue;
 
             if (currentPos != unit.position)
                 reachable[currentPos] = currentCost;
 
             foreach (var dir in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
             {
-                var nextPos = currentPos + dir;
-                if (visited.Contains(nextPos)) continue;
+                var nextPos = currentPos + dir; // <--- Use this for your checks!
+
                 if (!IsTileValidForMovement(nextPos)) continue;
 
-                int nextCost = currentCost + 1; // Kicserélni ha különböző mozgási költségek vannak
+                // 1. Determine the cost to enter THIS specific tile
+                int moveCost = 1;
+                if (IsTileThreatened(nextPos, unit.ownerId)) // <--- Fixed: passing nextPos
+                {
+                    moveCost = 3;
+                }
+
+                int nextCost = currentCost + moveCost;
+
+                // 2. Range check
                 if (nextCost > unit.remainingMovementPoints) continue;
 
-                visited.Add(nextPos);
-                queue.Enqueue((nextPos, nextCost));
+                // 3. Only proceed if we haven't been here, or if this new path is cheaper
+                if (!minCostToReach.ContainsKey(nextPos) || nextCost < minCostToReach[nextPos])
+                {
+                    minCostToReach[nextPos] = nextCost;
+                    queue.Enqueue((nextPos, nextCost));
+                }
             }
         }
 
@@ -105,19 +163,67 @@ public class UnitManager : MonoBehaviour
         return path;
     }
 
+    //public List<Vector2Int> GetPathToTarget(Unit unit, Vector2Int targetPos)
+    //{
+    //    var queue = new Queue<Vector2Int>();
+    //    var cameFrom = new Dictionary<Vector2Int, Vector2Int>(); // Útvonal nyomonkövetése
+    //    var costSoFar = new Dictionary<Vector2Int, int>();
+
+    //    queue.Enqueue(unit.position);
+    //    costSoFar[unit.position] = 0;
+
+    //    while (queue.Count > 0)
+    //    {
+    //        var current = queue.Dequeue();
+
+    //        if (current == targetPos)
+    //            return ReconstructPath(cameFrom, current);
+
+    //        foreach (var dir in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
+    //        {
+
+    //            var next = current + dir;
+    //            if (!IsTileValidForMovement(next)) continue;
+
+    //            int moveCost = 1;
+
+    //            if (IsTileThreatened(next, unit.ownerId))
+    //            {
+    //                moveCost = 3; // Massive penalty! (Or use unit.movementPoints to force a stop)
+    //            }
+
+    //            int newCost = costSoFar[current] + moveCost;
+    //            if (newCost > unit.remainingMovementPoints) continue;
+
+    //            if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
+    //            {
+    //                costSoFar[next] = newCost;
+    //                cameFrom[next] = current;
+    //                queue.Enqueue(next);
+    //            }
+    //        }
+    //    }
+    //    return null; 
+    //}
     public List<Vector2Int> GetPathToTarget(Unit unit, Vector2Int targetPos)
     {
-        var queue = new Queue<Vector2Int>();
-        var cameFrom = new Dictionary<Vector2Int, Vector2Int>(); // Útvonal nyomonkövetése
+        // We use a List as a simple priority queue since our maps are small.
+        // We want to always explore the tile with the LOWEST cost first.
+        var openList = new List<(Vector2Int pos, int cost)>();
+        var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
         var costSoFar = new Dictionary<Vector2Int, int>();
 
-        queue.Enqueue(unit.position);
+        openList.Add((unit.position, 0));
         costSoFar[unit.position] = 0;
 
-        while (queue.Count > 0)
+        while (openList.Count > 0)
         {
-            var current = queue.Dequeue();
+            // DIJKSTRA STEP: Sort by cost and pick the cheapest one to explore next
+            openList.Sort((a, b) => a.cost.CompareTo(b.cost));
+            var current = openList[0].pos;
+            openList.RemoveAt(0);
 
+            // Now, the FIRST time we reach targetPos, we ARE guaranteed it's the cheapest way
             if (current == targetPos)
                 return ReconstructPath(cameFrom, current);
 
@@ -126,18 +232,26 @@ public class UnitManager : MonoBehaviour
                 var next = current + dir;
                 if (!IsTileValidForMovement(next)) continue;
 
-                int newCost = costSoFar[current] + 1;
+                // Check if there is an enemy in the WAY (not just at the destination)
+                // But we ignore the enemy at the targetPos if we are planning to attack them
+                int moveCost = 1;
+                if (IsTileThreatened(next, unit.ownerId))
+                {
+                    moveCost = 3;
+                }
+
+                int newCost = costSoFar[current] + moveCost;
                 if (newCost > unit.remainingMovementPoints) continue;
 
                 if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
                 {
                     costSoFar[next] = newCost;
                     cameFrom[next] = current;
-                    queue.Enqueue(next);
+                    openList.Add((next, newCost));
                 }
             }
         }
-        return null; 
+        return null;
     }
 
     private bool IsTileValidForMovement(Vector2Int pos)
@@ -149,6 +263,27 @@ public class UnitManager : MonoBehaviour
         if (mapData.units.ContainsKey(pos))
             return false;
         return true;
+    }
+
+    private bool IsTileThreatened(Vector2Int pos, int movingUnitOwnerId)
+    {
+        // Check all 8 neighbors (including diagonals)
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                if (x == 0 && y == 0) continue;
+
+                Vector2Int neighbor = new Vector2Int(pos.x + x, pos.y + y);
+
+                if (mapData.units.TryGetValue(neighbor, out Unit unit))
+                {
+                    if (unit.ownerId != movingUnitOwnerId && unit.unitType != Unit.UnitType.Archer)
+                        return true;
+                }
+            }
+        }
+        return false;
     }
 
     // ---------------------------- TÁMADÁS FÜGGVÉNYEK ----------------------------
