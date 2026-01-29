@@ -26,6 +26,7 @@ public class GameInitializer : MonoBehaviour
     public GameManager gameManager;
     public VisualsManager visualsManager;
     public InfluenceManager influenceManager;
+    public ProductionManager productionManager;
 
     // async volt eddig
     void Start()
@@ -55,7 +56,8 @@ public class GameInitializer : MonoBehaviour
         unitManager.Initialize(mapManager.mapData);
         influenceManager.Initialize(mapManager.mapData);
         buildingManager.Initialize(mapManager.mapData, influenceManager);
-        
+        productionManager.Initialize(mapManager.mapData, unitManager, buildingManager);
+
         unitManager.IsTileBlockedByBuilding = (pos) => buildingManager.GetBuildingAtTile(pos) != null;
 
         mapGenerator = new MapGenerator(mapManager, map, tileRegistry);
@@ -63,7 +65,7 @@ public class GameInitializer : MonoBehaviour
         buildingVisualizer = new BuildingVisualizer(buildingMap, tileRegistry.GetTile(MapData.TileType.Building));
         influenceVisualizer = new InfluenceVisualizer(influenceMap, tileRegistry.GetTile(MapData.TileType.Border));
 
-        gameManager = new GameManager(mapManager, unitManager, buildingManager, unitVisualizer, buildingVisualizer);
+        gameManager = new GameManager(mapManager, unitManager, buildingManager, productionManager, unitVisualizer, buildingVisualizer);
 
 
         if (!isTrainingMode)
@@ -72,6 +74,7 @@ public class GameInitializer : MonoBehaviour
 
             AddVisualEventListeners();
 
+            inputController.mapData = mapManager.mapData;
             inputController.unitVisualizer = unitVisualizer;
             inputController.buildingVisualizer = buildingVisualizer;
             inputController.buildingManager = buildingManager;
@@ -84,6 +87,7 @@ public class GameInitializer : MonoBehaviour
         unitManager.OnUnitMoved += unitVisualizer.HandleUnitMoved;
         unitManager.OnUnitDestroyed += unitVisualizer.HandleUnitDied;
         influenceManager.OnInfluenceChanged += influenceVisualizer.DrawBorders;
+        unitManager.OnUnitCreated += unitVisualizer.ShowUnitAt; // You'll need to create this method in Visualizer
     }
 
     public void StartGame()

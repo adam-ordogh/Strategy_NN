@@ -2,9 +2,12 @@
 using UnityEngine.Tilemaps;
 using UnityEngine.InputSystem;
 using System.Linq;
+using UnityEngine.EventSystems;
+using UnityEditor.U2D.Aseprite;
 
 public class InputController : MonoBehaviour
 {
+    public MapData mapData;
     public Camera mainCamera;
     public Tilemap groundTilemap;
 
@@ -16,9 +19,15 @@ public class InputController : MonoBehaviour
     public BuildingVisualizer buildingVisualizer;
 
     private Vector2Int? selectedUnitPos;
-    public Building.BuildingType? activeBuildingType; // Null if not building
+    public Building.BuildingType? activeBuildingType;
+    public Building selectedBuilding;
+
     void Update()
     {
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
 
         if (activeBuildingType.HasValue)
         {
@@ -52,9 +61,43 @@ public class InputController : MonoBehaviour
 
     void HandleClick()
     {
-        Vector2Int clickedPos = GetGridPositionFromMouse();
+        Vector2Int gridPos = GetGridPositionFromMouse();
 
-        // Debug.Log($"Clicked at {clickedPos}");
+        Building buildingAtPos = buildingManager.GetBuildingAtTile(gridPos);
+
+        if (buildingAtPos != null && buildingAtPos.ownerId == gameManager.currentPlayerId)
+        {
+            SelectBuilding(buildingAtPos);
+            return;
+        }
+
+        if (mapData.units.TryGetValue(gridPos, out Unit unit))
+        {
+            if (unit.ownerId == gameManager.currentPlayerId)
+            {
+                SelectUnit(gridPos);
+                return;
+            }
+        }
+
+        if (selectedUnitPos.HasValue)
+        {
+            HandleUnitAction(gridPos);
+            return;
+        }
+
+        if (buildingAtPos != null)
+        {
+            SelectBuilding(buildingAtPos);
+        }
+        else
+        {
+            DeselectAll();
+        }
+    }
+
+    public void HandleUnitAction(Vector2Int clickedPos)
+    {
         bool unitAtClickedPos = mapManager.mapData.units.TryGetValue(clickedPos, out Unit clickedUnit);
 
         if (unitAtClickedPos)
@@ -81,7 +124,7 @@ public class InputController : MonoBehaviour
                 SelectUnit(clickedPos);
             }
         }
-        else if(selectedUnitPos.HasValue)
+        else if (selectedUnitPos.HasValue)
         {
             unitManager.TryMoveUnit(selectedUnitPos.Value, clickedPos);
             DeselectUnit();
@@ -120,6 +163,35 @@ public class InputController : MonoBehaviour
     {
         selectedUnitPos = null;
         unitVisualizer.ClearHighlights();
+    }
+
+    private void SelectBuilding(Building building)
+    {   
+        DeselectUnit();
+        selectedBuilding = building;
+
+        unitVisualizer.ClearHighlights();
+        unitVisualizer.ShowHighlights(building.GetOccupiedTiles(), new Color(1, 1, 0, 0.4f));
+
+        // UI Hook: Itt hozzon elő egy UI elemet az épülethez kapcsolódó műveletekkel
+        if (building.buildingType == Building.BuildingType.Barracks &&
+            building.ownerId == gameManager.currentPlayerId)
+        {
+            Debug.Log("Selected Barracks: Ready to produce units.");
+        }
+    }
+
+    private void DeselectBuilding()
+    {
+        selectedBuilding = null;
+        unitVisualizer.ClearHighlights();
+        Debug.Log("Deselected Building");
+    }
+
+    private void DeselectAll()
+    {
+        DeselectUnit();
+        DeselectBuilding();
     }
 
     private void HandleBuildingPreview()

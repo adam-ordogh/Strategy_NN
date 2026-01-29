@@ -1,12 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 public class UnitManager : MonoBehaviour
 {
     public MapData mapData;
 
-    public event System.Action<Unit, List<Vector2Int>> OnUnitMoved;
-    public event System.Action<Vector2Int> OnUnitDestroyed;
+    public event Action<Unit, Vector2Int> OnUnitCreated;
+    public event Action<Unit, List<Vector2Int>> OnUnitMoved;
+    public event Action<Vector2Int> OnUnitDestroyed;
 
     public System.Func<Vector2Int, bool> IsTileBlockedByBuilding;
 
@@ -15,29 +17,62 @@ public class UnitManager : MonoBehaviour
         this.mapData = mapData;
     }
 
+    public Unit SpawnUnit(Unit.UnitType type, Vector2Int pos, int ownerId)
+    {
+        // Alap statok, lehet ScriptabelObject-ba tenni később
+        int health = 100;
+        int attack = 10;
+        int range = 1;
+        int move = 3;
+
+        switch (type)
+        {
+            case Unit.UnitType.Archer:
+                health = 60;
+                attack = 15;
+                range = 3;
+                break;
+            case Unit.UnitType.Cavalry:
+                health = 120;
+                attack = 20;
+                move = 5;
+                break;
+            case Unit.UnitType.Soldier:
+                // Default stats
+                break;
+        }
+
+        Unit newUnit = new Unit(type, ownerId, health, attack, range, move, pos);
+
+        CreateUnit(newUnit);
+
+        return newUnit;
+    }
+
     public void CreateUnit(Unit unit)
     {
-        // Jelenleg nem nezi meg hogy a mezo foglalt-e
         unit.OnUnitDeath += HandleUnitDeath;
         mapData.units[unit.position] = unit;
+
+        OnUnitCreated?.Invoke(unit, unit.position);
     }
 
     public void HandleUnitDeath(Unit unit) 
-    { 
-        mapData.units.Remove(unit.position);
-        OnUnitDestroyed?.Invoke(unit.position);
-        Debug.Log($"Unit at {unit.position} has died and was removed.");
+    {
+        if (mapData.units.ContainsKey(unit.position))
+        {
+            mapData.units.Remove(unit.position);
+            OnUnitDestroyed?.Invoke(unit.position);
+        }
     }
     
 
     public void ResetUnitsForNewTurn(int currentPlayerId)
     {
-        foreach (var unit in mapData.units)
-        { 
-            if(unit.Value.ownerId != currentPlayerId)
-                continue;
-
-            unit.Value.ResetActions();
+        foreach (var unit in mapData.units.Values)
+        {
+            if (unit.ownerId == currentPlayerId)
+                unit.ResetActions();
         }
     }
 

@@ -14,6 +14,46 @@ public class GameUIController : MonoBehaviour
         turnLabel.text = $"Turn {turnNumber}";
     }
 
+    public void TrainSoldier()
+    {
+        Building selected = initializer.inputController.selectedBuilding;
+
+        if (selected != null && selected.buildingType == Building.BuildingType.Barracks)
+        {
+            initializer.productionManager.QueueUnit(selected, Unit.UnitType.Soldier);
+        }
+        else
+        {
+            Debug.LogWarning("Cannot train unit: No Barracks selected!");
+        }
+    }
+    public void TrainArcher()
+    {
+        Building selected = initializer.inputController.selectedBuilding;
+
+        if (selected != null && selected.buildingType == Building.BuildingType.Barracks)
+        {
+            initializer.productionManager.QueueUnit(selected, Unit.UnitType.Archer);
+        }
+        else
+        {
+            Debug.LogWarning("Cannot train unit: No Barracks selected!");
+        }
+    }
+    public void TrainCavalry()
+    {
+        Building selected = initializer.inputController.selectedBuilding;
+
+        if (selected != null && selected.buildingType == Building.BuildingType.Barracks)
+        {
+            initializer.productionManager.QueueUnit(selected, Unit.UnitType.Cavalry);
+        }
+        else
+        {
+            Debug.LogWarning("Cannot train unit: No Barracks selected!");
+        }
+    }
+
     public void SelectedTownHall()
     {
         initializer.inputController.activeBuildingType = Building.BuildingType.TownHall;

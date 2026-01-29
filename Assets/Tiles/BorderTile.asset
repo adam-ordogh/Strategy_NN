@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdb29b8a9d2144c45b916beb1435cec6, type: 3}
   m_Name: BorderTile
   m_EditorClassIdentifier: Assembly-CSharp::ColorTile
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: -5380157736237186097, guid: 11929f6ed477a5a48a8e322805cd29ed, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1
