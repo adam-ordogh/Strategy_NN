@@ -126,12 +126,11 @@ public class InputController : MonoBehaviour
     {
         Vector2Int mousePos = GetGridPositionFromMouse();
 
-        // Create a temporary object to get the footprint (does not affect MapData)
+        // Létrehozunk egy "szellem" épületet a kurzor pozíciójában
         Building ghost = new Building(activeBuildingType.Value, gameManager.currentPlayerId, mousePos);
         var footprint = ghost.GetOccupiedTiles();
 
-        // Check legality via Manager
-        bool isValid = buildingManager.CanPlaceBuilding(mousePos, ghost.size);
+        bool isValid = buildingManager.CanPlaceBuilding(mousePos, ghost.size, gameManager.currentPlayerId);
 
         // Use UnitVisualizer to show the ghost footprint
         unitVisualizer.ClearHighlights();

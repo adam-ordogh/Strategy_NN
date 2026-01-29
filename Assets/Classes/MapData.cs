@@ -15,6 +15,7 @@ public class MapData
         UnitType_Soldier,
         UnitType_Archer,
         UnitType_Cavalry,
+        Border,
         Building
     };
 
@@ -29,6 +30,7 @@ public class MapData
     public int mapWidth;
     public int mapHeight;
     public TileData[,] mapTiles;
+    public int[,] influenceMap;
     public Dictionary<Vector2Int, Unit> units = new Dictionary<Vector2Int, Unit>();
     public Dictionary<Vector2Int, Building> buildings = new Dictionary<Vector2Int, Building>();
 
@@ -37,6 +39,7 @@ public class MapData
         this.mapWidth = width;
         this.mapHeight = height;
         mapTiles = new TileData[mapWidth, mapHeight];
+        influenceMap = new int[mapWidth, mapHeight];
     }
 
     public TileData GetTileData(int x, int y)

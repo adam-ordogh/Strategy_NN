@@ -12,21 +12,13 @@ public class BuildingVisualizer
         this.buildingTile = buildingTile;
     }
 
-    //public void ShowBuilding(Building building)
-    //{
-    //    Vector3Int pos = new Vector3Int(building.position.x, building.position.y, 0);
-    //    buildingTilemap.SetTile(pos, buildingTile);
-    //}
-
     public void ShowBuilding(Building building)
     {
-        // Loop through every tile the building covers
         foreach (var tilePos in building.GetOccupiedTiles())
         {
             Vector3Int pos = new Vector3Int(tilePos.x, tilePos.y, 0);
             buildingTilemap.SetTile(pos, buildingTile);
 
-            // Optional: Tint the building based on owner
             buildingTilemap.SetTileFlags(pos, TileFlags.None);
             buildingTilemap.SetColor(pos, GetPlayerColor(building.ownerId));
         }

@@ -9,6 +9,7 @@ public class GameInitializer : MonoBehaviour
     public InputController inputController;
 
     public Tilemap map;
+    public Tilemap influenceMap;
     public Tilemap highlightMap;
     public Tilemap unitMap;
     public Tilemap buildingMap;
@@ -17,12 +18,14 @@ public class GameInitializer : MonoBehaviour
     private MapGenerator mapGenerator;
     private UnitVisualizer unitVisualizer;
     private BuildingVisualizer buildingVisualizer;
+    private InfluenceVisualizer influenceVisualizer;
 
     public MapManager mapManager;
     public BuildingManager buildingManager;
     public UnitManager unitManager;
     public GameManager gameManager;
     public VisualsManager visualsManager;
+    public InfluenceManager influenceManager;
 
     // async volt eddig
     void Start()
@@ -49,14 +52,19 @@ public class GameInitializer : MonoBehaviour
 
     public void InstantiateComponents()
     {
+        unitManager.Initialize(mapManager.mapData);
+        influenceManager.Initialize(mapManager.mapData);
+        buildingManager.Initialize(mapManager.mapData, influenceManager);
+        
+        unitManager.IsTileBlockedByBuilding = (pos) => buildingManager.GetBuildingAtTile(pos) != null;
+
         mapGenerator = new MapGenerator(mapManager, map, tileRegistry);
         unitVisualizer = new UnitVisualizer(unitMap, tileRegistry, highlightMap, tileRegistry.GetTile(MapData.TileType.MovementHighlight));
         buildingVisualizer = new BuildingVisualizer(buildingMap, tileRegistry.GetTile(MapData.TileType.Building));
-        gameManager = new GameManager(mapManager, unitManager, buildingManager, unitVisualizer, buildingVisualizer);
-        unitManager.Initialize(mapManager.mapData);
-        buildingManager.Initialize(mapManager.mapData);
+        influenceVisualizer = new InfluenceVisualizer(influenceMap, tileRegistry.GetTile(MapData.TileType.Border));
 
-        unitManager.IsTileBlockedByBuilding = (pos) => buildingManager.GetBuildingAtTile(pos) != null;
+        gameManager = new GameManager(mapManager, unitManager, buildingManager, unitVisualizer, buildingVisualizer);
+
 
         if (!isTrainingMode)
         {
@@ -75,6 +83,7 @@ public class GameInitializer : MonoBehaviour
     {
         unitManager.OnUnitMoved += unitVisualizer.HandleUnitMoved;
         unitManager.OnUnitDestroyed += unitVisualizer.HandleUnitDied;
+        influenceManager.OnInfluenceChanged += influenceVisualizer.DrawBorders;
     }
 
     public void StartGame()

@@ -12,11 +12,11 @@ public class GameManager
     public int turnNumber = 1;
     public int currentPlayerId = 1;
 
-    public GameManager(MapManager mapManager, UnitManager unitManager, BuildingManager buidlingManager, UnitVisualizer unitVisualizer, BuildingVisualizer buildingVisualizer)
+    public GameManager(MapManager mapManager, UnitManager unitManager, BuildingManager buildingManager, UnitVisualizer unitVisualizer, BuildingVisualizer buildingVisualizer)
     {
         this.mapManager = mapManager;
         this.unitManager = unitManager;
-        this.buildingManager = buidlingManager;
+        this.buildingManager = buildingManager;
         this.unitVisualizer = unitVisualizer;
         this.buildingVisualizer = buildingVisualizer;
     }
@@ -44,16 +44,6 @@ public class GameManager
         unitVisualizer.ShowUnitAt(unit, unit.position);
 
         mapManager.ListUnits();
-
-
-        //Building building;
-        //buildingVisualizer.ShowBuilding(buildingManager.PlaceBuilding(Building.BuildingType.TownHall, new Vector2Int(25, 25), 1));
-
-        
-        //buildingVisualizer.ShowBuilding(buildingManager.PlaceBuilding(Building.BuildingType.Barracks, new Vector2Int(29, 25), 1));
-
-        
-        //buildingVisualizer.ShowBuilding(buildingManager.PlaceBuilding(Building.BuildingType.House, new Vector2Int(33, 25), 1));
     }
 
     public void Update()

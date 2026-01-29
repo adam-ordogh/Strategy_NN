@@ -3,34 +3,49 @@
 public class BuildingManager : MonoBehaviour
 {
     public MapData mapData;
+    private Building[,] occupancyGrid;
 
-    public void Initialize(MapData mapData)
+    public InfluenceManager influenceManager;
+
+    public void Initialize(MapData mapData, InfluenceManager influenceManager)
     {
         this.mapData = mapData;
+        this.influenceManager = influenceManager;
+
+        occupancyGrid = new Building[mapData.mapWidth, mapData.mapHeight];
+
+        foreach (var building in mapData.buildings.Values)
+        {
+            UpdateOccupancy(building, true);
+        }
     }
 
     public Building PlaceBuilding(Building.BuildingType type, Vector2Int pos, int ownerId)
     {
-        Building temp = new Building(type, ownerId, pos);
+        Building newBuilding = new Building(type, ownerId, pos);
 
-        if (!CanPlaceBuilding(pos, temp.size))
+        if (!CanPlaceBuilding(pos, newBuilding.size, ownerId))
             return null;
 
-        mapData.buildings[pos] = temp;
+        UpdateOccupancy(newBuilding, true);
+        mapData.buildings[pos] = newBuilding;
+
+        influenceManager.RecalculateInfluence();
 
         // Később itt eventeket hívhatunk meg, pl. OnBuildingPlaced?.Invoke(temp);
-        return temp;
+        return newBuilding;
     }
 
     public void RemoveBuidling(Building building)
     {
         if (mapData.buildings.ContainsKey(building.position))
         {
+            UpdateOccupancy(building, false);
             mapData.buildings.Remove(building.position);
         }
     }
 
-    public bool CanPlaceBuilding(Vector2Int pos, Vector2Int size)
+    public bool CanPlaceBuilding(Vector2Int pos, Vector2Int size, int ownerId)
     {
         for (int x = 0; x < size.x; x++)
         {
@@ -40,10 +55,28 @@ public class BuildingManager : MonoBehaviour
 
                 if (!IsTileValidForPlacement(checkPos)) return false;
 
-                // Van-e már épület itt?
-                if (GetBuildingAtTile(checkPos) != null) return false;
 
-                if (mapData.units.ContainsKey(checkPos)) return false;
+                bool playerHasBuildings = false;
+                foreach (var b in mapData.buildings.Values)
+                {
+                    if (b.ownerId == ownerId)
+                    {
+                        playerHasBuildings = true;
+                        break;
+                    }
+                }
+                if (playerHasBuildings)
+                {
+                    if (!influenceManager.IsTileOwnedBy(checkPos, ownerId))
+                        return false;
+                }
+                //if (mapData.buildings.Count > 0)
+                //{
+                //    // We only need to check if the ANCHOR (pos) or Center is in territory,
+                //    // or check every tile. Usually, checking the anchor is enough.
+                //    if (!influenceManager.IsTileOwnedBy(checkPos, ownerId))
+                //        return false;
+                //}
             }
         }
         return true;
@@ -52,17 +85,10 @@ public class BuildingManager : MonoBehaviour
     // Segédfüggvény ami megnézi, hogy van-e épület egy adott mezőn, még ha az épület több mezőt is elfoglal
     public Building GetBuildingAtTile(Vector2Int pos)
     {
-        // Jelenleg lassú de biztonságos, mivel minden épületet végignéz
-        // Később optimalizálhatjuk ezt úgy, hogy a mezőket egy külön Lookup-ban tároljuk
-        foreach (var b in mapData.buildings.Values)
-        {
-            if (pos.x >= b.position.x && pos.x < b.position.x + b.size.x &&
-                pos.y >= b.position.y && pos.y < b.position.y + b.size.y)
-            {
-                return b;
-            }
-        }
-        return null;
+        if (pos.x < 0 || pos.x >= mapData.mapWidth || pos.y < 0 || pos.y >= mapData.mapHeight)
+            return null;
+
+        return occupancyGrid[pos.x, pos.y];
     }
 
     private bool IsTileValidForPlacement(Vector2Int pos)
@@ -73,6 +99,16 @@ public class BuildingManager : MonoBehaviour
             return false;
         if (mapData.units.ContainsKey(pos))
             return false;
+        if (GetBuildingAtTile(pos) != null)
+            return false;
         return true;
+    }
+
+    private void UpdateOccupancy(Building building, bool isAdding)
+    {
+        foreach (var tile in building.GetOccupiedTiles())
+        {
+            occupancyGrid[tile.x, tile.y] = isAdding ? building : null;
+        }
     }
 }

@@ -37,6 +37,7 @@ public class Building
                 break;
             case BuildingType.Barracks:
                 size = new Vector2Int(2, 1);
+                influenceRadius = 3;
                 break;
             case BuildingType.House:
                 size = new Vector2Int(1, 1);
