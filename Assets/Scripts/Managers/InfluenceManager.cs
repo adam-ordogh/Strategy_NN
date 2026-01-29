@@ -1,55 +1,123 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Collections;
+using UnityEngine;
 
 public class InfluenceManager : MonoBehaviour
 {
     private MapData mapData;
+    private List<Building>[,] buildingReachGrid;
 
     public event System.Action<MapData> OnInfluenceChanged;
 
     public void Initialize(MapData mapData)
     {
         this.mapData = mapData;
-        RecalculateInfluence();
+        buildingReachGrid = new List<Building>[mapData.mapWidth, mapData.mapHeight];
+
+        for (int x = 0; x < mapData.mapWidth; x++)
+            for (int y = 0; y < mapData.mapHeight; y++)
+                buildingReachGrid[x, y] = new List<Building>();
+
+        RecalculateAllInfluences();
     }
 
-    public void RecalculateInfluence()
+    // Amikor egy épület eltűnik, újraszámoljuk az egész térképet
+    public void RecalculateAllInfluences()
     {
         System.Array.Clear(mapData.influenceMap, 0, mapData.influenceMap.Length);
 
-        // Később logika kell a határok eldöntésére ha egymásba lódnak az influence radiusok,
-        // pl. ki van közelebb, jelenleg az utolsó épület felülírja a korábbiakat
-        foreach (var building in mapData.buildings.Values)
+        for (int x = 0; x < mapData.mapWidth; x++)
         {
-            ApplyInfluence(building);
+            for (int y = 0; y < mapData.mapHeight; y++)
+            {
+                mapData.influenceMap[x, y] = GetDominantPlayerAt(new Vector2Int(x, y));
+            }
         }
 
         OnInfluenceChanged?.Invoke(mapData);
     }
 
-    private void ApplyInfluence(Building b)
+    // Amikor egy új épület kerül a térképre, csak az érintett területet számoljuk újra
+    public void RecalculateInfluence(Building newBuilding)
+    {
+        int r = newBuilding.influenceRadius;
+
+        int startX = Mathf.Max(0, newBuilding.position.x - r);
+        int endX = Mathf.Min(mapData.mapWidth - 1, newBuilding.position.x + newBuilding.size.x + r);
+        int startY = Mathf.Max(0, newBuilding.position.y - r);
+        int endY = Mathf.Min(mapData.mapHeight - 1, newBuilding.position.y + newBuilding.size.y + r);
+
+        for (int x = startX; x <= endX; x++)
+        {
+            for (int y = startY; y <= endY; y++)
+            {
+                mapData.influenceMap[x, y] = GetDominantPlayerAt(new Vector2Int(x, y));
+            }
+        }
+
+        OnInfluenceChanged?.Invoke(mapData);
+    }
+
+    private int GetDominantPlayerAt(Vector2Int tilePos)
+    {
+        int bestPlayer = 0;
+        float minDistanceSq = float.MaxValue;
+
+        var candidates = buildingReachGrid[tilePos.x, tilePos.y];
+
+        foreach (var b in candidates)
+        {
+            float centerX = b.position.x + (b.size.x - 1) / 2f;
+            float centerY = b.position.y + (b.size.y - 1) / 2f;
+
+            float dx = tilePos.x - centerX;
+            float dy = tilePos.y - centerY;
+            float distSq = (dx * dx) + (dy * dy);
+
+            if (distSq <= b.influenceRadius * b.influenceRadius)
+            {
+                if (distSq < minDistanceSq)
+                {
+                    minDistanceSq = distSq;
+                    bestPlayer = b.ownerId;
+                }
+            }
+        }
+        return bestPlayer;
+    }
+
+    public void AddBuildingToReachGrid(Building b)
     {
         int r = b.influenceRadius;
-        float rSquared = r * r;
+        // Bounding box
+        int startX = Mathf.Max(0, b.position.x - r);
+        int endX = Mathf.Min(mapData.mapWidth - 1, b.position.x + b.size.x + r);
+        int startY = Mathf.Max(0, b.position.y - r);
+        int endY = Mathf.Min(mapData.mapHeight - 1, b.position.y + b.size.y + r);
 
-        float centerX = b.position.x + (b.size.x - 1) / 2f;
-        float centerY = b.position.y + (b.size.y - 1) / 2f;
-
-        for (int x = b.position.x - r; x < b.position.x + b.size.x + r; x++)
+        for (int x = startX; x <= endX; x++)
         {
-            for (int y = b.position.y - r; y < b.position.y + b.size.y + r; y++)
+            for (int y = startY; y <= endY; y++)
             {
-                Vector2Int pos = new Vector2Int(x, y);
+                buildingReachGrid[x, y].Add(b);
+            }
+        }
+    }
 
-                if (IsInsideMap(pos))
-                {
-                    float dx = x - centerX;
-                    float dy = y - centerY;
+    public void RemoveBuildingFromReachGrid(Building b)
+    {
+        int r = b.influenceRadius;
+        // Bounding box
+        int startX = Mathf.Max(0, b.position.x - r);
+        int endX = Mathf.Min(mapData.mapWidth - 1, b.position.x + b.size.x + r);
+        int startY = Mathf.Max(0, b.position.y - r);
+        int endY = Mathf.Min(mapData.mapHeight - 1, b.position.y + b.size.y + r);
 
-                    if ((dx * dx) + (dy * dy) <= rSquared)
-                    {
-                        mapData.influenceMap[pos.x, pos.y] = b.ownerId;
-                    }
-                }
+        for (int x = startX; x <= endX; x++)
+        {
+            for (int y = startY; y <= endY; y++)
+            {
+                buildingReachGrid[x, y].Remove(b);
             }
         }
     }

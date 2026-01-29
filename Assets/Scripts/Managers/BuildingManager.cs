@@ -30,7 +30,8 @@ public class BuildingManager : MonoBehaviour
         UpdateOccupancy(newBuilding, true);
         mapData.buildings[pos] = newBuilding;
 
-        influenceManager.RecalculateInfluence();
+        influenceManager.AddBuildingToReachGrid(newBuilding);
+        influenceManager.RecalculateInfluence(newBuilding);
 
         // Később itt eventeket hívhatunk meg, pl. OnBuildingPlaced?.Invoke(temp);
         return newBuilding;
@@ -42,41 +43,32 @@ public class BuildingManager : MonoBehaviour
         {
             UpdateOccupancy(building, false);
             mapData.buildings.Remove(building.position);
+            influenceManager.RemoveBuildingFromReachGrid(building);
+            influenceManager.RecalculateAllInfluences();
         }
     }
 
     public bool CanPlaceBuilding(Vector2Int pos, Vector2Int size, int ownerId)
     {
+        bool playerHasBuildings = false;
+        foreach (var b in mapData.buildings.Values)
+        {
+            if (b.ownerId == ownerId) { playerHasBuildings = true; break; }
+        }
+
         for (int x = 0; x < size.x; x++)
         {
             for (int y = 0; y < size.y; y++)
             {
                 Vector2Int checkPos = new Vector2Int(pos.x + x, pos.y + y);
-
                 if (!IsTileValidForPlacement(checkPos)) return false;
 
+                int currentTileOwner = mapData.influenceMap[checkPos.x, checkPos.y];
+                if (currentTileOwner != 0 && currentTileOwner != ownerId)
+                    return false;
 
-                bool playerHasBuildings = false;
-                foreach (var b in mapData.buildings.Values)
-                {
-                    if (b.ownerId == ownerId)
-                    {
-                        playerHasBuildings = true;
-                        break;
-                    }
-                }
-                if (playerHasBuildings)
-                {
-                    if (!influenceManager.IsTileOwnedBy(checkPos, ownerId))
-                        return false;
-                }
-                //if (mapData.buildings.Count > 0)
-                //{
-                //    // We only need to check if the ANCHOR (pos) or Center is in territory,
-                //    // or check every tile. Usually, checking the anchor is enough.
-                //    if (!influenceManager.IsTileOwnedBy(checkPos, ownerId))
-                //        return false;
-                //}
+                if (playerHasBuildings && !influenceManager.IsTileOwnedBy(checkPos, ownerId))
+                    return false;
             }
         }
         return true;
