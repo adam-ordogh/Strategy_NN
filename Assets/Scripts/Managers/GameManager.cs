@@ -60,7 +60,7 @@ public class GameManager
     {
         unitManager.ResetUnitsForNewTurn(currentPlayerId);
         currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
-        if (currentPlayerId == 0)
+        if (currentPlayerIndex == 0)
         {
             turnNumber++;
         }

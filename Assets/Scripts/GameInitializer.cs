@@ -7,6 +7,7 @@ public class GameInitializer : MonoBehaviour
     public bool isTrainingMode;
 
     public InputController inputController;
+    public GameUIController gameUiController;
 
     public Tilemap map;
     public Tilemap influenceMap;
@@ -61,12 +62,11 @@ public class GameInitializer : MonoBehaviour
 
         gameManager = new GameManager(mapManager, unitManager, buildingManager, productionManager, economyManager, unitVisualizer, buildingVisualizer);
 
-        unitManager.Initialize(mapManager.mapData, gameManager);
-        buildingManager.Initialize(mapManager.mapData, influenceManager, gameManager);
-        influenceManager.Initialize(mapManager.mapData);
-        productionManager.Initialize(mapManager.mapData, unitManager, buildingManager);
+        InitializeComponents();
 
         unitManager.IsTileBlockedByBuilding = (pos) => buildingManager.GetBuildingAtTile(pos) != null;
+
+        AddEconomyListeners();
 
         if (!isTrainingMode)
         {
@@ -78,8 +78,17 @@ public class GameInitializer : MonoBehaviour
             inputController.unitVisualizer = unitVisualizer;
             inputController.buildingVisualizer = buildingVisualizer;
             inputController.buildingManager = buildingManager;
-            inputController.gameManager = gameManager;
+            inputController.gameManager = gameManager;            
         }
+    }
+
+    public void InitializeComponents()
+    {
+        mapManager.Initialize();
+        unitManager.Initialize(mapManager.mapData, gameManager);
+        buildingManager.Initialize(mapManager.mapData, influenceManager, gameManager);
+        influenceManager.Initialize(mapManager.mapData);
+        productionManager.Initialize(mapManager.mapData, unitManager, buildingManager, gameManager);
     }
 
     public void AddVisualEventListeners()
@@ -88,6 +97,29 @@ public class GameInitializer : MonoBehaviour
         unitManager.OnUnitDestroyed += unitVisualizer.HandleUnitDied;
         influenceManager.OnInfluenceChanged += influenceVisualizer.DrawBorders;
         unitManager.OnUnitCreated += unitVisualizer.ShowUnitAt;
+
+        gameUiController.Subscribe(buildingManager, productionManager);
+    }
+
+    public void AddEconomyListeners()
+    {
+        buildingManager.OnBuildingPlaced += (building) => {
+            PlayerProfile owner = gameManager.GetPlayerProfile(building.ownerId);
+            economyManager.RecalculateCapacities(owner);
+        };
+
+        buildingManager.OnBuildingRemoved += (building) => {
+            PlayerProfile owner = gameManager.GetPlayerProfile(building.ownerId);
+            economyManager.RecalculateCapacities(owner);
+        };
+
+        unitManager.OnUnitCreated += (unit, pos) => {
+            gameUiController.UpdateUI(); 
+        };
+
+        unitManager.OnUnitDestroyed += (unit) => {
+            gameUiController.UpdateUI();
+        };
     }
 
     public void StartGame()

@@ -10,6 +10,9 @@ public class BuildingManager : MonoBehaviour
     public InfluenceManager influenceManager;
     public GameManager gameManager;
 
+    public event System.Action<Building> OnBuildingPlaced;
+    public event System.Action<Building> OnBuildingRemoved;
+
     public void Initialize(MapData mapData, InfluenceManager influenceManager, GameManager gameManager)
     {
         this.mapData = mapData;
@@ -45,6 +48,7 @@ public class BuildingManager : MonoBehaviour
         influenceManager.RecalculateInfluence(newBuilding);
 
         // Később itt eventeket hívhatunk meg, pl. OnBuildingPlaced?.Invoke(temp);
+        OnBuildingPlaced?.Invoke(newBuilding);
         return newBuilding;
     }
 
@@ -62,6 +66,7 @@ public class BuildingManager : MonoBehaviour
             {
                 owner.myBuildings.Remove(building);
             }
+            OnBuildingRemoved?.Invoke(building);
         }
     }
 

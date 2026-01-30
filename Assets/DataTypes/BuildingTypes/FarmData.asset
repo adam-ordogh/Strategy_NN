@@ -19,4 +19,4 @@ MonoBehaviour:
   jobSlotsProvided: 3
   goldCost: 0
   woodCost: 0
-  buildingTile: {fileID: 11400000, guid: 771b8d4bceaec4e439b2fff91ca8d016, type: 2}
+  buildingTile: {fileID: 11400000, guid: 004ca3e2f8204a14187e7dd755d1e164, type: 2}

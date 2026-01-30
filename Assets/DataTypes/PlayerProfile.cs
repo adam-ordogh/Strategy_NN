@@ -18,13 +18,21 @@ public class PlayerProfile
     public int assignedGoldWorkers;
     public int assignedWoodWorkers;
     public int assignedFoodWorkers;
-    public int availablePopulation
+    public int queuedPopulation;
+
+    public int CurrentUsedPopulation
     {
         get
         {
-            return maxPopulation - (myUnits.Count + assignedGoldWorkers + assignedWoodWorkers + assignedFoodWorkers);
+            int unitPop = 0;
+            foreach (var u in myUnits) unitPop += u.data.populationCost;
+
+            int workerPop = assignedGoldWorkers + assignedWoodWorkers + assignedFoodWorkers;
+
+            return unitPop + workerPop + queuedPopulation;
         }
     }
+    public int availablePopulation => maxPopulation - CurrentUsedPopulation;
 
     public int maxGoldSlots;
     public int maxWoodSlots;

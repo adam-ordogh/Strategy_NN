@@ -1,11 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using static Unit;
 
 public class ProductionManager : MonoBehaviour
 {
     private MapData mapData;
     private UnitManager unitManager;
     private BuildingManager buildingManager;
+    private GameManager gameManager;
+
+    public event System.Action<Building, Unit.UnitType> OnUnitQueued;
 
     // Egy egyszerű osztály a gyártási megrendelésekhez
     public class ProductionOrder
@@ -16,15 +20,26 @@ public class ProductionManager : MonoBehaviour
 
     private Dictionary<Building, Queue<ProductionOrder>> productionQueues = new Dictionary<Building, Queue<ProductionOrder>>();
 
-    public void Initialize(MapData data, UnitManager uManager, BuildingManager bManager)
+    public void Initialize(MapData data, UnitManager uManager, BuildingManager bManager, GameManager gameManager)
     {
         this.mapData = data;
         this.unitManager = uManager;
         this.buildingManager = bManager;
+        this.gameManager = gameManager;
     }
 
     public void QueueUnit(Building factory, Unit.UnitType unitType)
     {
+        UnitData template = unitManager.unitTemplates.Find(t => t.unitType == unitType);
+        PlayerProfile owner = gameManager.GetPlayerProfile(factory.ownerId);
+
+        if (owner.availablePopulation < template.populationCost)
+        {
+            Debug.LogWarning("Not enough population capacity!");
+            return;
+        }
+        owner.queuedPopulation += template.populationCost;
+
         if (!CanProduceUnit(factory, unitType)) return;
 
         if (!productionQueues.ContainsKey(factory))
@@ -41,6 +56,8 @@ public class ProductionManager : MonoBehaviour
         });
 
         Debug.Log($"Queued {unitType} at {factory.buildingType}. Time: {trainingTime} turns.");
+
+        OnUnitQueued?.Invoke(factory, unitType);
     }
 
     public void ProcessTurn(int ownerId)
@@ -74,7 +91,11 @@ public class ProductionManager : MonoBehaviour
 
         if (spawnPos.HasValue)
         {
-            unitManager.SpawnUnit(order.unitType, spawnPos.Value, building.ownerId);
+            UnitData template = unitManager.unitTemplates.Find(t => t.unitType == order.unitType);
+            PlayerProfile owner = gameManager.GetPlayerProfile(building.ownerId);
+
+            owner.queuedPopulation -= template.populationCost;
+            unitManager.SpawnUnit(order.unitType, spawnPos.Value, owner.playerId);
 
             queue.Dequeue();
             Debug.Log("Unit training complete!");

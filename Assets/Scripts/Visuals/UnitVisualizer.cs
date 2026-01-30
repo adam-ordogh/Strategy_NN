@@ -80,15 +80,15 @@ public class UnitVisualizer
         EnqueueAnimation(marchJob);
     }
 
-    public void HandleUnitDied(Vector2Int pos)
+    public void HandleUnitDied(Unit unit)
     {
         if (runner == null)
         {
-            RemoveUnit(pos);
+            RemoveUnit(unit.position);
             return;
         }
 
-        EnqueueAnimation(AnimateDeath(pos));
+        EnqueueAnimation(AnimateDeath(unit.position));
     }
 
     // ---------------------- ANIMATION ROUTINES ----------------------

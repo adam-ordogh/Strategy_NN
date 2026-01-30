@@ -1249,6 +1249,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MapGenerator
   isTrainingMode: 0
   inputController: {fileID: 542428516}
+  gameUiController: {fileID: 115917202}
   map: {fileID: 958348240}
   influenceMap: {fileID: 549181014}
   highlightMap: {fileID: 386602579}
@@ -2074,7 +2075,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: 7, y: 10, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdb29b8a9d2144c45b916beb1435cec6, type: 3}
   m_Name: BuildingType_TownHall
   m_EditorClassIdentifier: Assembly-CSharp::ColorTile
-  m_Sprite: {fileID: -2413806693520163455, guid: 5657b57184b58004c8a039a7d19ffcac, type: 3}
+  m_Sprite: {fileID: -2944583857397830032, guid: 0ed92434a63a45e4b8faae7665b237b0, type: 3}
   m_Color: {r: 0, g: 0.11709499, b: 1, a: 1}
   m_Transform:
     e00: 1

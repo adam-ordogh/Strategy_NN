@@ -19,5 +19,6 @@ MonoBehaviour:
   attackPower: 20
   attackRange: 4
   movementRange: 4
+  populationCost: 1
   trainingTime: 2
   unitTile: {fileID: 11400000, guid: 4b392001588b4514e9c4522a824ff820, type: 2}

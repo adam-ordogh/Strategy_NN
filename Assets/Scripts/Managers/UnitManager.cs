@@ -11,7 +11,7 @@ public class UnitManager : MonoBehaviour
 
     public event Action<Unit, Vector2Int> OnUnitCreated;
     public event Action<Unit, List<Vector2Int>> OnUnitMoved;
-    public event Action<Vector2Int> OnUnitDestroyed;
+    public event Action<Unit> OnUnitDestroyed;
 
     public System.Func<Vector2Int, bool> IsTileBlockedByBuilding;
 
@@ -67,7 +67,7 @@ public class UnitManager : MonoBehaviour
                 owner.myUnits.Remove(unit);
             }
 
-            OnUnitDestroyed?.Invoke(unit.position);
+            OnUnitDestroyed?.Invoke(unit);
         }
     }
 

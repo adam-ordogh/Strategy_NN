@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdb29b8a9d2144c45b916beb1435cec6, type: 3}
   m_Name: UnitType_Soldier
   m_EditorClassIdentifier: Assembly-CSharp::ColorTile
-  m_Sprite: {fileID: 3589208099904707856, guid: 133dd51fb1a58924a8596055c002a61f, type: 3}
+  m_Sprite: {fileID: -5577942538167640716, guid: 59bf094fe5647784d959edc6dde9dd15, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1

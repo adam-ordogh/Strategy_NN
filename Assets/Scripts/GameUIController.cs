@@ -24,8 +24,13 @@ public class GameUIController : MonoBehaviour
         turnLabel.text = $"Turn {turnNumber}";
 
         int currentPlayer = initializer.gameManager.currentPlayerId;
-        currentPlayerLabel.text = $"Player {currentPlayer}";
+        currentPlayerLabel.text = $"Player {currentPlayer}";       
 
+        UpdateUI();
+    }
+
+    public void UpdateUI()
+    {
         PlayerProfile activePlayer = initializer.gameManager.CurrentPlayer;
         foodLabel.text = $"Food: {activePlayer.food}";
         woodLabel.text = $"Wood: {activePlayer.wood}";
@@ -36,46 +41,69 @@ public class GameUIController : MonoBehaviour
         goldWorkersLabel.text = $"Gold Workers: {activePlayer.assignedGoldWorkers}/{activePlayer.maxGoldSlots}";
     }
 
+    private void HandleBuildingEvent(Building b) => UpdateUI();
+    private void HandleQueueEvent(Building b, Unit.UnitType u) => UpdateUI();
+
+    public void Subscribe(BuildingManager bm, ProductionManager pm)
+    {
+        bm.OnBuildingPlaced += HandleBuildingEvent;
+        bm.OnBuildingRemoved += HandleBuildingEvent;
+
+        pm.OnUnitQueued += HandleQueueEvent;
+    }
+
+    public void Unsubscribe(BuildingManager bm)
+    {
+        bm.OnBuildingPlaced -= HandleBuildingEvent;
+        bm.OnBuildingRemoved -= HandleBuildingEvent;
+    }
+
     public void AddFoodWorker()
     {
-        PlayerProfile activePlayer = initializer.gameManager.CurrentPlayer;
-        initializer.economyManager.AssignFoodWorkers(activePlayer, true);
-        foodWorkersLabel.text = $"Food Workers: {activePlayer.assignedFoodWorkers}/{activePlayer.maxFoodSlots}";
+        var player = initializer.gameManager.CurrentPlayer;
+        if (initializer.economyManager.ChangeWorkerAssignment(player, ResourceType.Food, 1))
+        {
+            UpdateUI(); 
+        }
     }
 
     public void RemoveFoodWorker()
     {
-        PlayerProfile activePlayer = initializer.gameManager.CurrentPlayer;
-        initializer.economyManager.AssignFoodWorkers(activePlayer, false);
-        foodWorkersLabel.text = $"Food Workers: {activePlayer.assignedFoodWorkers}/{activePlayer.maxFoodSlots}";
+        var player = initializer.gameManager.CurrentPlayer;
+        initializer.economyManager.ChangeWorkerAssignment(player, ResourceType.Food, -1);
+        UpdateUI();
     }
 
     public void AddWoodWorker()
     {
-        PlayerProfile activePlayer = initializer.gameManager.CurrentPlayer;
-        initializer.economyManager.AssignWoodWorkers(activePlayer, true);
-        woodWorkersLabel.text = $"Wood Workers: {activePlayer.assignedWoodWorkers}/{activePlayer.maxWoodSlots}";
+        var player = initializer.gameManager.CurrentPlayer;
+        if (initializer.economyManager.ChangeWorkerAssignment(player, ResourceType.Wood, 1))
+        {
+            UpdateUI();
+        }
     }
 
     public void RemoveWoodWorker()
     {
-        PlayerProfile activePlayer = initializer.gameManager.CurrentPlayer;
-        initializer.economyManager.AssignWoodWorkers(activePlayer, false);
-        woodWorkersLabel.text = $"Wood Workers: {activePlayer.assignedWoodWorkers}/{activePlayer.maxWoodSlots}";
+        var player = initializer.gameManager.CurrentPlayer;
+        initializer.economyManager.ChangeWorkerAssignment(player, ResourceType.Wood, -1);
+        UpdateUI();
     }
 
     public void AddGoldWorker()
     {
-        PlayerProfile activePlayer = initializer.gameManager.CurrentPlayer;
-        initializer.economyManager.AssignGoldWorkers(activePlayer, true);
-        goldWorkersLabel.text = $"Gold Workers: {activePlayer.assignedGoldWorkers}/{activePlayer.maxGoldSlots}";
+        var player = initializer.gameManager.CurrentPlayer;
+        if (initializer.economyManager.ChangeWorkerAssignment(player, ResourceType.Gold, 1))
+        {
+            UpdateUI(); 
+        }
     }
 
     public void RemoveGoldWorker()
     {
-        PlayerProfile activePlayer = initializer.gameManager.CurrentPlayer;
-        initializer.economyManager.AssignGoldWorkers(activePlayer, false);
-        goldWorkersLabel.text = $"Gold Workers: {activePlayer.assignedGoldWorkers}/{activePlayer.maxGoldSlots}";
+        var player = initializer.gameManager.CurrentPlayer;
+        initializer.economyManager.ChangeWorkerAssignment(player, ResourceType.Gold, -1);
+        UpdateUI();
     }
 
     public void TrainSoldier()
