@@ -17,40 +17,52 @@ public class GameUIController : MonoBehaviour
     public void TrainSoldier()
     {
         Building selected = initializer.inputController.selectedBuilding;
+        int activePlayer = initializer.gameManager.currentPlayerId;
 
-        if (selected != null && selected.buildingType == Building.BuildingType.Barracks)
+        if (selected != null && selected.ownerId == activePlayer)
         {
-            initializer.productionManager.QueueUnit(selected, Unit.UnitType.Soldier);
+            if(selected.buildingType == Building.BuildingType.Barracks)
+            {
+                initializer.productionManager.QueueUnit(selected, Unit.UnitType.Soldier);
+            }
         }
         else
         {
-            Debug.LogWarning("Cannot train unit: No Barracks selected!");
+            Debug.LogWarning("You cannot command a building you do not own!");
         }
     }
     public void TrainArcher()
     {
         Building selected = initializer.inputController.selectedBuilding;
+        int activePlayer = initializer.gameManager.currentPlayerId;
 
-        if (selected != null && selected.buildingType == Building.BuildingType.Barracks)
+        if (selected != null && selected.ownerId == activePlayer)
         {
-            initializer.productionManager.QueueUnit(selected, Unit.UnitType.Archer);
+            if (selected.buildingType == Building.BuildingType.Barracks)
+            {
+                initializer.productionManager.QueueUnit(selected, Unit.UnitType.Archer);
+            }
         }
         else
         {
-            Debug.LogWarning("Cannot train unit: No Barracks selected!");
+            Debug.LogWarning("You cannot command a building you do not own!");
         }
     }
     public void TrainCavalry()
     {
         Building selected = initializer.inputController.selectedBuilding;
+        int activePlayer = initializer.gameManager.currentPlayerId;
 
-        if (selected != null && selected.buildingType == Building.BuildingType.Barracks)
+        if (selected != null && selected.ownerId == activePlayer)
         {
-            initializer.productionManager.QueueUnit(selected, Unit.UnitType.Cavalry);
+            if (selected.buildingType == Building.BuildingType.Barracks)
+            {
+                initializer.productionManager.QueueUnit(selected, Unit.UnitType.Cavalry);
+            }
         }
         else
         {
-            Debug.LogWarning("Cannot train unit: No Barracks selected!");
+            Debug.LogWarning("You cannot command a building you do not own!");
         }
     }
 

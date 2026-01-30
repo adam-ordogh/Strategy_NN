@@ -1,9 +1,11 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class BuildingManager : MonoBehaviour
 {
     public MapData mapData;
     private Building[,] occupancyGrid;
+    public List<BuildingData> buildingTemplates;
 
     public InfluenceManager influenceManager;
 
@@ -22,7 +24,8 @@ public class BuildingManager : MonoBehaviour
 
     public Building PlaceBuilding(Building.BuildingType type, Vector2Int pos, int ownerId)
     {
-        Building newBuilding = new Building(type, ownerId, pos);
+        BuildingData template = buildingTemplates.Find(t => t.buildingType == type);
+        Building newBuilding = new Building(template, ownerId, pos);
 
         if (!CanPlaceBuilding(pos, newBuilding.size, ownerId))
             return null;

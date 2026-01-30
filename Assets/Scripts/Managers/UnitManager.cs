@@ -5,6 +5,7 @@ using System;
 public class UnitManager : MonoBehaviour
 {
     public MapData mapData;
+    public List<UnitData> unitTemplates;
 
     public event Action<Unit, Vector2Int> OnUnitCreated;
     public event Action<Unit, List<Vector2Int>> OnUnitMoved;
@@ -19,30 +20,19 @@ public class UnitManager : MonoBehaviour
 
     public Unit SpawnUnit(Unit.UnitType type, Vector2Int pos, int ownerId)
     {
-        // Alap statok, lehet ScriptabelObject-ba tenni később
-        int health = 100;
-        int attack = 10;
-        int range = 1;
-        int move = 3;
+        UnitData template = unitTemplates.Find(t => t.unitType == type);
 
-        switch (type)
+        if (template == null)
         {
-            case Unit.UnitType.Archer:
-                health = 60;
-                attack = 15;
-                range = 3;
-                break;
-            case Unit.UnitType.Cavalry:
-                health = 120;
-                attack = 20;
-                move = 5;
-                break;
-            case Unit.UnitType.Soldier:
-                // Default stats
-                break;
+            Debug.LogError($"No template found for {type}!");
+            return null;
         }
 
-        Unit newUnit = new Unit(type, ownerId, health, attack, range, move, pos);
+        Unit newUnit = new Unit(
+            template,
+            ownerId,
+            pos
+        );
 
         CreateUnit(newUnit);
 

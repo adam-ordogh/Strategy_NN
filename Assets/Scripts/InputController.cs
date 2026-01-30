@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using System.Linq;
 using UnityEngine.EventSystems;
 using UnityEditor.U2D.Aseprite;
+using static UnityEditor.PlayerSettings;
 
 public class InputController : MonoBehaviour
 {
@@ -199,7 +200,8 @@ public class InputController : MonoBehaviour
         Vector2Int mousePos = GetGridPositionFromMouse();
 
         // Létrehozunk egy "szellem" épületet a kurzor pozíciójában
-        Building ghost = new Building(activeBuildingType.Value, gameManager.currentPlayerId, mousePos);
+        BuildingData template = buildingManager.buildingTemplates.Find(t => t.buildingType == activeBuildingType.Value);
+        Building ghost = new Building(template, gameManager.currentPlayerId, mousePos);
         var footprint = ghost.GetOccupiedTiles();
 
         bool isValid = buildingManager.CanPlaceBuilding(mousePos, ghost.size, gameManager.currentPlayerId);

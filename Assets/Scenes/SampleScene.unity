@@ -2097,6 +2097,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 418a47375d9a4c0408a47c266682de4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitManager
+  unitTemplates:
+  - {fileID: 11400000, guid: 686efd318bc2ff14fa11402eab47e4d4, type: 2}
+  - {fileID: 11400000, guid: c0ca582b49de2fb43a23adceb618bc86, type: 2}
+  - {fileID: 11400000, guid: 14cff66d7a7ec544488e0fb81786033a, type: 2}
 --- !u!4 &751502176
 Transform:
   m_ObjectHideFlags: 0
