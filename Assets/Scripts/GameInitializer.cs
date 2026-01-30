@@ -27,6 +27,7 @@ public class GameInitializer : MonoBehaviour
     public VisualsManager visualsManager;
     public InfluenceManager influenceManager;
     public ProductionManager productionManager;
+    public EconomyManager economyManager;
 
     // async volt eddig
     void Start()
@@ -53,20 +54,19 @@ public class GameInitializer : MonoBehaviour
 
     public void InstantiateComponents()
     {
-        unitManager.Initialize(mapManager.mapData);
-        influenceManager.Initialize(mapManager.mapData);
-        buildingManager.Initialize(mapManager.mapData, influenceManager);
-        productionManager.Initialize(mapManager.mapData, unitManager, buildingManager);
-
-        unitManager.IsTileBlockedByBuilding = (pos) => buildingManager.GetBuildingAtTile(pos) != null;
-
         mapGenerator = new MapGenerator(mapManager, map, tileRegistry);
-        unitVisualizer = new UnitVisualizer(unitMap, tileRegistry, highlightMap, tileRegistry.GetTile(MapData.TileType.MovementHighlight));
+        unitVisualizer = new UnitVisualizer(unitMap, highlightMap, tileRegistry.GetTile(MapData.TileType.MovementHighlight));
         buildingVisualizer = new BuildingVisualizer(buildingMap);
         influenceVisualizer = new InfluenceVisualizer(influenceMap, tileRegistry.GetTile(MapData.TileType.Border));
 
-        gameManager = new GameManager(mapManager, unitManager, buildingManager, productionManager, unitVisualizer, buildingVisualizer);
+        gameManager = new GameManager(mapManager, unitManager, buildingManager, productionManager, economyManager, unitVisualizer, buildingVisualizer);
 
+        unitManager.Initialize(mapManager.mapData, gameManager);
+        buildingManager.Initialize(mapManager.mapData, influenceManager, gameManager);
+        influenceManager.Initialize(mapManager.mapData);
+        productionManager.Initialize(mapManager.mapData, unitManager, buildingManager);
+
+        unitManager.IsTileBlockedByBuilding = (pos) => buildingManager.GetBuildingAtTile(pos) != null;
 
         if (!isTrainingMode)
         {
@@ -87,7 +87,7 @@ public class GameInitializer : MonoBehaviour
         unitManager.OnUnitMoved += unitVisualizer.HandleUnitMoved;
         unitManager.OnUnitDestroyed += unitVisualizer.HandleUnitDied;
         influenceManager.OnInfluenceChanged += influenceVisualizer.DrawBorders;
-        unitManager.OnUnitCreated += unitVisualizer.ShowUnitAt; // You'll need to create this method in Visualizer
+        unitManager.OnUnitCreated += unitVisualizer.ShowUnitAt;
     }
 
     public void StartGame()

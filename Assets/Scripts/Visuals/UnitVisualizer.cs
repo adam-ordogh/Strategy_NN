@@ -8,7 +8,6 @@ using System.Linq;
 public class UnitVisualizer
 {
     private Tilemap unitTilemap;
-    private TileRegistry tileRegistry;
 
     private Tilemap highlightTilemap;
     private TileBase highlightTile;
@@ -23,10 +22,9 @@ public class UnitVisualizer
 
     public bool IsBusy() => isProcessingQueue || animationQueue.Count > 0;
 
-    public UnitVisualizer(Tilemap unitTilemap, TileRegistry tileRegistry, Tilemap highlightTilemap, TileBase highlightTile)
+    public UnitVisualizer(Tilemap unitTilemap, Tilemap highlightTilemap, TileBase highlightTile)
     {
         this.unitTilemap = unitTilemap;
-        this.tileRegistry = tileRegistry;
         this.highlightTilemap = highlightTilemap;
         this.highlightTile = highlightTile;
     }

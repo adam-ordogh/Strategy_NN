@@ -7,15 +7,18 @@ public class UnitManager : MonoBehaviour
     public MapData mapData;
     public List<UnitData> unitTemplates;
 
+    public GameManager gameManager;
+
     public event Action<Unit, Vector2Int> OnUnitCreated;
     public event Action<Unit, List<Vector2Int>> OnUnitMoved;
     public event Action<Vector2Int> OnUnitDestroyed;
 
     public System.Func<Vector2Int, bool> IsTileBlockedByBuilding;
 
-    public void Initialize(MapData mapData)
+    public void Initialize(MapData mapData, GameManager gameManager)
     {
         this.mapData = mapData;
+        this.gameManager = gameManager;
     }
 
     public Unit SpawnUnit(Unit.UnitType type, Vector2Int pos, int ownerId)
@@ -44,6 +47,12 @@ public class UnitManager : MonoBehaviour
         unit.OnUnitDeath += HandleUnitDeath;
         mapData.units[unit.position] = unit;
 
+        PlayerProfile owner = gameManager.GetPlayerProfile(unit.ownerId);
+        if (owner != null)
+        {
+            owner.myUnits.Add(unit);
+        }
+
         OnUnitCreated?.Invoke(unit, unit.position);
     }
 
@@ -52,10 +61,15 @@ public class UnitManager : MonoBehaviour
         if (mapData.units.ContainsKey(unit.position))
         {
             mapData.units.Remove(unit.position);
+            PlayerProfile owner = gameManager.GetPlayerProfile(unit.ownerId);
+            if (owner != null)
+            {
+                owner.myUnits.Remove(unit);
+            }
+
             OnUnitDestroyed?.Invoke(unit.position);
         }
     }
-    
 
     public void ResetUnitsForNewTurn(int currentPlayerId)
     {

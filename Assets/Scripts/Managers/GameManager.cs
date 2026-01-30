@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -7,20 +8,28 @@ public class GameManager
     public UnitManager unitManager;
     public BuildingManager buildingManager;
     public ProductionManager productionManager;
+    public EconomyManager economyManager;
     public UnitVisualizer unitVisualizer;
     public BuildingVisualizer buildingVisualizer;
 
     public int turnNumber = 1;
-    public int currentPlayerId = 1;
 
-    public GameManager(MapManager mapManager, UnitManager unitManager, BuildingManager buildingManager, ProductionManager productionManager, UnitVisualizer unitVisualizer, BuildingVisualizer buildingVisualizer)
+    public List<PlayerProfile> players = new List<PlayerProfile>();
+    private int currentPlayerIndex = 0;
+    public int currentPlayerId => players[currentPlayerIndex].playerId;
+    public PlayerProfile CurrentPlayer => players[currentPlayerIndex];
+
+    public GameManager(MapManager mapManager, UnitManager unitManager, BuildingManager buildingManager, ProductionManager productionManager, EconomyManager economyManager, UnitVisualizer unitVisualizer, BuildingVisualizer buildingVisualizer)
     {
         this.mapManager = mapManager;
         this.unitManager = unitManager;
         this.buildingManager = buildingManager;
         this.productionManager = productionManager;
+        this.economyManager = economyManager;
         this.unitVisualizer = unitVisualizer;
         this.buildingVisualizer = buildingVisualizer;
+
+        InitializePlayers();
     }
 
     public void Start()
@@ -33,14 +42,32 @@ public class GameManager
 
     }
 
+    private void InitializePlayers()
+    {
+        var p1 = new PlayerProfile { playerId = 1, isAi = false, gold = 100, wood = 100, maxPopulation = 5 };
+        players.Add(p1);
+
+        var p2 = new PlayerProfile { playerId = 2, isAi = false, gold = 100, wood = 100, maxPopulation = 5 };
+        players.Add(p2);
+    }
+
+    public PlayerProfile GetPlayerProfile(int id)
+    {
+        return players.Find(p => p.playerId == id);
+    }
+
     public void NextTurn()
     {
         unitManager.ResetUnitsForNewTurn(currentPlayerId);
-        currentPlayerId = (currentPlayerId % 2) + 1;
-        if (currentPlayerId == 1)
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
+        if (currentPlayerId == 0)
         {
             turnNumber++;
         }
+        PlayerProfile activePlayer = CurrentPlayer;
+        Debug.Log($"Starting Turn for Player {activePlayer.playerId}");
+
         productionManager.ProcessTurn(currentPlayerId);
+        economyManager.ProcessTurn(activePlayer);
     }
 }

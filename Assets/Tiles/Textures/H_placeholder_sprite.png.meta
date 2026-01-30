@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: a0a3fbdda5afe964db58c78845342eca
+guid: d879f39899d6999448d6711c39f49a5e
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7150039465735671327
-    second: Triangle1_0
+      213: 2573583640113407640
+    second: H_placeholder_sprite_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,7 +113,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Triangle1_0
+      name: H_placeholder_sprite_0
       rect:
         serializedVersion: 2
         x: 0
@@ -121,15 +121,15 @@ TextureImporter:
         width: 256
         height: 256
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f1ec235f20b0a3360800000000000000
-      internalID: 7150039465735671327
+      spriteID: 89667bc6fa437b320800000000000000
+      internalID: 2573583640113407640
       vertices: []
       indices: 
       edges: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: b9957df8b4ff7484baf7b8412a74fca6
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Triangle1_0: 7150039465735671327
+      H_placeholder_sprite_0: 2573583640113407640
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

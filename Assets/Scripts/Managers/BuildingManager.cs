@@ -8,11 +8,13 @@ public class BuildingManager : MonoBehaviour
     public List<BuildingData> buildingTemplates;
 
     public InfluenceManager influenceManager;
+    public GameManager gameManager;
 
-    public void Initialize(MapData mapData, InfluenceManager influenceManager)
+    public void Initialize(MapData mapData, InfluenceManager influenceManager, GameManager gameManager)
     {
         this.mapData = mapData;
         this.influenceManager = influenceManager;
+        this.gameManager = gameManager;
 
         occupancyGrid = new Building[mapData.mapWidth, mapData.mapHeight];
 
@@ -33,6 +35,12 @@ public class BuildingManager : MonoBehaviour
         UpdateOccupancy(newBuilding, true);
         mapData.buildings[pos] = newBuilding;
 
+        PlayerProfile owner = gameManager.GetPlayerProfile(newBuilding.ownerId);
+        if (owner != null)
+        {
+            owner.myBuildings.Add(newBuilding);
+        }
+
         influenceManager.AddBuildingToReachGrid(newBuilding);
         influenceManager.RecalculateInfluence(newBuilding);
 
@@ -40,7 +48,7 @@ public class BuildingManager : MonoBehaviour
         return newBuilding;
     }
 
-    public void RemoveBuidling(Building building)
+    public void RemoveBuilding(Building building)
     {
         if (mapData.buildings.ContainsKey(building.position))
         {
@@ -48,6 +56,12 @@ public class BuildingManager : MonoBehaviour
             mapData.buildings.Remove(building.position);
             influenceManager.RemoveBuildingFromReachGrid(building);
             influenceManager.RecalculateAllInfluences();
+
+            PlayerProfile owner = gameManager.GetPlayerProfile(building.ownerId);
+            if (owner != null)
+            {
+                owner.myBuildings.Remove(building);
+            }
         }
     }
 
