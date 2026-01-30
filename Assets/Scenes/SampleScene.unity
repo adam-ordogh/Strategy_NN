@@ -1340,7 +1340,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09e0a796bcade664b8b4087f11fcc5f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingManager
-  influenceManager: {fileID: 0}
+  buildingTemplates:
+  - {fileID: 11400000, guid: 433f223f7e547f74e8baa927628a0f5f, type: 2}
+  - {fileID: 11400000, guid: e13da8cdbc27b28429d3bdae666e4ffe, type: 2}
+  - {fileID: 11400000, guid: 55223a9c048e05c439558dd77d97fb11, type: 2}
+  - {fileID: 11400000, guid: a44f9d5d8623ea640b05cc1ad9c91df2, type: 2}
+  - {fileID: 11400000, guid: 990b4ce4c8b72a3458da99d18c8316a6, type: 2}
+  - {fileID: 11400000, guid: fdd56d5acdef1a449bd5cb67942fbf55, type: 2}
+  influenceManager: {fileID: 1233808478}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0

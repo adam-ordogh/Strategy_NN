@@ -62,7 +62,7 @@ public class GameInitializer : MonoBehaviour
 
         mapGenerator = new MapGenerator(mapManager, map, tileRegistry);
         unitVisualizer = new UnitVisualizer(unitMap, tileRegistry, highlightMap, tileRegistry.GetTile(MapData.TileType.MovementHighlight));
-        buildingVisualizer = new BuildingVisualizer(buildingMap, tileRegistry.GetTile(MapData.TileType.Building));
+        buildingVisualizer = new BuildingVisualizer(buildingMap);
         influenceVisualizer = new InfluenceVisualizer(influenceMap, tileRegistry.GetTile(MapData.TileType.Border));
 
         gameManager = new GameManager(mapManager, unitManager, buildingManager, productionManager, unitVisualizer, buildingVisualizer);

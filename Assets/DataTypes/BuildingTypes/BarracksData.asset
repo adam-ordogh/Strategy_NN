@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4963c817adea2bb4ea91182658aeb31d, type: 3}
   m_Name: BarracksData
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  buildingType: 0
-  size: {x: 0, y: 0}
-  influenceRadius: 0
+  buildingType: 1
+  size: {x: 2, y: 1}
+  influenceRadius: 3
   populationProvided: 0
   jobSlotsProvided: 0
   goldCost: 0
   woodCost: 0
+  buildingTile: {fileID: 11400000, guid: 771b8d4bceaec4e439b2fff91ca8d016, type: 2}

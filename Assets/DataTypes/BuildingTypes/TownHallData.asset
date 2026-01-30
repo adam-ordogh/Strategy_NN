@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: TownHallData
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
   buildingType: 0
-  size: {x: 0, y: 0}
-  influenceRadius: 0
-  populationProvided: 0
+  size: {x: 2, y: 2}
+  influenceRadius: 5
+  populationProvided: 10
   jobSlotsProvided: 0
   goldCost: 0
   woodCost: 0
+  buildingTile: {fileID: 11400000, guid: 771b8d4bceaec4e439b2fff91ca8d016, type: 2}

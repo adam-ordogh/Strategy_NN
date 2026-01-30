@@ -142,19 +142,17 @@ public class UnitVisualizer
 
     private Sprite GetUnitSprite(Unit unit)
     {
-        var tileType = GetTileTypeFromUnit(unit.unitType);
-        var tileBase = tileRegistry.GetTile(tileType);
+        var tileType = unit.data.unitTile;
 
-        if (tileBase is Tile tile) return tile.sprite;
+        if (tileType is Tile tile) return tile.sprite;
         return null;
     }
 
     public void ShowUnitAt(Unit unit, Vector2Int pos)
     {
         Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
-        TileBase unitTile = tileRegistry.GetTile(GetTileTypeFromUnit(unit.unitType));
 
-        unitTilemap.SetTile(tilePos, unitTile);
+        unitTilemap.SetTile(tilePos, unit.data.unitTile);
         unitTilemap.SetTileFlags(tilePos, TileFlags.None);
         unitTilemap.SetColor(tilePos, GetPlayerColor(unit.ownerId));
     }
@@ -166,17 +164,6 @@ public class UnitVisualizer
             1 => Color.cyan,
             2 => new Color(1f, 0.3f, 0.3f), // Soft red
             _ => Color.white
-        };
-    }
-
-    private MapData.TileType GetTileTypeFromUnit(Unit.UnitType unitType)
-    {
-        return unitType switch
-        {
-            Unit.UnitType.Soldier => MapData.TileType.UnitType_Soldier,
-            Unit.UnitType.Archer => MapData.TileType.UnitType_Archer,
-            Unit.UnitType.Cavalry => MapData.TileType.UnitType_Cavalry,
-            _ => MapData.TileType.UnitType_Soldier
         };
     }
 

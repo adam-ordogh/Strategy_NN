@@ -13,8 +13,11 @@ MonoBehaviour:
   m_Name: CavalryData
   m_EditorClassIdentifier: Assembly-CSharp::UnitData
   unitType: 2
+  attackType: 1
+  armorType: 1
   maxHealth: 130
   attackPower: 15
   attackRange: 1
   movementRange: 6
   trainingTime: 3
+  unitTile: {fileID: 11400000, guid: 5d85fbf478952894695d3a5a80c55323, type: 2}

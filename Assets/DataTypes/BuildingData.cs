@@ -4,6 +4,7 @@ using UnityEngine.Tilemaps;
 [CreateAssetMenu(fileName = "NewBuildingData", menuName = "Game/Building Data")]
 public class BuildingData : ScriptableObject
 {
+    [Header("Logic Stats")]
     public Building.BuildingType buildingType;
     public Vector2Int size;
     public int influenceRadius;
@@ -13,5 +14,6 @@ public class BuildingData : ScriptableObject
     public int goldCost;
     public int woodCost;
 
-    //public TileBase buildingTile;
+    [Header("Visuals")]
+    public TileBase buildingTile;
 }

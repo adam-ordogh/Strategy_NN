@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4963c817adea2bb4ea91182658aeb31d, type: 3}
   m_Name: MineData
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  buildingType: 0
-  size: {x: 0, y: 0}
+  buildingType: 5
+  size: {x: 1, y: 1}
   influenceRadius: 0
   populationProvided: 0
-  jobSlotsProvided: 0
+  jobSlotsProvided: 3
   goldCost: 0
   woodCost: 0
+  buildingTile: {fileID: 11400000, guid: 771b8d4bceaec4e439b2fff91ca8d016, type: 2}

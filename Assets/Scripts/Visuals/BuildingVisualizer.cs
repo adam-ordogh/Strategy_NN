@@ -4,12 +4,10 @@ using UnityEngine.Tilemaps;
 public class BuildingVisualizer
 {
     private Tilemap buildingTilemap;
-    private TileBase buildingTile;
 
-    public BuildingVisualizer(Tilemap buildingTilemap, TileBase buildingTile)
+    public BuildingVisualizer(Tilemap buildingTilemap)
     {
         this.buildingTilemap = buildingTilemap;
-        this.buildingTile = buildingTile;
     }
 
     public void ShowBuilding(Building building)
@@ -17,7 +15,7 @@ public class BuildingVisualizer
         foreach (var tilePos in building.GetOccupiedTiles())
         {
             Vector3Int pos = new Vector3Int(tilePos.x, tilePos.y, 0);
-            buildingTilemap.SetTile(pos, buildingTile);
+            buildingTilemap.SetTile(pos, building.data.buildingTile);
 
             buildingTilemap.SetTileFlags(pos, TileFlags.None);
             buildingTilemap.SetColor(pos, GetPlayerColor(building.ownerId));

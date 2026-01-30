@@ -12,11 +12,7 @@ public class MapData
         Mountain,
         Gold,     
         MovementHighlight,
-        UnitType_Soldier,
-        UnitType_Archer,
-        UnitType_Cavalry,
-        Border,
-        Building
+        Border
     };
 
     [System.Serializable]
