@@ -24,12 +24,4 @@ MonoBehaviour:
   - type: 4
     tile: {fileID: 11400000, guid: 9a5560f6c63a8af4fb1615c11ab19daf, type: 2}
   - type: 5
-    tile: {fileID: 11400000, guid: e357876dbc84fdf4484b4c3814469f93, type: 2}
-  - type: 6
-    tile: {fileID: 11400000, guid: 4b392001588b4514e9c4522a824ff820, type: 2}
-  - type: 7
-    tile: {fileID: 11400000, guid: 5d85fbf478952894695d3a5a80c55323, type: 2}
-  - type: 8
     tile: {fileID: 11400000, guid: ea5262df122ca604c941ae42a846a3c4, type: 2}
-  - type: 9
-    tile: {fileID: 11400000, guid: 771b8d4bceaec4e439b2fff91ca8d016, type: 2}

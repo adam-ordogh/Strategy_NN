@@ -206,7 +206,6 @@ public class InputController : MonoBehaviour
 
         bool isValid = buildingManager.CanPlaceBuilding(mousePos, ghost.size, gameManager.currentPlayerId);
 
-        // Use UnitVisualizer to show the ghost footprint
         unitVisualizer.ClearHighlights();
         Color ghostColor = isValid ? new Color(0, 1f, 0, 0.5f) : new Color(1f, 0, 0, 0.5f);
         unitVisualizer.ShowHighlights(footprint, ghostColor);
