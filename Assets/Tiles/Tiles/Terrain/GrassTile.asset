@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GrassTile
   m_EditorClassIdentifier: Assembly-CSharp::ColorTile
   m_Sprite: {fileID: -8774579561408971138, guid: d589023fb61d5114582baaf9384e14ed, type: 3}
-  m_Color: {r: 0.554717, g: 0.43290502, b: 0.16222848, a: 1}
+  m_Color: {r: 0.29411766, g: 0.54509807, b: 0.23137255, a: 1}
   m_Transform:
     e00: 1
     e01: 0

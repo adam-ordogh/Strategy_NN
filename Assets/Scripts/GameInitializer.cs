@@ -6,17 +6,20 @@ public class GameInitializer : MonoBehaviour
 {
     public bool isTrainingMode;
 
+    private MapGenerator mapGenerator;
+
     public InputController inputController;
     public GameUIController gameUiController;
 
     public Tilemap map;
+    public Tilemap featureMap;
     public Tilemap influenceMap;
     public Tilemap highlightMap;
     public Tilemap unitMap;
     public Tilemap buildingMap;
 
     public TileRegistry tileRegistry;
-    private MapGenerator mapGenerator;
+    public MapVisualizer mapVisualizer;
     private UnitVisualizer unitVisualizer;
     private BuildingVisualizer buildingVisualizer;
     private InfluenceVisualizer influenceVisualizer;
@@ -55,7 +58,8 @@ public class GameInitializer : MonoBehaviour
 
     public void InstantiateComponents()
     {
-        mapGenerator = new MapGenerator(mapManager, map, tileRegistry);
+        mapGenerator = new MapGenerator(mapManager);
+        mapVisualizer = new MapVisualizer(map, featureMap, tileRegistry);
         unitVisualizer = new UnitVisualizer(unitMap, highlightMap, tileRegistry.GetTile(MapData.TileType.MovementHighlight));
         buildingVisualizer = new BuildingVisualizer(buildingMap);
         influenceVisualizer = new InfluenceVisualizer(influenceMap, tileRegistry.GetTile(MapData.TileType.Border));
@@ -142,6 +146,11 @@ public class GameInitializer : MonoBehaviour
     {
         mapGenerator.Generate();
         
+        if(!isTrainingMode)
+        {
+            mapVisualizer.DrawMap(mapManager.mapData, mapManager.mapWidth, mapManager.mapHeight);
+        }
+
         gameManager.Start();
     }
 }

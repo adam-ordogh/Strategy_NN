@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdb29b8a9d2144c45b916beb1435cec6, type: 3}
   m_Name: ForestTile
   m_EditorClassIdentifier: Assembly-CSharp::ColorTile
-  m_Sprite: {fileID: -8774579561408971138, guid: d589023fb61d5114582baaf9384e14ed, type: 3}
-  m_Color: {r: 0, g: 0.6150943, b: 0.18855733, a: 1}
+  m_Sprite: {fileID: 7359863556735400489, guid: c2df4d5df1722e749aab09997119df9f, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1
     e01: 0
