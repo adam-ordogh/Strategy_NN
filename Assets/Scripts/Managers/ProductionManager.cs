@@ -21,6 +21,7 @@ public class ProductionManager : MonoBehaviour
 
     public event System.Action<Building, Unit.UnitType> OnUnitQueued;
     public event System.Action<Building> OnUnitDequeued;
+    public event System.Action<Unit.UnitType> OnUnitSpawned;
 
     public void Initialize(MapData data, UnitManager uManager, BuildingManager bManager, GameManager gameManager)
     {
@@ -177,6 +178,8 @@ public class ProductionManager : MonoBehaviour
 
             queue.RemoveAt(0);
             Debug.Log("Unit training complete!");
+
+            OnUnitSpawned?.Invoke(order.unitType);
         }
         else
         {

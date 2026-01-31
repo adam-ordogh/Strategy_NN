@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GameUIController : MonoBehaviour
 {
@@ -46,13 +46,22 @@ public class GameUIController : MonoBehaviour
     public void UpdateUI()
     {
         PlayerProfile activePlayer = initializer.gameManager.CurrentPlayer;
-        foodLabel.text = $"Food: {activePlayer.food}";
-        woodLabel.text = $"Wood: {activePlayer.wood}";
-        goldLabel.text = $"Gold: {activePlayer.gold}";
+        var report = initializer.economyManager.GetProjectedIncome(activePlayer);
+
+        foodLabel.text = $"Food: {activePlayer.food} {FormatIncome(report.foodNet)}";
+        woodLabel.text = $"Wood: {activePlayer.wood} {FormatIncome(report.woodNet)}";
+        goldLabel.text = $"Gold: {activePlayer.gold} {FormatIncome(report.goldNet)}";
         availablePopLabel.text = $"Population: {activePlayer.availablePopulation}/{activePlayer.maxPopulation}";
         foodWorkersLabel.text = $"Food Workers: {activePlayer.assignedFoodWorkers}/{activePlayer.maxFoodSlots}";
         woodWorkersLabel.text = $"Wood Workers: {activePlayer.assignedWoodWorkers}/{activePlayer.maxWoodSlots}";
         goldWorkersLabel.text = $"Gold Workers: {activePlayer.assignedGoldWorkers}/{activePlayer.maxGoldSlots}";
+    }
+
+    private string FormatIncome(int income)
+    {
+        string color = income >= 0 ? "green" : "red";
+        string sign = income >= 0 ? "+" : "";
+        return $"<color={color}>({sign}{income})</color>";
     }
 
     private void HandleBuildingEvent(Building b) => UpdateUI();
@@ -66,14 +75,14 @@ public class GameUIController : MonoBehaviour
 
         pm.OnUnitQueued += HandleQueueEvent;
         pm.OnUnitDequeued += HandleDequeueEvent;
-
+        pm.OnUnitSpawned += (u) => RefreshSelectedBuildingUI();
     }
 
     public void Unsubscribe(BuildingManager bm)
     {
         bm.OnBuildingPlaced -= HandleBuildingEvent;
         bm.OnBuildingRemoved -= HandleBuildingEvent;
-        // Kezelni kell a ProductionManager esem�nyeit is, ha sz�ks�ges
+        // Kezelni kell a ProductionManager eseményeit is, ha szükséges
     }
 
     public void AddFoodWorker()
@@ -231,7 +240,7 @@ public class GameUIController : MonoBehaviour
         {
             productionPanel.SetActive(true);
 
-            // Fetch the queue from ProductionManager
+            // Queue lekérése a ProductionManagerből
             var queue = initializer.productionManager.GetQueueForBuilding(selected);
 
             if (queue != null && queue.Count > 0)
@@ -240,8 +249,7 @@ public class GameUIController : MonoBehaviour
                 for (int i = 0; i < queue.Count; i++)
                 {
                     queueStatus += $"[{i}] {queue[i].unitType} ";
-                    // Add a "Cancel" button logic here later, 
-                    // for now just showing text is enough for testing
+                    // Cancel gomb logika ittl esz később
                 }
                 queueText.text = queueStatus;
             }
@@ -262,7 +270,7 @@ public class GameUIController : MonoBehaviour
         if (selected == null) return;
 
         var queue = initializer.productionManager.GetQueueForBuilding(selected);
-        if (queue != null && queue.Count > 1) // Count > 1 because we don't refund index 0
+        if (queue != null && queue.Count > 1)
         {
             initializer.productionManager.CancelSpecificUnit(selected, queue.Count - 1);
             UpdateUI();

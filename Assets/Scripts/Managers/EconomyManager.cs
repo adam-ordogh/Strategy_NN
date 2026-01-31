@@ -1,6 +1,13 @@
 ﻿using UnityEngine;
 
 public enum ResourceType { Food, Wood, Gold }
+public struct IncomeReport
+{
+    public int goldNet;
+    public int woodNet;
+    public int foodNet;
+}
+
 public class EconomyManager : MonoBehaviour
 {
     public void ProcessTurn(PlayerProfile player)
@@ -9,13 +16,13 @@ public class EconomyManager : MonoBehaviour
         // (Ha mondjuk egy épület le lett rombolva, tudjunk róla)
         RecalculateCapacities(player);
 
-        int goldIncome = player.assignedGoldWorkers * 5;
-        int woodIncome = player.assignedWoodWorkers * 5;
-        int foodIncome = player.assignedFoodWorkers * 5;
+        int goldFromWorkers = player.assignedGoldWorkers * 5;
+        int woodFromWorkers = player.assignedWoodWorkers * 5;
+        int foodFromWorkers = player.assignedFoodWorkers * 5;
 
-        player.gold += goldIncome;
-        player.wood += woodIncome;
-        player.food += foodIncome;
+        player.gold += (player.baseGoldIncome + goldFromWorkers);
+        player.wood += (player.baseWoodIncome + woodFromWorkers);
+        player.food += (player.baseFoodIncome + foodFromWorkers);
 
         // Minden egység és dolgozó elfogyaszt 1 élelmet
         int totalPopulation = player.myUnits.Count + player.assignedGoldWorkers + player.assignedWoodWorkers + player.assignedFoodWorkers;
@@ -27,7 +34,7 @@ public class EconomyManager : MonoBehaviour
             Debug.LogWarning($"Player {player.playerId} is starving!");
         }
 
-        Debug.Log($"Economy Update P{player.playerId}: +{goldIncome}G +{woodIncome}W. Food Status: {player.food}");
+        Debug.Log($"Economy Update P{player.playerId}: +{player.baseGoldIncome + goldFromWorkers}G +{player.baseWoodIncome + woodFromWorkers}W. Food Status: {player.food}");
     }
 
     public void RecalculateCapacities(PlayerProfile player)
@@ -103,5 +110,23 @@ public class EconomyManager : MonoBehaviour
         }
 
         return true;
+    }
+
+    public IncomeReport GetProjectedIncome(PlayerProfile player)
+    {
+        // Reuse your logic from ProcessTurn but don't apply it
+        int gold = player.baseGoldIncome + (player.assignedGoldWorkers * 5);
+        int wood = player.baseWoodIncome + (player.assignedWoodWorkers * 5);
+
+        // Food is income minus consumption
+        int foodIncome = player.baseFoodIncome + (player.assignedFoodWorkers * 5);
+        int foodCons = player.CurrentUsedPopulation;
+
+        return new IncomeReport
+        {
+            goldNet = gold,
+            woodNet = wood,
+            foodNet = foodIncome - foodCons
+        };
     }
 }

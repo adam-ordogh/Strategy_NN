@@ -14,6 +14,10 @@ public class PlayerProfile
     public int wood;
     public int food;
 
+    public int baseGoldIncome = 2;
+    public int baseWoodIncome = 2;
+    public int baseFoodIncome = 2;
+
     public int totalPopulation;
     public int assignedGoldWorkers;
     public int assignedWoodWorkers;
