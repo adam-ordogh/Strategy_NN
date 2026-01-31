@@ -58,31 +58,78 @@ public class InfluenceManager : MonoBehaviour
         OnInfluenceChanged?.Invoke(mapData);
     }
 
+    //private int GetDominantPlayerAt(Vector2Int tilePos)
+    //{
+    //    int bestPlayer = 0;
+    //    float minDistanceSq = float.MaxValue;
+
+    //    var candidates = buildingReachGrid[tilePos.x, tilePos.y];
+
+    //    foreach (var b in candidates)
+    //    {
+    //        float centerX = b.position.x + (b.size.x - 1) / 2f;
+    //        float centerY = b.position.y + (b.size.y - 1) / 2f;
+
+    //        float dx = tilePos.x - centerX;
+    //        float dy = tilePos.y - centerY;
+    //        float distSq = (dx * dx) + (dy * dy);
+
+    //        if (distSq <= b.influenceRadius * b.influenceRadius)
+    //        {
+    //            if (distSq < minDistanceSq)
+    //            {
+    //                minDistanceSq = distSq;
+    //                bestPlayer = b.ownerId;
+    //            }
+    //        }
+    //    }
+    //    return bestPlayer;
+    //}
+
+
     private int GetDominantPlayerAt(Vector2Int tilePos)
     {
-        int bestPlayer = 0;
-        float minDistanceSq = float.MaxValue;
+        var buildings = buildingReachGrid[tilePos.x, tilePos.y];
+        if (buildings.Count == 0) return 0;
 
-        var candidates = buildingReachGrid[tilePos.x, tilePos.y];
+        Dictionary<int, float> playerScores = new Dictionary<int, float>();
 
-        foreach (var b in candidates)
+        foreach (var b in buildings)
         {
-            float centerX = b.position.x + (b.size.x - 1) / 2f;
-            float centerY = b.position.y + (b.size.y - 1) / 2f;
+            // Épület közepe (pl., 2x2-es méret (0,0)-nél (1,1))
+            float centerX = b.position.x + b.size.x / 2.0f;
+            float centerY = b.position.y + b.size.y / 2.0f;
 
-            float dx = tilePos.x - centerX;
-            float dy = tilePos.y - centerY;
+            // Cél mező közepe (pl., (5,0)-nél mező közepe (5.5, 0.5))
+            float targetX = tilePos.x + 0.5f;
+            float targetY = tilePos.y + 0.5f;
+
+            float dx = targetX - centerX;
+            float dy = targetY - centerY;
             float distSq = (dx * dx) + (dy * dy);
+            float r = b.influenceRadius;
 
-            if (distSq <= b.influenceRadius * b.influenceRadius)
+            if (distSq <= r * r)
             {
-                if (distSq < minDistanceSq)
-                {
-                    minDistanceSq = distSq;
-                    bestPlayer = b.ownerId;
-                }
+                float dist = Mathf.Sqrt(distSq);
+                float strength = r - dist + 1f;
+
+                if (!playerScores.ContainsKey(b.ownerId)) playerScores[b.ownerId] = 0;
+                playerScores[b.ownerId] += strength;
             }
         }
+
+        int bestPlayer = 0;
+        float maxScore = -1f;
+        foreach (var entry in playerScores)
+        {
+            if (entry.Value > maxScore)
+            {
+                maxScore = entry.Value;
+                bestPlayer = entry.Key;
+            }
+        }
+
         return bestPlayer;
     }
 

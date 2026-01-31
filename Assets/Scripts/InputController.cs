@@ -69,7 +69,7 @@ public class InputController : MonoBehaviour
 
         Building buildingAtPos = buildingManager.GetBuildingAtTile(gridPos);
 
-        if (buildingAtPos != null && buildingAtPos.ownerId == gameManager.currentPlayerId)
+        if (buildingAtPos != null && buildingAtPos.buildingType != Building.BuildingType.Road && buildingAtPos.ownerId == gameManager.currentPlayerId)
         {
             SelectBuilding(buildingAtPos);
             return;

@@ -15,8 +15,8 @@ public class Unit
     public int attackPower;
     public int attackRange;
     public bool canAttack = true;
-    public int movementPoints;
-    public int remainingMovementPoints;
+    public float movementPoints;
+    public float remainingMovementPoints;
     public Vector2Int position;
 
     public event System.Action<Unit> OnUnitDeath;
@@ -31,7 +31,7 @@ public class Unit
         this.health = data.maxHealth;
         this.attackPower = data.attackPower;
         this.attackRange = data.attackRange;
-        this.movementPoints = data.movementRange;
+        this.movementPoints = (float)data.movementRange;
         this.remainingMovementPoints = movementPoints;
         this.position = startPos;
     }

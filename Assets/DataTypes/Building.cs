@@ -10,7 +10,9 @@ public class Building
         House,
         Lumberyard, //Woodcamp jobban hangzik
         Farm,
-        Mine
+        Mine,
+        Outpost,
+        Road
     };
 
     public BuildingData data;

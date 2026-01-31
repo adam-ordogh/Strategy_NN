@@ -225,6 +225,14 @@ public class GameUIController : MonoBehaviour
     {
         initializer.inputController.activeBuildingType = Building.BuildingType.Mine;
     }
+    public void SelectedOutpost()
+    {
+        initializer.inputController.activeBuildingType = Building.BuildingType.Outpost;
+    }
+    public void SelectedRoad()
+    {
+        initializer.inputController.activeBuildingType = Building.BuildingType.Road;
+    }
 
     public void RefreshSelectedBuildingUI()
     {

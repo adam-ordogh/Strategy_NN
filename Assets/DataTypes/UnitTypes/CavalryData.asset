@@ -21,7 +21,7 @@ MonoBehaviour:
   movementRange: 6
   trainingTime: 3
   populationCost: 2
-  goldCost: 10
-  foodCost: 20
+  goldCost: 30
+  foodCost: 40
   woodCost: 20
   unitTile: {fileID: 11400000, guid: 5d85fbf478952894695d3a5a80c55323, type: 2}
