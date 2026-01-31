@@ -17,6 +17,6 @@ MonoBehaviour:
   influenceRadius: 3
   populationProvided: 0
   jobSlotsProvided: 0
-  goldCost: 0
-  woodCost: 0
+  goldCost: 30
+  woodCost: 50
   buildingTile: {fileID: 11400000, guid: 1821b3f8e0b167c419980d945506e433, type: 2}

@@ -19,6 +19,9 @@ MonoBehaviour:
   attackPower: 20
   attackRange: 4
   movementRange: 4
-  populationCost: 1
   trainingTime: 2
+  populationCost: 1
+  goldCost: 0
+  foodCost: 20
+  woodCost: 30
   unitTile: {fileID: 11400000, guid: 4b392001588b4514e9c4522a824ff820, type: 2}

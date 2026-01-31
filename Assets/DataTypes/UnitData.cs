@@ -15,8 +15,13 @@ public class UnitData : ScriptableObject
     public int attackPower;
     public int attackRange;
     public int movementRange;
-    public int populationCost;
     public int trainingTime;
+
+    [Header("Production Costs")]
+    public int populationCost;
+    public int goldCost;
+    public int foodCost;
+    public int woodCost;
 
     [Header("Visuals")]
     public TileBase unitTile;

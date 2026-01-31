@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.InputSystem;
 using System.Linq;
@@ -22,6 +23,8 @@ public class InputController : MonoBehaviour
     private Vector2Int? selectedUnitPos;
     public Building.BuildingType? activeBuildingType;
     public Building selectedBuilding;
+
+    public event Action OnSelectionChanged;
 
     void Update()
     {
@@ -180,6 +183,8 @@ public class InputController : MonoBehaviour
         {
             Debug.Log("Selected Barracks: Ready to produce units.");
         }
+
+        OnSelectionChanged?.Invoke();
     }
 
     private void DeselectBuilding()
@@ -187,6 +192,8 @@ public class InputController : MonoBehaviour
         selectedBuilding = null;
         unitVisualizer.ClearHighlights();
         Debug.Log("Deselected Building");
+
+        OnSelectionChanged?.Invoke();
     }
 
     private void DeselectAll()
@@ -204,7 +211,7 @@ public class InputController : MonoBehaviour
         Building ghost = new Building(template, gameManager.currentPlayerId, mousePos);
         var footprint = ghost.GetOccupiedTiles();
 
-        bool isValid = buildingManager.CanPlaceBuilding(mousePos, ghost.size, gameManager.currentPlayerId);
+        bool isValid = buildingManager.CanPlaceBuilding(mousePos, ghost.size, gameManager.currentPlayerId) && buildingManager.CanAffordBuilding(template, gameManager.GetPlayerProfile(gameManager.currentPlayerId));
 
         unitVisualizer.ClearHighlights();
         Color ghostColor = isValid ? new Color(0, 1f, 0, 0.5f) : new Color(1f, 0, 0, 0.5f);

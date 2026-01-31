@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using static Unit;
 
 public class BuildingManager : MonoBehaviour
 {
@@ -31,14 +32,14 @@ public class BuildingManager : MonoBehaviour
     {
         BuildingData template = buildingTemplates.Find(t => t.buildingType == type);
         Building newBuilding = new Building(template, ownerId, pos);
+        PlayerProfile owner = gameManager.GetPlayerProfile(ownerId);
 
-        if (!CanPlaceBuilding(pos, newBuilding.size, ownerId))
+        if (!CanAffordBuilding(template, owner) || !CanPlaceBuilding(pos, newBuilding.size, ownerId)) // Lehet kell majd jobb resource ellenőrzés, ezt csak rögtönöztem
             return null;
 
         UpdateOccupancy(newBuilding, true);
         mapData.buildings[pos] = newBuilding;
 
-        PlayerProfile owner = gameManager.GetPlayerProfile(newBuilding.ownerId);
         if (owner != null)
         {
             owner.myBuildings.Add(newBuilding);
@@ -46,6 +47,8 @@ public class BuildingManager : MonoBehaviour
 
         influenceManager.AddBuildingToReachGrid(newBuilding);
         influenceManager.RecalculateInfluence(newBuilding);
+
+        owner.SpendResources(template.goldCost, template.woodCost, 0);
 
         // Később itt eventeket hívhatunk meg, pl. OnBuildingPlaced?.Invoke(temp);
         OnBuildingPlaced?.Invoke(newBuilding);
@@ -70,6 +73,11 @@ public class BuildingManager : MonoBehaviour
         }
     }
 
+    public bool CanAffordBuilding(BuildingData data, PlayerProfile owner)
+    {
+        return owner != null && owner.CanAfford(data.goldCost, data.woodCost, 0);
+    }
+
     public bool CanPlaceBuilding(Vector2Int pos, Vector2Int size, int ownerId)
     {
         bool playerHasBuildings = false;
@@ -84,7 +92,7 @@ public class BuildingManager : MonoBehaviour
             {
                 Vector2Int checkPos = new Vector2Int(pos.x + x, pos.y + y);
                 if (!IsTileValidForPlacement(checkPos)) return false;
-
+                
                 int currentTileOwner = mapData.influenceMap[checkPos.x, checkPos.y];
                 if (currentTileOwner != 0 && currentTileOwner != ownerId)
                     return false;

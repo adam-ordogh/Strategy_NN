@@ -4,13 +4,6 @@ using static Unit;
 
 public class ProductionManager : MonoBehaviour
 {
-    private MapData mapData;
-    private UnitManager unitManager;
-    private BuildingManager buildingManager;
-    private GameManager gameManager;
-
-    public event System.Action<Building, Unit.UnitType> OnUnitQueued;
-
     // Egy egyszerű osztály a gyártási megrendelésekhez
     public class ProductionOrder
     {
@@ -18,7 +11,16 @@ public class ProductionManager : MonoBehaviour
         public int turnsRemaining;
     }
 
-    private Dictionary<Building, Queue<ProductionOrder>> productionQueues = new Dictionary<Building, Queue<ProductionOrder>>();
+    private Dictionary<Building, List<ProductionOrder>> productionQueues = new Dictionary<Building, List<ProductionOrder>>();
+    private MapData mapData;
+    private UnitManager unitManager;
+    private BuildingManager buildingManager;
+    private GameManager gameManager;
+
+    public int maxQueueSize = 5;
+
+    public event System.Action<Building, Unit.UnitType> OnUnitQueued;
+    public event System.Action<Building> OnUnitDequeued;
 
     public void Initialize(MapData data, UnitManager uManager, BuildingManager bManager, GameManager gameManager)
     {
@@ -33,23 +35,37 @@ public class ProductionManager : MonoBehaviour
         UnitData template = unitManager.unitTemplates.Find(t => t.unitType == unitType);
         PlayerProfile owner = gameManager.GetPlayerProfile(factory.ownerId);
 
+        if (productionQueues.ContainsKey(factory) && productionQueues[factory].Count >= maxQueueSize)
+        {
+            Debug.LogWarning("Queue is full!");
+            return;
+        }
+
         if (owner.availablePopulation < template.populationCost)
         {
             Debug.LogWarning("Not enough population capacity!");
             return;
         }
+
+        if (!owner.CanAfford(template.goldCost, template.woodCost, template.foodCost))
+        {
+            Debug.LogWarning("Not enough resources!");
+            return;
+        }
+
+        owner.SpendResources(template.goldCost, template.woodCost, template.foodCost);
         owner.queuedPopulation += template.populationCost;
 
         if (!CanProduceUnit(factory, unitType)) return;
 
         if (!productionQueues.ContainsKey(factory))
         {
-            productionQueues[factory] = new Queue<ProductionOrder>();
+            productionQueues[factory] = new List<ProductionOrder>();
         }
 
         int trainingTime = GetTrainingTime(unitType);
 
-        productionQueues[factory].Enqueue(new ProductionOrder
+        productionQueues[factory].Add(new ProductionOrder
         {
             unitType = unitType,
             turnsRemaining = trainingTime
@@ -60,6 +76,68 @@ public class ProductionManager : MonoBehaviour
         OnUnitQueued?.Invoke(factory, unitType);
     }
 
+    public void CancelProductionForBuilding(Building building)
+    {
+        if (!productionQueues.TryGetValue(building, out List<ProductionOrder> queue))
+            return;
+
+        PlayerProfile owner = gameManager.GetPlayerProfile(building.ownerId);
+
+        if (queue.Count > 0)
+        {
+            queue.RemoveAt(0); 
+        }
+
+        while (queue.Count > 0)
+        {
+            ProductionOrder order = queue[0];
+            UnitData data = unitManager.unitTemplates.Find(t => t.unitType == order.unitType);
+
+            owner.gold += data.goldCost;
+            owner.wood += data.woodCost;
+            owner.food += data.foodCost;
+            owner.queuedPopulation -= data.populationCost;
+        }
+
+        productionQueues.Remove(building);
+        Debug.Log($"Production queue for {building.buildingType} at {building.position} cleared.");
+
+        OnUnitDequeued?.Invoke(building);
+    }
+
+    public void CancelSpecificUnit(Building factory, int index)
+{
+        if (!productionQueues.TryGetValue(factory, out List<ProductionOrder> queue) || index >= queue.Count)
+            return;
+
+        // Nem lehet törölni az első elemet, ez lehet ki lesz véve mert így sosem lehet teljesen leállítani a gyártást
+        if (index == 0)
+        {
+            Debug.LogWarning("Cannot cancel unit already in production!");
+            return;
+        }
+
+        ProductionOrder orderToCancel = queue[index];
+        PlayerProfile owner = gameManager.GetPlayerProfile(factory.ownerId);
+
+        UnitData data = unitManager.unitTemplates.Find(t => t.unitType == orderToCancel.unitType);
+        owner.gold += data.goldCost;
+        owner.wood += data.woodCost;
+        owner.food += data.foodCost;
+
+        owner.queuedPopulation -= data.populationCost;
+
+        queue.RemoveAt(index);
+    
+        OnUnitDequeued?.Invoke(factory);
+    }
+
+    public List<ProductionOrder> GetQueueForBuilding(Building b)
+    {
+        if (productionQueues.ContainsKey(b)) return productionQueues[b];
+        return null;
+    }
+
     public void ProcessTurn(int ownerId)
     {
         foreach (var kvp in productionQueues)
@@ -68,11 +146,11 @@ public class ProductionManager : MonoBehaviour
 
             if (building.ownerId != ownerId) continue;
 
-            Queue<ProductionOrder> queue = kvp.Value;
+            List<ProductionOrder> queue = kvp.Value;
 
             if (queue.Count > 0)
             {
-                ProductionOrder currentOrder = queue.Peek();
+                ProductionOrder currentOrder = queue[0];
                 currentOrder.turnsRemaining--;
 
                 if (currentOrder.turnsRemaining <= 0)
@@ -83,9 +161,9 @@ public class ProductionManager : MonoBehaviour
         }
     }
 
-    private void TrySpawnFinishedUnit(Building building, Queue<ProductionOrder> queue)
+    private void TrySpawnFinishedUnit(Building building, List<ProductionOrder> queue)
     {
-        ProductionOrder order = queue.Peek();
+        ProductionOrder order = queue[0];
 
         Vector2Int? spawnPos = GetSpawnPosition(building);
 
@@ -97,7 +175,7 @@ public class ProductionManager : MonoBehaviour
             owner.queuedPopulation -= template.populationCost;
             unitManager.SpawnUnit(order.unitType, spawnPos.Value, owner.playerId);
 
-            queue.Dequeue();
+            queue.RemoveAt(0);
             Debug.Log("Unit training complete!");
         }
         else

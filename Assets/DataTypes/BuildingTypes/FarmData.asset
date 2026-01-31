@@ -18,5 +18,5 @@ MonoBehaviour:
   populationProvided: 0
   jobSlotsProvided: 3
   goldCost: 0
-  woodCost: 0
+  woodCost: 20
   buildingTile: {fileID: 11400000, guid: 004ca3e2f8204a14187e7dd755d1e164, type: 2}

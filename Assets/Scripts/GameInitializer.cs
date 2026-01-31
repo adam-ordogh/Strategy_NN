@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -78,7 +78,9 @@ public class GameInitializer : MonoBehaviour
             inputController.unitVisualizer = unitVisualizer;
             inputController.buildingVisualizer = buildingVisualizer;
             inputController.buildingManager = buildingManager;
-            inputController.gameManager = gameManager;            
+            inputController.gameManager = gameManager;   
+            
+            gameUiController.UpdateUI();
         }
     }
 
@@ -98,7 +100,21 @@ public class GameInitializer : MonoBehaviour
         influenceManager.OnInfluenceChanged += influenceVisualizer.DrawBorders;
         unitManager.OnUnitCreated += unitVisualizer.ShowUnitAt;
 
+        inputController.OnSelectionChanged += gameUiController.RefreshSelectedBuildingUI;
+
         gameUiController.Subscribe(buildingManager, productionManager);
+
+        unitManager.OnUnitCreated += (unit, pos) => {
+            gameUiController.UpdateUI();
+        };
+
+        unitManager.OnUnitDestroyed += (unit) => {
+            gameUiController.UpdateUI();
+        };
+
+        // Ez csak teszt jelleggel van itt, nem fog minden játékosra feliratkozni
+        gameUiController.SubscribeToPlayerUpdates(gameManager.players[0]);
+        gameUiController.SubscribeToPlayerUpdates(gameManager.players[1]);
     }
 
     public void AddEconomyListeners()
@@ -113,12 +129,12 @@ public class GameInitializer : MonoBehaviour
             economyManager.RecalculateCapacities(owner);
         };
 
-        unitManager.OnUnitCreated += (unit, pos) => {
-            gameUiController.UpdateUI(); 
-        };
-
-        unitManager.OnUnitDestroyed += (unit) => {
-            gameUiController.UpdateUI();
+        buildingManager.OnBuildingRemoved += (building) => {
+            // Gyártási sor törlése, ha gyártási épületről van szó
+            if (building.buildingType == Building.BuildingType.Barracks)
+            {
+                productionManager.CancelProductionForBuilding(building);
+            }
         };
     }
 

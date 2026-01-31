@@ -44,10 +44,10 @@ public class GameManager
 
     private void InitializePlayers()
     {
-        var p1 = new PlayerProfile { playerId = 1, isAi = false, gold = 100, wood = 100, maxPopulation = 5 };
+        var p1 = new PlayerProfile { playerId = 1, isAi = false, food = 50, gold = 200, wood = 200, maxPopulation = 5 };
         players.Add(p1);
 
-        var p2 = new PlayerProfile { playerId = 2, isAi = false, gold = 100, wood = 100, maxPopulation = 5 };
+        var p2 = new PlayerProfile { playerId = 2, isAi = false, food = 50, gold = 200, wood = 200, maxPopulation = 5 };
         players.Add(p2);
     }
 

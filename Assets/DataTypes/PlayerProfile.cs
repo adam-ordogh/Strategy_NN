@@ -38,4 +38,19 @@ public class PlayerProfile
     public int maxWoodSlots;
     public int maxFoodSlots;
     public int maxPopulation;
+
+    public event System.Action OnResourcesChanged;
+
+    public bool CanAfford(int goldCost, int woodCost, int foodCost)
+    {
+        return gold >= goldCost && wood >= woodCost && food >= foodCost;
+    }
+
+    public void SpendResources(int goldCost, int woodCost, int foodCost)
+    {
+        gold -= goldCost;
+        wood -= woodCost;
+        food -= foodCost;
+        OnResourcesChanged?.Invoke();
+    }
 }
