@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.UIElements;
 
 public class BuildingVisualizer
 {
@@ -32,8 +33,12 @@ public class BuildingVisualizer
         };
     }
 
-    public void RemoveBuilding(Vector2Int pos)
+    public void RemoveBuilding(Building building)
     {
-
+        foreach (var tilePos in building.GetOccupiedTiles())
+        {
+            Vector3Int pos = new Vector3Int(tilePos.x, tilePos.y, 0);
+            buildingTilemap.SetTile(pos, null);
+        }
     }
 }

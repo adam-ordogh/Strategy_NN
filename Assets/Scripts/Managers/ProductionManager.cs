@@ -7,7 +7,7 @@ public class ProductionManager : MonoBehaviour
     // Egy egyszerű osztály a gyártási megrendelésekhez
     public class ProductionOrder
     {
-        public Unit.UnitType unitType;
+        public UnitData template;
         public int turnsRemaining;
     }
 
@@ -19,9 +19,9 @@ public class ProductionManager : MonoBehaviour
 
     public int maxQueueSize = 5;
 
-    public event System.Action<Building, Unit.UnitType> OnUnitQueued;
+    public event System.Action<Building, UnitData> OnUnitQueued;
     public event System.Action<Building> OnUnitDequeued;
-    public event System.Action<Unit.UnitType> OnUnitSpawned;
+    public event System.Action OnUnitSpawned;
 
     public void Initialize(MapData data, UnitManager uManager, BuildingManager bManager, GameManager gameManager)
     {
@@ -31,9 +31,8 @@ public class ProductionManager : MonoBehaviour
         this.gameManager = gameManager;
     }
 
-    public void QueueUnit(Building factory, Unit.UnitType unitType)
+    public void QueueUnit(Building factory, UnitData unitType)
     {
-        UnitData template = unitManager.unitTemplates.Find(t => t.unitType == unitType);
         PlayerProfile owner = gameManager.GetPlayerProfile(factory.ownerId);
 
         if (productionQueues.ContainsKey(factory) && productionQueues[factory].Count >= maxQueueSize)
@@ -42,33 +41,33 @@ public class ProductionManager : MonoBehaviour
             return;
         }
 
-        if (owner.availablePopulation < template.populationCost)
+        if (owner.availablePopulation < unitType.populationCost)
         {
             Debug.LogWarning("Not enough population capacity!");
             return;
         }
 
-        if (!owner.CanAfford(template.goldCost, template.woodCost, template.foodCost))
+        if (!owner.CanAfford(unitType.goldCost, unitType.woodCost, unitType.foodCost))
         {
             Debug.LogWarning("Not enough resources!");
             return;
         }
 
-        owner.SpendResources(template.goldCost, template.woodCost, template.foodCost);
-        owner.queuedPopulation += template.populationCost;
+        owner.SpendResources(unitType.goldCost, unitType.woodCost, unitType.foodCost);
+        owner.queuedPopulation += unitType.populationCost;
 
-        if (!CanProduceUnit(factory, unitType)) return;
+        if (!CanProduceUnit(factory)) return;
 
         if (!productionQueues.ContainsKey(factory))
         {
             productionQueues[factory] = new List<ProductionOrder>();
         }
 
-        int trainingTime = GetTrainingTime(unitType);
+        int trainingTime = unitType.trainingTime;
 
         productionQueues[factory].Add(new ProductionOrder
         {
-            unitType = unitType,
+            template = unitType,
             turnsRemaining = trainingTime
         });
 
@@ -91,13 +90,12 @@ public class ProductionManager : MonoBehaviour
 
         while (queue.Count > 0)
         {
-            ProductionOrder order = queue[0];
-            UnitData data = unitManager.unitTemplates.Find(t => t.unitType == order.unitType);
+            UnitData order = queue[0].template;
 
-            owner.gold += data.goldCost;
-            owner.wood += data.woodCost;
-            owner.food += data.foodCost;
-            owner.queuedPopulation -= data.populationCost;
+            owner.gold += order.goldCost;
+            owner.wood += order.woodCost;
+            owner.food += order.foodCost;
+            owner.queuedPopulation -= order.populationCost;
         }
 
         productionQueues.Remove(building);
@@ -118,15 +116,14 @@ public class ProductionManager : MonoBehaviour
             return;
         }
 
-        ProductionOrder orderToCancel = queue[index];
+        UnitData orderToCancel = queue[index].template;
         PlayerProfile owner = gameManager.GetPlayerProfile(factory.ownerId);
+        
+        owner.gold += orderToCancel.goldCost;
+        owner.wood += orderToCancel.woodCost;
+        owner.food += orderToCancel.foodCost;
 
-        UnitData data = unitManager.unitTemplates.Find(t => t.unitType == orderToCancel.unitType);
-        owner.gold += data.goldCost;
-        owner.wood += data.woodCost;
-        owner.food += data.foodCost;
-
-        owner.queuedPopulation -= data.populationCost;
+        owner.queuedPopulation -= orderToCancel.populationCost;
 
         queue.RemoveAt(index);
     
@@ -164,22 +161,21 @@ public class ProductionManager : MonoBehaviour
 
     private void TrySpawnFinishedUnit(Building building, List<ProductionOrder> queue)
     {
-        ProductionOrder order = queue[0];
+        UnitData order = queue[0].template;
 
         Vector2Int? spawnPos = GetSpawnPosition(building);
 
         if (spawnPos.HasValue)
         {
-            UnitData template = unitManager.unitTemplates.Find(t => t.unitType == order.unitType);
             PlayerProfile owner = gameManager.GetPlayerProfile(building.ownerId);
 
-            owner.queuedPopulation -= template.populationCost;
-            unitManager.SpawnUnit(order.unitType, spawnPos.Value, owner.playerId);
+            owner.queuedPopulation -= order.populationCost;
+            unitManager.SpawnUnit(order, spawnPos.Value, owner.playerId);
 
             queue.RemoveAt(0);
             Debug.Log("Unit training complete!");
 
-            OnUnitSpawned?.Invoke(order.unitType);
+            OnUnitSpawned?.Invoke();
         }
         else
         {
@@ -187,22 +183,13 @@ public class ProductionManager : MonoBehaviour
         }
     }
 
-    public bool CanProduceUnit(Building factory, Unit.UnitType unitType)
+    public bool CanProduceUnit(Building factory)
     {
         if (factory.buildingType != Building.BuildingType.Barracks) return false;
         return true;
         // Nem nézzük a spawnt itt, mert lehet, hogy lesz hely mire kész a egység
     }
 
-    private int GetTrainingTime(Unit.UnitType type)
-    {
-        switch (type)
-        {
-            case Unit.UnitType.Archer: return 2;
-            case Unit.UnitType.Cavalry: return 3;
-            default: return 1; // Soldier
-        }
-    }
 
     private Vector2Int? GetSpawnPosition(Building factory)
     {

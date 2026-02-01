@@ -29,13 +29,12 @@ public class BuildingManager : MonoBehaviour
         }
     }
 
-    public Building PlaceBuilding(Building.BuildingType type, Vector2Int pos, int ownerId)
+    public Building PlaceBuilding(BuildingData template, Vector2Int pos, int ownerId)
     {
-        BuildingData template = buildingTemplates.Find(t => t.buildingType == type);
         Building newBuilding = new Building(template, ownerId, pos);
         PlayerProfile owner = gameManager.GetPlayerProfile(ownerId);
 
-        if (!CanAffordBuilding(template, owner) || !CanPlaceBuilding(pos, newBuilding.size, ownerId, type)) // Lehet kell majd jobb resource ellenőrzés, ezt csak rögtönöztem
+        if (!CanAffordBuilding(template, owner) || !CanPlaceBuilding(template, pos, ownerId)) // Lehet kell majd jobb resource ellenőrzés, ezt csak rögtönöztem
             return null;
 
         UpdateOccupancy(newBuilding, true);
@@ -74,12 +73,20 @@ public class BuildingManager : MonoBehaviour
         }
     }
 
+    public void CheckBuildingHealth(Building building)
+    {
+        if (building.currentHp <= 0)
+        {
+            RemoveBuilding(building);
+        }
+    }
+
     public bool CanAffordBuilding(BuildingData data, PlayerProfile owner)
     {
         return owner != null && owner.CanAfford(data.goldCost, data.woodCost, 0);
     }
 
-    public bool CanPlaceBuilding(Vector2Int pos, Vector2Int size, int ownerId, Building.BuildingType type)
+    public bool CanPlaceBuilding(BuildingData building, Vector2Int pos, int ownerId)
     {
         // --- Van-e épülete a játékosnak ---
         bool playerHasBuildings = false;
@@ -89,12 +96,12 @@ public class BuildingManager : MonoBehaviour
         }
 
         // --- Az épület belső mezői ellenérzése ---
-        for (int x = 0; x < size.x; x++)
+        for (int x = 0; x < building.size.x; x++)
         {
-            for (int y = 0; y < size.y; y++)
+            for (int y = 0; y < building.size.y; y++)
             {
                 Vector2Int checkPos = new Vector2Int(pos.x + x, pos.y + y);
-                if (!IsTileValidForPlacement(checkPos, type)) return false;
+                if (!IsTileValidForPlacement(checkPos, building.buildingType)) return false;
 
                 int currentTileOwner = mapData.influenceMap[checkPos.x, checkPos.y];
                 if (currentTileOwner != 0 && currentTileOwner != ownerId)
@@ -107,15 +114,15 @@ public class BuildingManager : MonoBehaviour
 
         // --- Szomszédság megnézése ---
         // Utak nem blokkolnak semmit, így őket kihagyjuk
-        if (type != Building.BuildingType.Road)
+        if (building.buildingType != Building.BuildingType.Road)
         {
             //bool touchesRoad;
 
-            for (int x = -1; x <= size.x; x++)
+            for (int x = -1; x <= building.size.x; x++)
             {
-                for (int y = -1; y <= size.y; y++)
+                for (int y = -1; y <= building.size.y; y++)
                 {
-                    if (x >= 0 && x < size.x && y >= 0 && y < size.y) continue;
+                    if (x >= 0 && x < building.size.x && y >= 0 && y < building.size.y) continue;
 
                     Vector2Int neighborPos = new Vector2Int(pos.x + x, pos.y + y);
 
@@ -179,9 +186,9 @@ public class BuildingManager : MonoBehaviour
         {
             occupancyGrid[tile.x, tile.y] = isAdding ? building : null;
 
-            if (isAdding && building.buildingType == Building.BuildingType.Road)
+            if (isAdding)
             {
-                mapData.moveCostMap[tile.x, tile.y] = 0.5f;
+                mapData.moveCostMap[tile.x, tile.y] = building.data.movementCostModifier;
             }
             else
             {

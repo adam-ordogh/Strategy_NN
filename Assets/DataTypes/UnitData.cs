@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public enum AttackType { Melee, Slashing, Piercing}
-public enum ArmorType { Unarmored, Light, Heavy}
+public enum AttackType { Melee, Slashing, Piercing, Siege}
+public enum ArmorType { Unarmored, Light, Heavy, Structure}
 
 [CreateAssetMenu(fileName = "NewUnitData", menuName = "Game/Unit Data")]
 public class UnitData : ScriptableObject

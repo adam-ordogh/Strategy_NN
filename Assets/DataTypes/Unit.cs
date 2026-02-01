@@ -6,33 +6,36 @@ public class Unit
     {
         Soldier,
         Archer,
-        Cavalry
+        Cavalry,
+        Siege
     };
 
-    public UnitType unitType;
+    public UnitData data;
+
+    //public UnitType unitType;
     public int ownerId;
-    public int health;
-    public int attackPower;
-    public int attackRange;
+    public int currentHealth;
+    //public int health;
+    //public int attackPower;
+    //public int attackRange;
     public bool canAttack = true;
-    public float movementPoints;
+    //public float movementPoints;
     public float remainingMovementPoints;
     public Vector2Int position;
 
-    public event System.Action<Unit> OnUnitDeath;
 
-    public UnitData data;
+    public event System.Action<Unit> OnUnitDeath;
 
     public Unit(UnitData data, int ownerId, Vector2Int startPos)
     {
         this.data = data;
-        this.unitType = data.unitType;
+        //this.unitType = data.unitType;
         this.ownerId = ownerId;
-        this.health = data.maxHealth;
-        this.attackPower = data.attackPower;
-        this.attackRange = data.attackRange;
-        this.movementPoints = (float)data.movementRange;
-        this.remainingMovementPoints = movementPoints;
+        this.currentHealth = data.maxHealth;
+        //this.attackPower = data.attackPower;
+        //this.attackRange = data.attackRange;
+        //this.movementPoints = (float)data.movementRange;
+        this.remainingMovementPoints = data.movementRange;
         this.position = startPos;
     }
 
@@ -43,8 +46,8 @@ public class Unit
 
     public void TakeDamage(int damage)
     {
-        this.health -= damage;
-        if (this.health <= 0)
+        this.currentHealth -= damage;
+        if (this.currentHealth <= 0)
         {
             OnUnitDeath?.Invoke(this);
         }
@@ -60,7 +63,7 @@ public class Unit
 
         float multiplier = CombatMath.GetMultiplier(this.data.attackType, target.data.armorType);
 
-        int finalDamage = Mathf.RoundToInt(this.attackPower * multiplier);
+        int finalDamage = Mathf.RoundToInt(this.data.attackPower * multiplier);
 
         target.TakeDamage(finalDamage);
         canAttack = false;
@@ -68,26 +71,37 @@ public class Unit
         Debug.Log($"Unit at {this.position} attacked unit at {target.position} for {finalDamage} damage.");
 
 
-        if (target.health > 0 && target.unitType != UnitType.Archer)
+        if (target.currentHealth > 0 && target.data.unitType != UnitType.Archer)
         {
             int dist = Mathf.Max(Mathf.Abs(this.position.x - target.position.x), Mathf.Abs(this.position.y - target.position.y));
 
-            if (dist <= target.attackRange)
+            if (dist <= target.data.attackRange)
             {
                 float returnMultiplier = CombatMath.GetMultiplier(target.data.attackType, this.data.armorType);
 
-                int returnDamage = Mathf.RoundToInt(this.attackPower * returnMultiplier * 0.5f);
+                int returnDamage = Mathf.RoundToInt(this.data.attackPower * returnMultiplier * 0.5f);
 
-                Debug.Log($"Retaliation! {target.unitType} hits back for {returnDamage}.");
+                Debug.Log($"Retaliation! {target.data.unitType} hits back for {returnDamage}.");
                 this.TakeDamage(returnDamage);
             }
         }
         
     }
 
+    public void DealDamageToBuilding(Building target)
+    {
+        if (!canAttack) return;
+
+        float multiplier = CombatMath.GetMultiplier(this.data.attackType, target.data.armorType);
+
+        int finalDamage = Mathf.RoundToInt(this.data.attackPower * multiplier);
+        target.TakeDamage(finalDamage);
+
+        canAttack = false;
+    }
     public void ResetActions()
     {
-        this.remainingMovementPoints = this.movementPoints;
+        this.remainingMovementPoints = this.data.movementRange;
         this.canAttack = true;
     }
 }

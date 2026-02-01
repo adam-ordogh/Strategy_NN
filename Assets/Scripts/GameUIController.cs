@@ -65,7 +65,7 @@ public class GameUIController : MonoBehaviour
     }
 
     private void HandleBuildingEvent(Building b) => UpdateUI();
-    private void HandleQueueEvent(Building b, Unit.UnitType u) => UpdateUI();
+    private void HandleQueueEvent(Building b, UnitData u) => UpdateUI();
     private void HandleDequeueEvent(Building b) => UpdateUI();
 
     public void Subscribe(BuildingManager bm, ProductionManager pm)
@@ -75,7 +75,7 @@ public class GameUIController : MonoBehaviour
 
         pm.OnUnitQueued += HandleQueueEvent;
         pm.OnUnitDequeued += HandleDequeueEvent;
-        pm.OnUnitSpawned += (u) => RefreshSelectedBuildingUI();
+        pm.OnUnitSpawned += RefreshSelectedBuildingUI;
     }
 
     public void Unsubscribe(BuildingManager bm)
@@ -133,61 +133,16 @@ public class GameUIController : MonoBehaviour
         UpdateUI();
     }
 
-    public void TrainSoldier()
+    public void TrainUnit(UnitData unitData)
     {
         Building selected = initializer.inputController.selectedBuilding;
-        int activePlayer = initializer.gameManager.currentPlayerId;
 
-        if (selected != null && selected.ownerId == activePlayer)
+        if (selected != null && selected.ownerId == initializer.gameManager.currentPlayerId)
         {
-            if(selected.buildingType == Building.BuildingType.Barracks)
-            {
-                initializer.productionManager.QueueUnit(selected, Unit.UnitType.Soldier);
-                RefreshSelectedBuildingUI();
-            }
-        }
-        else
-        {
-            Debug.LogWarning("You cannot command a building you do not own!");
+            initializer.productionManager.QueueUnit(selected, unitData);
+            RefreshSelectedBuildingUI();
         }
     }
-    public void TrainArcher()
-    {
-        Building selected = initializer.inputController.selectedBuilding;
-        int activePlayer = initializer.gameManager.currentPlayerId;
-
-        if (selected != null && selected.ownerId == activePlayer)
-        {
-            if (selected.buildingType == Building.BuildingType.Barracks)
-            {
-                initializer.productionManager.QueueUnit(selected, Unit.UnitType.Archer);
-                RefreshSelectedBuildingUI();
-            }
-        }
-        else
-        {
-            Debug.LogWarning("You cannot command a building you do not own!");
-        }
-    }
-    public void TrainCavalry()
-    {
-        Building selected = initializer.inputController.selectedBuilding;
-        int activePlayer = initializer.gameManager.currentPlayerId;
-
-        if (selected != null && selected.ownerId == activePlayer)
-        {
-            if (selected.buildingType == Building.BuildingType.Barracks)
-            {
-                initializer.productionManager.QueueUnit(selected, Unit.UnitType.Cavalry);
-                RefreshSelectedBuildingUI();
-            }
-        }
-        else
-        {
-            Debug.LogWarning("You cannot command a building you do not own!");
-        }
-    }
-
 
     public void OpenBuildingMenu()
     {
@@ -201,37 +156,9 @@ public class GameUIController : MonoBehaviour
         buildingPanelClosed.SetActive(true);
     }
 
-    public void SelectedTownHall()
+    public void SelectBuildingToBuild(BuildingData buildingData)
     {
-        initializer.inputController.activeBuildingType = Building.BuildingType.TownHall;
-    }
-    public void SelectedBarracks()
-    {
-        initializer.inputController.activeBuildingType = Building.BuildingType.Barracks;
-    }
-    public void SelectedHouse()
-    {
-        initializer.inputController.activeBuildingType = Building.BuildingType.House;
-    }
-    public void SelectedLumberyard()
-    {
-        initializer.inputController.activeBuildingType = Building.BuildingType.Lumberyard;
-    }
-    public void SelectedFarm()
-    {
-        initializer.inputController.activeBuildingType = Building.BuildingType.Farm;
-    }
-    public void SelectedMine()
-    {
-        initializer.inputController.activeBuildingType = Building.BuildingType.Mine;
-    }
-    public void SelectedOutpost()
-    {
-        initializer.inputController.activeBuildingType = Building.BuildingType.Outpost;
-    }
-    public void SelectedRoad()
-    {
-        initializer.inputController.activeBuildingType = Building.BuildingType.Road;
+        initializer.inputController.activeBuildingType = buildingData;
     }
 
     public void RefreshSelectedBuildingUI()
@@ -256,7 +183,7 @@ public class GameUIController : MonoBehaviour
                 string queueStatus = "Next in: " + queue[0].turnsRemaining + " turns\n";
                 for (int i = 0; i < queue.Count; i++)
                 {
-                    queueStatus += $"[{i}] {queue[i].unitType} ";
+                    queueStatus += $" {queue[i].template.unitType} ";
                     // Cancel gomb logika ittl esz később
                 }
                 queueText.text = queueStatus;

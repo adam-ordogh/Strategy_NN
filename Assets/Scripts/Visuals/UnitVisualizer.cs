@@ -97,7 +97,7 @@ public class UnitVisualizer
     {
         Vector3Int startCell = new Vector3Int(path[0].x, path[0].y, 0);
 
-        GameObject walker = new GameObject($"Walker_{unit.unitType}");
+        GameObject walker = new GameObject($"Walker_{unit.data.unitType}");
         SpriteRenderer sr = walker.AddComponent<SpriteRenderer>();
         sr.sprite = sprite;
         sr.color = GetPlayerColor(unit.ownerId);

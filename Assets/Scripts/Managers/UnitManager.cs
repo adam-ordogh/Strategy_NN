@@ -22,13 +22,11 @@ public class UnitManager : MonoBehaviour
         this.gameManager = gameManager;
     }
 
-    public Unit SpawnUnit(Unit.UnitType type, Vector2Int pos, int ownerId)
+    public Unit SpawnUnit(UnitData template, Vector2Int pos, int ownerId)
     {
-        UnitData template = unitTemplates.Find(t => t.unitType == type);
-
         if (template == null)
         {
-            Debug.LogError($"No template found for {type}!");
+            Debug.LogError($"No template found for template!");
             return null;
         }
 
@@ -107,9 +105,7 @@ public class UnitManager : MonoBehaviour
                 if (!IsTileValidForMovement(next)) continue;
 
                 // Alap mozgás ár (Út vs Fű)
-                float moveCost = mapData.moveCostMap[next.x, next.y];
-                if (IsTileThreatened(next, unit.ownerId))
-                    moveCost += 2f;
+                float moveCost = GetStepCost(unit, next);
 
                 float newCost = cost[current] + moveCost;
 
@@ -126,39 +122,51 @@ public class UnitManager : MonoBehaviour
         return cost;
     }
 
+    // Részleges mozgás kezelése, ha nincs elég mozgáspont a teljes úthoz
     public void TryMoveUnit(Vector2Int fromPos, Vector2Int toPos)
     {
         if (!mapData.units.TryGetValue(fromPos, out Unit unit)) return;
+        if (unit.remainingMovementPoints <= 0) return;
 
-        List<Vector2Int> path = GetPathToTarget(unit, toPos);
-        if (path == null) return;
+        List<Vector2Int> fullPath = GetPathToTarget(unit, toPos);
+        if (fullPath == null || fullPath.Count <= 1) return;
 
-        float totalPathCost = 0;
+        List<Vector2Int> actualPath = new List<Vector2Int> { fromPos };
+        float totalCost = 0;
+        Vector2Int lastReachableTile = fromPos;
 
-        for (int i = 1; i < path.Count; i++)
+       
+        for (int i = 1; i < fullPath.Count; i++)
         {
-            Vector2Int step = path[i];
+            float stepCost = GetStepCost(unit, fullPath[i]);
 
-            // Alap mozgás ár (Út vs Fű)
-            float stepCost = mapData.moveCostMap[step.x, step.y];
-
-
-            if (IsTileThreatened(step, unit.ownerId))
+            if (totalCost + stepCost <= unit.remainingMovementPoints)
             {
-                stepCost += 2.0f;
+                totalCost += stepCost;
+                lastReachableTile = fullPath[i];
+                actualPath.Add(lastReachableTile);
             }
-
-            totalPathCost += stepCost;
+            else
+            {
+                break;
+            }
         }
 
-        unit.remainingMovementPoints = Mathf.Max(0, unit.remainingMovementPoints - totalPathCost);
+        // Csak akkor mozogjon, ha legalább egy lépést meg tud tenni
+        if (actualPath.Count > 1)
+        {
+            unit.remainingMovementPoints -= totalCost;
 
-        unit.Move(toPos);
+            unit.Move(lastReachableTile);
+            mapData.units.Remove(fromPos);
+            mapData.units[lastReachableTile] = unit;
 
-        mapData.units.Remove(fromPos);
-        mapData.units[toPos] = unit;
-
-        OnUnitMoved?.Invoke(unit, path);
+            OnUnitMoved?.Invoke(unit, actualPath);
+        }
+        else
+        {
+            Debug.Log("Unit cannot even take one step toward that target!");
+        }
     }
 
     public List<Vector2Int> GetPathToTarget(Unit unit, Vector2Int targetPos)
@@ -205,12 +213,24 @@ public class UnitManager : MonoBehaviour
 
                 if (mapData.units.TryGetValue(neighbor, out Unit unit))
                 {
-                    if (unit.ownerId != movingUnitOwnerId && unit.unitType != Unit.UnitType.Archer)
+                    if (unit.ownerId != movingUnitOwnerId && unit.data.unitType != Unit.UnitType.Archer)
                         return true;
                 }
             }
         }
         return false;
+    }
+
+    public float GetStepCost(Unit unit, Vector2Int tile)
+    {
+        float cost = mapData.moveCostMap[tile.x, tile.y];
+
+        if (IsTileThreatened(tile, unit.ownerId))
+        {
+            cost += 2.0f;
+        }
+
+        return cost;
     }
 
     // ---------------------------- TÁMADÁS FÜGGVÉNYEK ----------------------------
@@ -243,7 +263,7 @@ public class UnitManager : MonoBehaviour
                     Mathf.Abs(standTile.y - enemyPos.y)
                 );
 
-                if (dist <= unit.attackRange)
+                if (dist <= unit.data.attackRange)
                 {
                     validTargets.Add(new AttackCommand
                     {
@@ -273,7 +293,7 @@ public class UnitManager : MonoBehaviour
             // Chebyshev távolság számítása (8-irányú) ettől az ellenféltől
             int dist = Mathf.Max(Mathf.Abs(tile.x - targetPos.x), Mathf.Abs(tile.y - targetPos.y));
 
-            if (dist <= attacker.attackRange)
+            if (dist <= attacker.data.attackRange)
             {
                 float cost = reachableTiles[tile];
 
@@ -289,22 +309,36 @@ public class UnitManager : MonoBehaviour
         return bestTile;
     }
 
-    public void TryAttackUnit(Vector2Int attackerPos, Vector2Int targetPos)
+    public void TryAttack(Vector2Int attackerPos, Vector2Int targetPos)
     {
-        if (!mapData.units.TryGetValue(attackerPos, out Unit attacker) ||
-            !mapData.units.TryGetValue(targetPos, out Unit target))
-            return;
-
-        if (attacker.ownerId == target.ownerId) return;
-
+        if (!mapData.units.TryGetValue(attackerPos, out Unit attacker)) return;
         if (!attacker.canAttack) return;
 
-        // Chebyshev távság számítása (8-irányú)
-        int distance = Mathf.Max(Mathf.Abs(attackerPos.x - targetPos.x), Mathf.Abs(attackerPos.y - targetPos.y));
-
-        if (distance <= attacker.attackRange)
+        // ha a célpont egy egység
+        if (mapData.units.TryGetValue(targetPos, out Unit targetUnit))
         {
-            attacker.DealDamageToUnit(target);
+            if (attacker.ownerId != targetUnit.ownerId)
+            {
+                attacker.DealDamageToUnit(targetUnit);
+            }
+        }
+        // Ha a célpont nem egység, akkor lehet épület
+        else
+        {
+            // A BuildingManager referenciát lehet át kell dolgozni, esetleg deleagate-t használva?
+            Building targetBuilding = FindFirstObjectByType<BuildingManager>().GetBuildingAtTile(targetPos);
+
+            if (targetBuilding != null && targetBuilding.data.isSelectable && targetBuilding.ownerId != attacker.ownerId)
+            {
+                // Range check
+                int dist = Mathf.Max(Mathf.Abs(attackerPos.x - targetPos.x), Mathf.Abs(attackerPos.y - targetPos.y));
+                if (dist <= attacker.data.attackRange)
+                {
+                    attacker.DealDamageToBuilding(targetBuilding);
+
+                    FindFirstObjectByType<BuildingManager>().CheckBuildingHealth(targetBuilding);
+                }
+            }
         }
     }
 }

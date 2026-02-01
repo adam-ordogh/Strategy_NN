@@ -22,7 +22,7 @@ public class InputController : MonoBehaviour
     public BuildingVisualizer buildingVisualizer;
 
     private Vector2Int? selectedUnitPos;
-    public Building.BuildingType? activeBuildingType;
+    public BuildingData activeBuildingType;
     public Building selectedBuilding;
 
     private Vector2Int? dragStartPos;
@@ -38,9 +38,9 @@ public class InputController : MonoBehaviour
             return;
         }
 
-        if (activeBuildingType.HasValue)
+        if (activeBuildingType != null)
         {
-            if (activeBuildingType == Building.BuildingType.Road)
+            if (activeBuildingType.buildingType == Building.BuildingType.Road)
             {
                 HandleRoadDragging();
             }
@@ -109,35 +109,56 @@ public class InputController : MonoBehaviour
 
     public void HandleUnitAction(Vector2Int clickedPos)
     {
-        bool unitAtClickedPos = mapManager.mapData.units.TryGetValue(clickedPos, out Unit clickedUnit);
-
-        if (unitAtClickedPos)
+        // Egység interakciók kezelése
+        if (mapManager.mapData.units.TryGetValue(clickedPos, out Unit clickedUnit))
         {
             if (selectedUnitPos.HasValue && clickedUnit.ownerId != gameManager.currentPlayerId)
             {
-                Unit attacker = mapManager.mapData.units[selectedUnitPos.Value];
-                Vector2Int? attackTile = unitManager.GetBestAttackPosition(attacker, clickedPos);
-
-                if (attackTile.HasValue)
-                {
-                    if (attackTile.Value != attacker.position)
-                    {
-                        unitManager.TryMoveUnit(attacker.position, attackTile.Value);
-                    }
-
-                    unitManager.TryAttackUnit(attacker.position, clickedPos);
-
-                    DeselectUnit();
-                }
+                PerformMoveAndAttack(selectedUnitPos.Value, clickedPos);
             }
             else if (clickedUnit.ownerId == gameManager.currentPlayerId)
             {
                 SelectUnit(clickedPos);
             }
+            return;
         }
-        else if (selectedUnitPos.HasValue)
+
+        // Épület interakciók kezelése
+        Building clickedBuilding = buildingManager.GetBuildingAtTile(clickedPos);
+        if (clickedBuilding != null && clickedBuilding.data.isSelectable && selectedUnitPos.HasValue)
+        {
+            if (clickedBuilding.ownerId != gameManager.currentPlayerId)
+            {
+                PerformMoveAndAttack(selectedUnitPos.Value, clickedPos);
+                DeselectUnit();
+                return;
+            }
+        }
+
+        // Mozgás kezelése
+        if (selectedUnitPos.HasValue)
         {
             unitManager.TryMoveUnit(selectedUnitPos.Value, clickedPos);
+            DeselectUnit();
+        }
+    }
+
+    private void PerformMoveAndAttack(Vector2Int attackerPos, Vector2Int targetPos)
+    {
+        Unit attacker = mapManager.mapData.units[attackerPos];
+
+        // GetBestAttackPosition most már kezeli az épületeket is
+        Vector2Int? attackTile = unitManager.GetBestAttackPosition(attacker, targetPos);
+
+        if (attackTile.HasValue)
+        {
+            if (attackTile.Value != attacker.position)
+            {
+                unitManager.TryMoveUnit(attacker.position, attackTile.Value);
+            }
+
+            unitManager.TryAttack(attacker.position, targetPos);
+
             DeselectUnit();
         }
     }
@@ -214,11 +235,11 @@ public class InputController : MonoBehaviour
         Vector2Int mousePos = GetGridPositionFromMouse();
 
         // Létrehozunk egy "szellem" épületet a kurzor pozíciójában
-        BuildingData template = buildingManager.buildingTemplates.Find(t => t.buildingType == activeBuildingType.Value);
-        Building ghost = new Building(template, gameManager.currentPlayerId, mousePos);
+        //BuildingData template = buildingManager.buildingTemplates.Find(t => t.buildingType == activeBuildingType.Value);
+        Building ghost = new Building(activeBuildingType, gameManager.currentPlayerId, mousePos);
         var footprint = ghost.GetOccupiedTiles();
 
-        bool isValid = buildingManager.CanPlaceBuilding(mousePos, ghost.size, gameManager.currentPlayerId, template.buildingType) && buildingManager.CanAffordBuilding(template, gameManager.GetPlayerProfile(gameManager.currentPlayerId));
+        bool isValid = buildingManager.CanPlaceBuilding(activeBuildingType, mousePos, gameManager.currentPlayerId) && buildingManager.CanAffordBuilding(activeBuildingType, gameManager.GetPlayerProfile(gameManager.currentPlayerId));
 
         unitVisualizer.ClearHighlights();
         Color ghostColor = isValid ? new Color(0, 1f, 0, 0.5f) : new Color(1f, 0, 0, 0.5f);
@@ -228,11 +249,10 @@ public class InputController : MonoBehaviour
     private void TryPlaceBuilding()
     {
         Vector2Int mousePos = GetGridPositionFromMouse();
-        Building placed = buildingManager.PlaceBuilding(activeBuildingType.Value, mousePos, gameManager.currentPlayerId);
+        Building placed = buildingManager.PlaceBuilding(activeBuildingType, mousePos, gameManager.currentPlayerId);
 
         if (placed != null)
         {
-            buildingVisualizer.ShowBuilding(placed);
             CancelBuildMode();
         }
     }
@@ -305,11 +325,8 @@ public class InputController : MonoBehaviour
             {
                 foreach (var pos in previewRoadPath)
                 {
-                    Building placed = buildingManager.PlaceBuilding(Building.BuildingType.Road, pos, gameManager.currentPlayerId);
-                    if (placed != null)
-                    {
-                        buildingVisualizer.ShowBuilding(placed);
-                    }
+                    Building placed = buildingManager.PlaceBuilding(activeBuildingType, pos, gameManager.currentPlayerId);
+                    Debug.Log(activeBuildingType);
                 }
             }
 

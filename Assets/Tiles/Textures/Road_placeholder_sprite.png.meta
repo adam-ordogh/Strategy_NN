@@ -1,28 +1,28 @@
 fileFormatVersion: 2
-guid: d08d0beadfdad624ab9daa81874896f3
+guid: e37be9835171be146964c264b7eaf9e2
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6071753649392296269
-    second: Road_placeholder_sprite 1_0
+      213: -2497508499996401918
+    second: Road_placeholder_sprite_0
   - first:
-      213: 2347061719503049511
-    second: Road_placeholder_sprite 1_1
+      213: -5622675549333049705
+    second: Road_placeholder_sprite_1
   - first:
-      213: 5589777775211563695
-    second: Road_placeholder_sprite 1_2
+      213: -3160127319934410256
+    second: Road_placeholder_sprite_2
   - first:
-      213: -22056830963303920
-    second: Road_placeholder_sprite 1_3
+      213: 5145861251706165959
+    second: Road_placeholder_sprite_3
   - first:
-      213: 5514769446868317030
-    second: Road_placeholder_sprite 1_4
+      213: 8909604095628577825
+    second: Road_placeholder_sprite_4
   - first:
-      213: -1043019176107276512
-    second: Road_placeholder_sprite 1_5
+      213: -4945153197604976483
+    second: Road_placeholder_sprite_5
   - first:
-      213: 261199497137848613
-    second: Road_placeholder_sprite 1_6
+      213: 6878848789849171558
+    second: Road_placeholder_sprite_6
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -131,7 +131,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Road_placeholder_sprite 1_0
+      name: Road_placeholder_sprite_0
       rect:
         serializedVersion: 2
         x: 40
@@ -146,14 +146,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d41a5bb46c3334450800000000000000
-      internalID: 6071753649392296269
+      spriteID: 20f123a6041175dd0800000000000000
+      internalID: -2497508499996401918
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Road_placeholder_sprite 1_1
+      name: Road_placeholder_sprite_1
       rect:
         serializedVersion: 2
         x: 153
@@ -168,14 +168,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 72395e8d230729020800000000000000
-      internalID: 2347061719503049511
+      spriteID: 79eaabac06e38f1b0800000000000000
+      internalID: -5622675549333049705
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Road_placeholder_sprite 1_2
+      name: Road_placeholder_sprite_2
       rect:
         serializedVersion: 2
         x: 31
@@ -190,14 +190,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: faacbd84541e29d40800000000000000
-      internalID: 5589777775211563695
+      spriteID: 0f16d4212f8f424d0800000000000000
+      internalID: -3160127319934410256
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Road_placeholder_sprite 1_3
+      name: Road_placeholder_sprite_3
       rect:
         serializedVersion: 2
         x: 97
@@ -212,14 +212,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 01abf89dd63a1bff0800000000000000
-      internalID: -22056830963303920
+      spriteID: 7ca94636b85c96740800000000000000
+      internalID: 5145861251706165959
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Road_placeholder_sprite 1_4
+      name: Road_placeholder_sprite_4
       rect:
         serializedVersion: 2
         x: 178
@@ -234,14 +234,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 66373cae795688c40800000000000000
-      internalID: 5514769446868317030
+      spriteID: 12c8e4948b545ab70800000000000000
+      internalID: 8909604095628577825
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Road_placeholder_sprite 1_5
+      name: Road_placeholder_sprite_5
       rect:
         serializedVersion: 2
         x: 47
@@ -256,14 +256,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 0278432e5937681f0800000000000000
-      internalID: -1043019176107276512
+      spriteID: d984ed80e594f5bb0800000000000000
+      internalID: -4945153197604976483
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Road_placeholder_sprite 1_6
+      name: Road_placeholder_sprite_6
       rect:
         serializedVersion: 2
         x: 139
@@ -278,8 +278,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 521896a0f87ff9300800000000000000
-      internalID: 261199497137848613
+      spriteID: 666e5965784967f50800000000000000
+      internalID: 6878848789849171558
       vertices: []
       indices: 
       edges: []
@@ -298,13 +298,13 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Road_placeholder_sprite 1_0: 6071753649392296269
-      Road_placeholder_sprite 1_1: 2347061719503049511
-      Road_placeholder_sprite 1_2: 5589777775211563695
-      Road_placeholder_sprite 1_3: -22056830963303920
-      Road_placeholder_sprite 1_4: 5514769446868317030
-      Road_placeholder_sprite 1_5: -1043019176107276512
-      Road_placeholder_sprite 1_6: 261199497137848613
+      Road_placeholder_sprite_0: -2497508499996401918
+      Road_placeholder_sprite_1: -5622675549333049705
+      Road_placeholder_sprite_2: -3160127319934410256
+      Road_placeholder_sprite_3: 5145861251706165959
+      Road_placeholder_sprite_4: 8909604095628577825
+      Road_placeholder_sprite_5: -4945153197604976483
+      Road_placeholder_sprite_6: 6878848789849171558
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

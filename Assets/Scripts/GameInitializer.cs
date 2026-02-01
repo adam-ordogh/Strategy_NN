@@ -99,24 +99,28 @@ public class GameInitializer : MonoBehaviour
 
     public void AddVisualEventListeners()
     {
+        // Egység események
         unitManager.OnUnitMoved += unitVisualizer.HandleUnitMoved;
         unitManager.OnUnitDestroyed += unitVisualizer.HandleUnitDied;
-        influenceManager.OnInfluenceChanged += influenceVisualizer.DrawBorders;
         unitManager.OnUnitCreated += unitVisualizer.ShowUnitAt;
-
-        inputController.OnSelectionChanged += gameUiController.RefreshSelectedBuildingUI;
-
-        gameUiController.Subscribe(buildingManager, productionManager);
-
         unitManager.OnUnitCreated += (unit, pos) => {
             gameUiController.UpdateUI();
         };
-
         unitManager.OnUnitDestroyed += (unit) => {
             gameUiController.UpdateUI();
         };
 
-        // Ez csak teszt jelleggel van itt, nem fog minden játékosra feliratkozni
+        // Épület események
+        influenceManager.OnInfluenceChanged += influenceVisualizer.DrawBorders;
+        buildingManager.OnBuildingPlaced += buildingVisualizer.ShowBuilding;
+        buildingManager.OnBuildingRemoved += buildingVisualizer.RemoveBuilding;
+
+        // Felhasználói felület események
+        inputController.OnSelectionChanged += gameUiController.RefreshSelectedBuildingUI;
+
+        gameUiController.Subscribe(buildingManager, productionManager);
+
+            // Ez csak teszt jelleggel van itt, nem fog minden játékosra feliratkozni
         gameUiController.SubscribeToPlayerUpdates(gameManager.players[0]);
         gameUiController.SubscribeToPlayerUpdates(gameManager.players[1]);
     }

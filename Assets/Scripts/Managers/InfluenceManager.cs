@@ -40,12 +40,12 @@ public class InfluenceManager : MonoBehaviour
     // Amikor egy új épület kerül a térképre, csak az érintett területet számoljuk újra
     public void RecalculateInfluence(Building newBuilding)
     {
-        int r = newBuilding.influenceRadius;
+        int r = newBuilding.data.influenceRadius;
 
         int startX = Mathf.Max(0, newBuilding.position.x - r);
-        int endX = Mathf.Min(mapData.mapWidth - 1, newBuilding.position.x + newBuilding.size.x + r);
+        int endX = Mathf.Min(mapData.mapWidth - 1, newBuilding.position.x + newBuilding.data.size.x + r);
         int startY = Mathf.Max(0, newBuilding.position.y - r);
-        int endY = Mathf.Min(mapData.mapHeight - 1, newBuilding.position.y + newBuilding.size.y + r);
+        int endY = Mathf.Min(mapData.mapHeight - 1, newBuilding.position.y + newBuilding.data.size.y + r);
 
         for (int x = startX; x <= endX; x++)
         {
@@ -68,8 +68,8 @@ public class InfluenceManager : MonoBehaviour
         foreach (var b in buildings)
         {
             // Épület közepe (pl., 2x2-es méret (0,0)-nél (1,1))
-            float centerX = b.position.x + b.size.x / 2.0f;
-            float centerY = b.position.y + b.size.y / 2.0f;
+            float centerX = b.position.x + b.data.size.x / 2.0f;
+            float centerY = b.position.y + b.data.size.y / 2.0f;
 
             // Cél mező közepe (pl., (5,0)-nél mező közepe (5.5, 0.5))
             float targetX = tilePos.x + 0.5f;
@@ -78,7 +78,7 @@ public class InfluenceManager : MonoBehaviour
             float dx = targetX - centerX;
             float dy = targetY - centerY;
             float distSq = (dx * dx) + (dy * dy);
-            float r = b.influenceRadius;
+            float r = b.data.influenceRadius;
 
             if (distSq <= r * r)
             {
@@ -106,12 +106,12 @@ public class InfluenceManager : MonoBehaviour
 
     public void AddBuildingToReachGrid(Building b)
     {
-        int r = b.influenceRadius;
+        int r = b.data.influenceRadius;
         // Bounding box
         int startX = Mathf.Max(0, b.position.x - r);
-        int endX = Mathf.Min(mapData.mapWidth - 1, b.position.x + b.size.x + r);
+        int endX = Mathf.Min(mapData.mapWidth - 1, b.position.x + b.data.size.x + r);
         int startY = Mathf.Max(0, b.position.y - r);
-        int endY = Mathf.Min(mapData.mapHeight - 1, b.position.y + b.size.y + r);
+        int endY = Mathf.Min(mapData.mapHeight - 1, b.position.y + b.data.size.y + r);
 
         for (int x = startX; x <= endX; x++)
         {
@@ -124,12 +124,12 @@ public class InfluenceManager : MonoBehaviour
 
     public void RemoveBuildingFromReachGrid(Building b)
     {
-        int r = b.influenceRadius;
+        int r = b.data.influenceRadius;
         // Bounding box
         int startX = Mathf.Max(0, b.position.x - r);
-        int endX = Mathf.Min(mapData.mapWidth - 1, b.position.x + b.size.x + r);
+        int endX = Mathf.Min(mapData.mapWidth - 1, b.position.x + b.data.size.x + r);
         int startY = Mathf.Max(0, b.position.y - r);
-        int endY = Mathf.Min(mapData.mapHeight - 1, b.position.y + b.size.y + r);
+        int endY = Mathf.Min(mapData.mapHeight - 1, b.position.y + b.data.size.y + r);
 
         for (int x = startX; x <= endX; x++)
         {

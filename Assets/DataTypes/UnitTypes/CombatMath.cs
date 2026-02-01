@@ -18,6 +18,12 @@ public static class CombatMath
             // Archers (Piercing) vs Soldiers (Heavy)
             (AttackType.Piercing, ArmorType.Heavy) => 0.6f,
 
+            // Soldier, Archer, Cavalry vs Structures
+            (AttackType.Melee, ArmorType.Structure) => 0.5f,
+            (AttackType.Piercing, ArmorType.Structure) => 0.1f,
+            (AttackType.Slashing, ArmorType.Structure) => 0.2f,
+            (AttackType.Siege, ArmorType.Structure) => 3.0f,
+
             _ => 1.0f
         };
     }

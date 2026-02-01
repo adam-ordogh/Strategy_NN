@@ -19,4 +19,7 @@ MonoBehaviour:
   jobSlotsProvided: 0
   goldCost: 30
   woodCost: 50
+  maxHealth: 100
+  armorType: 3
   buildingTile: {fileID: 11400000, guid: 1821b3f8e0b167c419980d945506e433, type: 2}
+  isSelectable: 1

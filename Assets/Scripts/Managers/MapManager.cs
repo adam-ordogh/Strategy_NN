@@ -33,7 +33,7 @@ public class MapManager : MonoBehaviour
         {
             Vector2Int pos = kvp.Key;
             Unit unit = kvp.Value;
-            Debug.Log($"Unit at ({pos.x},{pos.y}): Type={unit.unitType}, Player={unit.ownerId}, Health={unit.health}, Attack={unit.attackPower}, Movement range={unit.movementPoints}");
+            Debug.Log($"Unit at ({pos.x},{pos.y}): Type={unit.data.unitType}, Player={unit.ownerId}, Health={unit.currentHealth}, Attack={unit.data.attackPower}, Movement range={unit.data.movementRange}");
         }
     }
 
