@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using static Unit;
+using static UnityEditor.PlayerSettings;
 
 public class BuildingManager : MonoBehaviour
 {
@@ -131,6 +132,20 @@ public class BuildingManager : MonoBehaviour
         foreach (var tile in building.GetOccupiedTiles())
         {
             occupancyGrid[tile.x, tile.y] = isAdding ? building : null;
+
+            if (isAdding && building.buildingType == Building.BuildingType.Road)
+            {
+                mapData.moveCostMap[tile.x, tile.y] = 0.5f;
+            }
+            else
+            {
+                if (!mapData.mapTiles[tile.x, tile.y].isPassable)
+                    mapData.moveCostMap[tile.x, tile.y] = Mathf.Infinity;
+                else if (mapData.mapTiles[tile.x, tile.y].type == MapData.TileType.Forest)
+                    mapData.moveCostMap[tile.x, tile.y] = 2.0f;
+                else
+                    mapData.moveCostMap[tile.x, tile.y] = 1.0f;
+            }
         }
     }
 }

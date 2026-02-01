@@ -28,6 +28,8 @@ public class MapGenerator
 
         ClearArea(player1Start, 4);
         ClearArea(player2Start, 4);
+
+        mapManager.mapData.InitializeMoveCostMap();
     }
 
     private void SetData(int x, int y, MapData.TileType type)

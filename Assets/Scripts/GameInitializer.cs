@@ -69,15 +69,6 @@ public class GameInitializer : MonoBehaviour
         InitializeComponents();
 
         unitManager.IsTileBlockedByBuilding = (pos) => buildingManager.GetBuildingAtTile(pos) != null && buildingManager.GetBuildingAtTile(pos).buildingType != Building.BuildingType.Road;
-        unitManager.GetTileMovementCost = (pos) =>
-        {
-            Building b = buildingManager.GetBuildingAtTile(pos);
-            if (b != null && b.buildingType == Building.BuildingType.Road)
-            {
-                return 0.5f; // Roads are 2x faster
-            }
-            return 1.0f; // Default cost
-        };
 
         AddEconomyListeners();
 

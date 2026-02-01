@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class UnitManager : MonoBehaviour
 {
@@ -14,7 +15,6 @@ public class UnitManager : MonoBehaviour
     public event Action<Unit> OnUnitDestroyed;
 
     public System.Func<Vector2Int, bool> IsTileBlockedByBuilding;
-    public System.Func<Vector2Int, float> GetTileMovementCost;
 
     public void Initialize(MapData mapData, GameManager gameManager)
     {
@@ -57,7 +57,7 @@ public class UnitManager : MonoBehaviour
         OnUnitCreated?.Invoke(unit, unit.position);
     }
 
-    public void HandleUnitDeath(Unit unit) 
+    public void HandleUnitDeath(Unit unit)
     {
         if (mapData.units.ContainsKey(unit.position))
         {
@@ -82,118 +82,50 @@ public class UnitManager : MonoBehaviour
     }
 
     // ---------------------------- MOZGÁS FÜGGVÉNYEK ----------------------------
-    //public Dictionary<Vector2Int, int> GetReachableTilesWithCost(Unit unit)
-    //{
-    //    var reachable = new Dictionary<Vector2Int, int>();
-    //    // Könyvtárban tárolt minimális költség egy mező eléréséhez
-    //    var minCostToReach = new Dictionary<Vector2Int, int>();
-
-    //    var queue = new Queue<(Vector2Int pos, int cost)>();
-
-    //    queue.Enqueue((unit.position, 0));
-    //    minCostToReach[unit.position] = 0;
-
-    //    while (queue.Count > 0)
-    //    {
-    //        var (currentPos, currentCost) = queue.Dequeue();
-
-    //        // Ha már találtunk olcsóbb utat ide, kihagyjuk
-    //        if (currentCost > minCostToReach[currentPos]) continue;
-
-    //        if (currentPos != unit.position)
-    //            reachable[currentPos] = currentCost;
-
-    //        foreach (var dir in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
-    //        {
-    //            var nextPos = currentPos + dir;
-
-    //            if (!IsTileValidForMovement(nextPos)) continue;
-
-    //            int moveCost = 1;
-    //            if (IsTileThreatened(nextPos, unit.ownerId))
-    //            {
-    //                moveCost = 3;
-    //            }
-
-    //            int nextCost = currentCost + moveCost;
-    //            if (nextCost > unit.remainingMovementPoints) continue;
-
-    //            if (!minCostToReach.ContainsKey(nextPos) || nextCost < minCostToReach[nextPos])
-    //            {
-    //                minCostToReach[nextPos] = nextCost;
-    //                queue.Enqueue((nextPos, nextCost));
-    //            }
-    //        }
-    //    }
-
-    //    return reachable;
-    //}
+    static readonly Vector2Int[] Directions =
+    {
+        Vector2Int.up,
+        Vector2Int.down,
+        Vector2Int.left,
+        Vector2Int.right
+    };
     public Dictionary<Vector2Int, float> GetReachableTilesWithCost(Unit unit)
     {
-        // Changed Dictionary value to float
-        Dictionary<Vector2Int, float> cost = new Dictionary<Vector2Int, float>();
-        Queue<Vector2Int> queue = new Queue<Vector2Int>();
+        var frontier = new PriorityQueue<Vector2Int, float>();
+        var cost = new Dictionary<Vector2Int, float>();
 
+        frontier.Enqueue(unit.position, 0);
         cost[unit.position] = 0;
-        queue.Enqueue(unit.position);
 
-        while (queue.Count > 0)
+        while (frontier.Count > 0)
         {
-            Vector2Int current = queue.Dequeue();
+            var current = frontier.Dequeue();
 
-            // --- Ha 8-irányú mozgást akarunk:
-            //Vector2Int[] neighbors = {
-            //current + Vector2Int.up, current + Vector2Int.down,
-            //current + Vector2Int.left, current + Vector2Int.right,
-            //current + new Vector2Int(1,1), current + new Vector2Int(1,-1),
-            //current + new Vector2Int(-1,1), current + new Vector2Int(-1,-1)
-            //};
-
-            // Ha 4-irányú mozgást akarunk:
-            Vector2Int[] neighbors = {
-            current + Vector2Int.up, current + Vector2Int.down,
-            current + Vector2Int.left, current + Vector2Int.right
-            };
-
-            foreach (var neighbor in neighbors)
+            foreach (var dir in Directions)
             {
-                if (IsTileValidForMovement(neighbor))
-                {
-                    // Alap mozgás ár (Út vs Fű)
-                    float moveCost = GetTileMovementCost != null ? GetTileMovementCost(neighbor) : 1.0f;
-                    if (IsTileThreatened(neighbor, unit.ownerId))
-                    {
-                        moveCost += 2.0f;
-                    }
-                    float newCost = cost[current] + moveCost;
+                var next = current + dir;
+                if (!IsTileValidForMovement(next)) continue;
 
-                    if (newCost <= unit.remainingMovementPoints && (!cost.ContainsKey(neighbor) || newCost < cost[neighbor]))
-                    {
-                        cost[neighbor] = newCost;
-                        queue.Enqueue(neighbor);
-                    }
+                // Alap mozgás ár (Út vs Fű)
+                float moveCost = mapData.moveCostMap[next.x, next.y];
+                if (IsTileThreatened(next, unit.ownerId))
+                    moveCost += 2f;
+
+                float newCost = cost[current] + moveCost;
+
+                if (newCost > unit.remainingMovementPoints) continue;
+
+                if (!cost.TryGetValue(next, out float oldCost) || newCost < oldCost)
+                {
+                    cost[next] = newCost;
+                    frontier.Enqueue(next, newCost);
                 }
             }
         }
+
         return cost;
     }
 
-    //public void TryMoveUnit(Vector2Int fromPos, Vector2Int toPos)
-    //{
-    //    if (!mapData.units.TryGetValue(fromPos, out Unit unit)) return;
-
-    //    List<Vector2Int> path = GetPathToTarget(unit, toPos);
-    //    if (path == null) return; 
-
-    //    int moveCost = path.Count - 1;
-    //    unit.remainingMovementPoints -= moveCost;
-    //    unit.Move(toPos);
-
-    //    mapData.units.Remove(fromPos);
-    //    mapData.units[toPos] = unit;
-
-    //    OnUnitMoved?.Invoke(unit, path);
-    //}
     public void TryMoveUnit(Vector2Int fromPos, Vector2Int toPos)
     {
         if (!mapData.units.TryGetValue(fromPos, out Unit unit)) return;
@@ -208,7 +140,8 @@ public class UnitManager : MonoBehaviour
             Vector2Int step = path[i];
 
             // Alap mozgás ár (Út vs Fű)
-            float stepCost = GetTileMovementCost != null ? GetTileMovementCost(step) : 1.0f;
+            float stepCost = mapData.moveCostMap[step.x, step.y];
+
 
             if (IsTileThreatened(step, unit.ownerId))
             {
@@ -240,89 +173,31 @@ public class UnitManager : MonoBehaviour
         path.Reverse(); // Útvonal megfordítása a kezdőponttól a célpontig
         return path;
     }
-    //public List<Vector2Int> GetPathToTarget(Unit unit, Vector2Int targetPos)
-    //{
-    //    // Lista z egyszerű prioritásos sor helyett
-    //    // Mindig a legolcsóbb csomópontot választjuk ki először
-    //    var openList = new List<(Vector2Int pos, int cost)>();
-    //    var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
-    //    var costSoFar = new Dictionary<Vector2Int, int>();
 
-    //    openList.Add((unit.position, 0));
-    //    costSoFar[unit.position] = 0;
-
-    //    while (openList.Count > 0)
-    //    {
-    //        // DIJKSTRA LÉPS
-    //        openList.Sort((a, b) => a.cost.CompareTo(b.cost));
-    //        var current = openList[0].pos;
-    //        openList.RemoveAt(0);
-
-    //        if (current == targetPos)
-    //            return ReconstructPath(cameFrom, current);
-
-    //        foreach (var dir in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
-    //        {
-    //            var next = current + dir;
-    //            if (!IsTileValidForMovement(next)) continue;
-
-    //            // Van-e ellenség az útban?
-    //            // Ignoráljuk az ellenséges egységet a targetPos-nál ha ő maga a célpont
-    //            int moveCost = 1;
-    //            if (IsTileThreatened(next, unit.ownerId))
-    //            {
-    //                moveCost = 3;
-    //            }
-
-    //            int newCost = costSoFar[current] + moveCost;
-    //            if (newCost > unit.remainingMovementPoints) continue;
-
-    //            if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
-    //            {
-    //                costSoFar[next] = newCost;
-    //                cameFrom[next] = current;
-    //                openList.Add((next, newCost));
-    //            }
-    //        }
-    //    }
-    //    return null;
-    //}
-
+    // A* útvonal kereső
     public List<Vector2Int> GetPathToTarget(Unit unit, Vector2Int targetPos)
     {
-        var openList = new List<(Vector2Int pos, float cost)>();
+        var openList = new PriorityQueue<Vector2Int, float>();
         var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
-        var costSoFar = new Dictionary<Vector2Int, float>(); 
+        var costSoFar = new Dictionary<Vector2Int, float>();
 
-        openList.Add((unit.position, 0));
+        openList.Enqueue(unit.position, 0);
         costSoFar[unit.position] = 0;
 
         while (openList.Count > 0)
         {
-            openList.Sort((a, b) => a.cost.CompareTo(b.cost));
-            var current = openList[0].pos;
-            openList.RemoveAt(0);
+            var current = openList.Dequeue();
 
             if (current == targetPos)
                 return ReconstructPath(cameFrom, current);
 
-            // --- Ha 8-irányú mozgást akarunk: 
-            //foreach (var dir in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right,
-            //                        new Vector2Int(1,1), new Vector2Int(1,-1), new Vector2Int(-1,1), new Vector2Int(-1,-1)})
-
-            // Ha 4-irányú mozgást akarunk:
-            foreach (var dir in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
+            foreach (var dir in Directions)
             {
                 var next = current + dir;
                 if (!IsTileValidForMovement(next)) continue;
 
-                float moveCost = GetTileMovementCost != null ? GetTileMovementCost(next) : 1.0f;
-
-                if (IsTileThreatened(next, unit.ownerId))
-                {
-                    moveCost += 2.0f;
-                }
-
+                float terrainCost = mapData.moveCostMap[next.x, next.y];
+                float moveCost = terrainCost + (IsTileThreatened(next, unit.ownerId) ? 2.0f : 0f);
                 float newCost = costSoFar[current] + moveCost;
 
                 if (newCost > unit.remainingMovementPoints) continue;
@@ -331,7 +206,10 @@ public class UnitManager : MonoBehaviour
                 {
                     costSoFar[next] = newCost;
                     cameFrom[next] = current;
-                    openList.Add((next, newCost));
+
+                    // Heurisztika, hogy A* legyen
+                    float h = Math.Abs(next.x - targetPos.x) + Math.Abs(next.y - targetPos.y);
+                    openList.Enqueue(next, newCost + h);
                 }
             }
         }
@@ -342,7 +220,7 @@ public class UnitManager : MonoBehaviour
     {
         if (pos.x < 0 || pos.x >= mapData.mapWidth || pos.y < 0 || pos.y >= mapData.mapHeight)
             return false;
-        if (!mapData.mapTiles[pos.x, pos.y].isPassable)
+        if (float.IsInfinity(mapData.moveCostMap[pos.x, pos.y]))
             return false;
         if (mapData.units.ContainsKey(pos))
             return false;
@@ -416,32 +294,6 @@ public class UnitManager : MonoBehaviour
         return validTargets;
     }
 
-    //public Vector2Int? GetBestAttackPosition(Unit attacker, Vector2Int targetPos)
-    //{
-    //    var reachableTiles = GetReachableTilesWithCost(attacker);
-    //    reachableTiles[attacker.position] = 0;
-
-    //    Vector2Int? bestTile = null;
-    //    float minCost = float.MaxValue;
-
-    //    foreach (var tile in reachableTiles.Keys)
-    //    {
-    //        // Chebyshev távolság számítása (8-irányú) ettől az ellenféltől
-    //        int dist = Mathf.Max(Mathf.Abs(tile.x - targetPos.x), Mathf.Abs(tile.y - targetPos.y));
-
-    //        if (dist <= attacker.attackRange)
-    //        {
-    //            // Találtunk egy elérhető mezőt ahonnan támadhatunk
-    //            // A legjobb mező kiválasztása a legkisebb mozgási költség alapján
-    //            if (reachableTiles[tile] < minCost)
-    //            {
-    //                minCost = reachableTiles[tile];
-    //                bestTile = tile;
-    //            }
-    //        }
-    //    }
-    //    return bestTile;
-    //}
     public Vector2Int? GetBestAttackPosition(Unit attacker, Vector2Int targetPos)
     {
         var reachableTiles = GetReachableTilesWithCost(attacker);
@@ -454,12 +306,15 @@ public class UnitManager : MonoBehaviour
 
         foreach (var tile in reachableTiles.Keys)
         {
+            // Chebyshev távolság számítása (8-irányú) ettől az ellenféltől
             int dist = Mathf.Max(Mathf.Abs(tile.x - targetPos.x), Mathf.Abs(tile.y - targetPos.y));
 
             if (dist <= attacker.attackRange)
             {
                 float cost = reachableTiles[tile];
 
+                // Találtunk egy elérhető mezőt ahonnan támadhatunk
+                // A legjobb mező kiválasztása a legkisebb mozgási költség alapján
                 if (cost < minCost)
                 {
                     minCost = cost;
@@ -487,5 +342,32 @@ public class UnitManager : MonoBehaviour
         {
             attacker.DealDamageToUnit(target);
         }
+    }
+}
+
+public class PriorityQueue<TElement, TPriority> where TPriority : IComparable<TPriority>
+{
+    private List<(TElement Element, TPriority Priority)> elements = new List<(TElement, TPriority)>();
+
+    public int Count => elements.Count;
+
+    public void Enqueue(TElement element, TPriority priority)
+    {
+        elements.Add((element, priority));
+    }
+
+    public TElement Dequeue()
+    {
+        // Find the index of the item with the lowest priority
+        int bestIndex = 0;
+        for (int i = 1; i < elements.Count; i++)
+        {
+            if (elements[i].Priority.CompareTo(elements[bestIndex].Priority) < 0)
+                bestIndex = i;
+        }
+
+        TElement bestItem = elements[bestIndex].Element;
+        elements.RemoveAt(bestIndex);
+        return bestItem;
     }
 }

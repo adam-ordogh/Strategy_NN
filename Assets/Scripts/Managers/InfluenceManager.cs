@@ -58,35 +58,6 @@ public class InfluenceManager : MonoBehaviour
         OnInfluenceChanged?.Invoke(mapData);
     }
 
-    //private int GetDominantPlayerAt(Vector2Int tilePos)
-    //{
-    //    int bestPlayer = 0;
-    //    float minDistanceSq = float.MaxValue;
-
-    //    var candidates = buildingReachGrid[tilePos.x, tilePos.y];
-
-    //    foreach (var b in candidates)
-    //    {
-    //        float centerX = b.position.x + (b.size.x - 1) / 2f;
-    //        float centerY = b.position.y + (b.size.y - 1) / 2f;
-
-    //        float dx = tilePos.x - centerX;
-    //        float dy = tilePos.y - centerY;
-    //        float distSq = (dx * dx) + (dy * dy);
-
-    //        if (distSq <= b.influenceRadius * b.influenceRadius)
-    //        {
-    //            if (distSq < minDistanceSq)
-    //            {
-    //                minDistanceSq = distSq;
-    //                bestPlayer = b.ownerId;
-    //            }
-    //        }
-    //    }
-    //    return bestPlayer;
-    //}
-
-
     private int GetDominantPlayerAt(Vector2Int tilePos)
     {
         var buildings = buildingReachGrid[tilePos.x, tilePos.y];

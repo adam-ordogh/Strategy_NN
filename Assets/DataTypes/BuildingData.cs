@@ -16,4 +16,7 @@ public class BuildingData : ScriptableObject
 
     [Header("Visuals")]
     public TileBase buildingTile;
+
+    [Header("User Interaction")]
+    public bool isSelectable;
 }

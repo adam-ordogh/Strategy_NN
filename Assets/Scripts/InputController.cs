@@ -69,7 +69,7 @@ public class InputController : MonoBehaviour
 
         Building buildingAtPos = buildingManager.GetBuildingAtTile(gridPos);
 
-        if (buildingAtPos != null && buildingAtPos.buildingType != Building.BuildingType.Road && buildingAtPos.ownerId == gameManager.currentPlayerId)
+        if (buildingAtPos != null && buildingAtPos.data.isSelectable == true && buildingAtPos.ownerId == gameManager.currentPlayerId)
         {
             SelectBuilding(buildingAtPos);
             return;
@@ -90,14 +90,8 @@ public class InputController : MonoBehaviour
             return;
         }
 
-        if (buildingAtPos != null)
-        {
-            SelectBuilding(buildingAtPos);
-        }
-        else
-        {
-            DeselectAll();
-        }
+        DeselectAll();
+        
     }
 
     public void HandleUnitAction(Vector2Int clickedPos)
