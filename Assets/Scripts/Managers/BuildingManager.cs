@@ -35,7 +35,7 @@ public class BuildingManager : MonoBehaviour
         Building newBuilding = new Building(template, ownerId, pos);
         PlayerProfile owner = gameManager.GetPlayerProfile(ownerId);
 
-        if (!CanAffordBuilding(template, owner) || !CanPlaceBuilding(pos, newBuilding.size, ownerId)) // Lehet kell majd jobb resource ellenőrzés, ezt csak rögtönöztem
+        if (!CanAffordBuilding(template, owner) || !CanPlaceBuilding(pos, newBuilding.size, ownerId, type)) // Lehet kell majd jobb resource ellenőrzés, ezt csak rögtönöztem
             return null;
 
         UpdateOccupancy(newBuilding, true);
@@ -79,21 +79,23 @@ public class BuildingManager : MonoBehaviour
         return owner != null && owner.CanAfford(data.goldCost, data.woodCost, 0);
     }
 
-    public bool CanPlaceBuilding(Vector2Int pos, Vector2Int size, int ownerId)
+    public bool CanPlaceBuilding(Vector2Int pos, Vector2Int size, int ownerId, Building.BuildingType type)
     {
+        // --- Van-e épülete a játékosnak ---
         bool playerHasBuildings = false;
         foreach (var b in mapData.buildings.Values)
         {
             if (b.ownerId == ownerId) { playerHasBuildings = true; break; }
         }
 
+        // --- Az épület belső mezői ellenérzése ---
         for (int x = 0; x < size.x; x++)
         {
             for (int y = 0; y < size.y; y++)
             {
                 Vector2Int checkPos = new Vector2Int(pos.x + x, pos.y + y);
-                if (!IsTileValidForPlacement(checkPos)) return false;
-                
+                if (!IsTileValidForPlacement(checkPos, type)) return false;
+
                 int currentTileOwner = mapData.influenceMap[checkPos.x, checkPos.y];
                 if (currentTileOwner != 0 && currentTileOwner != ownerId)
                     return false;
@@ -101,6 +103,50 @@ public class BuildingManager : MonoBehaviour
                 if (playerHasBuildings && !influenceManager.IsTileOwnedBy(checkPos, ownerId))
                     return false;
             }
+        }
+
+        // --- Szomszédság megnézése ---
+        // Utak nem blokkolnak semmit, így őket kihagyjuk
+        if (type != Building.BuildingType.Road)
+        {
+            //bool touchesRoad;
+
+            for (int x = -1; x <= size.x; x++)
+            {
+                for (int y = -1; y <= size.y; y++)
+                {
+                    if (x >= 0 && x < size.x && y >= 0 && y < size.y) continue;
+
+                    Vector2Int neighborPos = new Vector2Int(pos.x + x, pos.y + y);
+
+                    if (neighborPos.x < 0 || neighborPos.x >= mapData.mapWidth ||
+                        neighborPos.y < 0 || neighborPos.y >= mapData.mapHeight) continue;
+
+                    Building neighborBuilding = GetBuildingAtTile(neighborPos);
+                    if (neighborBuilding != null)
+                    {
+                        //if (neighborBuilding.buildingType == Building.BuildingType.Road)
+                        //{
+                        //    touchesRoad = true;
+                        //}
+
+                        // ---  1 mezőnyi rés ---
+                        if (neighborBuilding.buildingType == Building.BuildingType.Barracks)
+                        {
+                            return false;
+                        }
+
+                    }
+                }
+            }
+
+            // --- Muszáj utat érinteni ---
+            //if (playerHasBuildings && !touchesRoad)
+            //{
+            //    // Building must be next to a road (except for the very first building)
+            //    return false;
+            //}
+
         }
         return true;
     }
@@ -114,13 +160,13 @@ public class BuildingManager : MonoBehaviour
         return occupancyGrid[pos.x, pos.y];
     }
 
-    private bool IsTileValidForPlacement(Vector2Int pos)
+    private bool IsTileValidForPlacement(Vector2Int pos, Building.BuildingType type)
     {
         if (pos.x < 0 || pos.x >= mapData.mapWidth || pos.y < 0 || pos.y >= mapData.mapHeight)
             return false;
         if (!mapData.mapTiles[pos.x, pos.y].isPassable)
             return false;
-        if (mapData.units.ContainsKey(pos))
+        if (type != Building.BuildingType.Road && mapData.units.ContainsKey(pos))
             return false;
         if (GetBuildingAtTile(pos) != null)
             return false;

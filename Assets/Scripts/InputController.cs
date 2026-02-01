@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEngine.EventSystems;
 using UnityEditor.U2D.Aseprite;
 using static UnityEditor.PlayerSettings;
+using System.Collections.Generic;
 
 public class InputController : MonoBehaviour
 {
@@ -24,6 +25,10 @@ public class InputController : MonoBehaviour
     public Building.BuildingType? activeBuildingType;
     public Building selectedBuilding;
 
+    private Vector2Int? dragStartPos;
+    private List<Vector2Int> previewRoadPath = new List<Vector2Int>();
+
+
     public event Action OnSelectionChanged;
 
     void Update()
@@ -35,12 +40,20 @@ public class InputController : MonoBehaviour
 
         if (activeBuildingType.HasValue)
         {
-            HandleBuildingPreview();
-
-            if (Mouse.current.leftButton.wasPressedThisFrame)
+            if (activeBuildingType == Building.BuildingType.Road)
             {
-                TryPlaceBuilding();
+                HandleRoadDragging();
             }
+            else
+            {
+                HandleBuildingPreview();
+
+                if (Mouse.current.leftButton.wasPressedThisFrame)
+                {
+                    TryPlaceBuilding();
+                }
+            }
+
             if (Mouse.current.rightButton.wasPressedThisFrame)
                 CancelBuildMode();
         }
@@ -205,7 +218,7 @@ public class InputController : MonoBehaviour
         Building ghost = new Building(template, gameManager.currentPlayerId, mousePos);
         var footprint = ghost.GetOccupiedTiles();
 
-        bool isValid = buildingManager.CanPlaceBuilding(mousePos, ghost.size, gameManager.currentPlayerId) && buildingManager.CanAffordBuilding(template, gameManager.GetPlayerProfile(gameManager.currentPlayerId));
+        bool isValid = buildingManager.CanPlaceBuilding(mousePos, ghost.size, gameManager.currentPlayerId, template.buildingType) && buildingManager.CanAffordBuilding(template, gameManager.GetPlayerProfile(gameManager.currentPlayerId));
 
         unitVisualizer.ClearHighlights();
         Color ghostColor = isValid ? new Color(0, 1f, 0, 0.5f) : new Color(1f, 0, 0, 0.5f);
@@ -228,5 +241,81 @@ public class InputController : MonoBehaviour
     {
         activeBuildingType = null;
         unitVisualizer.ClearHighlights();
+    }
+
+    private List<Vector2Int> GetRoadPath(Vector2Int start, Vector2Int end)
+    {
+        Func<Vector2Int, float> roadCostFunc = (pos) => 1.0f;
+
+        Func<Vector2Int, bool> roadValidFunc = (pos) =>
+        {
+            if (pos.x < 0 || pos.x >= mapData.mapWidth || pos.y < 0 || pos.y >= mapData.mapHeight) return false;
+
+            if (float.IsInfinity(mapData.moveCostMap[pos.x, pos.y])) return false;
+
+            Building buildingAtTile = buildingManager.GetBuildingAtTile(pos);
+            if (buildingAtTile != null)
+            {
+                // Út az úton keresztül mehet, de más épület nem lehet ott
+                if (buildingAtTile.buildingType != Building.BuildingType.Road)
+                    return false;
+            }
+
+            return true;
+        };
+
+        return Pathfinder.FindPath(start, end, roadCostFunc, roadValidFunc);
+    }
+
+    private void HandleRoadDragging()
+    {
+        if (Mouse.current.rightButton.wasPressedThisFrame)
+        {
+            dragStartPos = null;
+            previewRoadPath = null; 
+            unitVisualizer.ClearHighlights();
+            return;
+        }
+
+        Vector2Int currentMousePos = GetGridPositionFromMouse();
+
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            dragStartPos = currentMousePos;
+        }
+
+        if (dragStartPos.HasValue)
+        {
+            if (previewRoadPath == null || previewRoadPath.Count == 0 || currentMousePos != previewRoadPath.Last())
+            {
+                previewRoadPath = GetRoadPath(dragStartPos.Value, currentMousePos);
+            }
+
+            unitVisualizer.ClearHighlights();
+
+            if (previewRoadPath != null && previewRoadPath.Count > 0)
+            {
+                unitVisualizer.ShowHighlights(previewRoadPath, new Color(0.4f, 0.6f, 1f, 0.5f));
+            }
+        }
+
+        if (Mouse.current.leftButton.wasReleasedThisFrame && dragStartPos.HasValue)
+        {
+            if (previewRoadPath != null)
+            {
+                foreach (var pos in previewRoadPath)
+                {
+                    Building placed = buildingManager.PlaceBuilding(Building.BuildingType.Road, pos, gameManager.currentPlayerId);
+                    if (placed != null)
+                    {
+                        buildingVisualizer.ShowBuilding(placed);
+                    }
+                }
+            }
+
+            dragStartPos = null;
+            previewRoadPath = null;
+            unitVisualizer.ClearHighlights();
+        }
     }
 }

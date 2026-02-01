@@ -225,7 +225,7 @@ public class ProductionManager : MonoBehaviour
         if (pos.x < 0 || pos.x >= mapData.mapWidth || pos.y < 0 || pos.y >= mapData.mapHeight) return false;
         if (!mapData.mapTiles[pos.x, pos.y].isPassable) return false;
         if (mapData.units.ContainsKey(pos)) return false;
-        if (buildingManager.GetBuildingAtTile(pos) != null) return false;
+        if (buildingManager.GetBuildingAtTile(pos) != null && buildingManager.GetBuildingAtTile(pos).buildingType != Building.BuildingType.Road) return false;
         return true;
     }
 }

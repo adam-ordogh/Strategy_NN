@@ -114,11 +114,9 @@ public class EconomyManager : MonoBehaviour
 
     public IncomeReport GetProjectedIncome(PlayerProfile player)
     {
-        // Reuse your logic from ProcessTurn but don't apply it
         int gold = player.baseGoldIncome + (player.assignedGoldWorkers * 5);
         int wood = player.baseWoodIncome + (player.assignedWoodWorkers * 5);
 
-        // Food is income minus consumption
         int foodIncome = player.baseFoodIncome + (player.assignedFoodWorkers * 5);
         int foodCons = player.CurrentUsedPopulation;
 

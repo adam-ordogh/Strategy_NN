@@ -161,59 +161,23 @@ public class UnitManager : MonoBehaviour
         OnUnitMoved?.Invoke(unit, path);
     }
 
-    // Segédfüggvény útvonal visszaállításhoz
-    private List<Vector2Int> ReconstructPath(Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int current)
-    {
-        List<Vector2Int> path = new List<Vector2Int> { current };
-        while (cameFrom.ContainsKey(current))
-        {
-            current = cameFrom[current];
-            path.Add(current);
-        }
-        path.Reverse(); // Útvonal megfordítása a kezdőponttól a célpontig
-        return path;
-    }
-
-    // A* útvonal kereső
     public List<Vector2Int> GetPathToTarget(Unit unit, Vector2Int targetPos)
     {
-        var openList = new PriorityQueue<Vector2Int, float>();
-        var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
-        var costSoFar = new Dictionary<Vector2Int, float>();
-
-        openList.Enqueue(unit.position, 0);
-        costSoFar[unit.position] = 0;
-
-        while (openList.Count > 0)
+        // Cost Function meghatározása 
+        // Lamda függvényként adjuk meg az egyes mezők mozgási költségét
+        Func<Vector2Int, float> unitCostFunc = (pos) =>
         {
-            var current = openList.Dequeue();
+            float baseCost = mapData.moveCostMap[pos.x, pos.y];
+            return baseCost + (IsTileThreatened(pos, unit.ownerId) ? 2.0f : 0f);
+        };
 
-            if (current == targetPos)
-                return ReconstructPath(cameFrom, current);
+        // Validation Function meghatározása
+        Func<Vector2Int, bool> unitValidFunc = (pos) =>
+        {
+            return IsTileValidForMovement(pos);
+        };
 
-            foreach (var dir in Directions)
-            {
-                var next = current + dir;
-                if (!IsTileValidForMovement(next)) continue;
-
-                float terrainCost = mapData.moveCostMap[next.x, next.y];
-                float moveCost = terrainCost + (IsTileThreatened(next, unit.ownerId) ? 2.0f : 0f);
-                float newCost = costSoFar[current] + moveCost;
-
-                if (newCost > unit.remainingMovementPoints) continue;
-
-                if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
-                {
-                    costSoFar[next] = newCost;
-                    cameFrom[next] = current;
-
-                    // Heurisztika, hogy A* legyen
-                    float h = Math.Abs(next.x - targetPos.x) + Math.Abs(next.y - targetPos.y);
-                    openList.Enqueue(next, newCost + h);
-                }
-            }
-        }
-        return null;
+        return Pathfinder.FindPath(unit.position, targetPos, unitCostFunc, unitValidFunc);
     }
 
     private bool IsTileValidForMovement(Vector2Int pos)
@@ -342,32 +306,5 @@ public class UnitManager : MonoBehaviour
         {
             attacker.DealDamageToUnit(target);
         }
-    }
-}
-
-public class PriorityQueue<TElement, TPriority> where TPriority : IComparable<TPriority>
-{
-    private List<(TElement Element, TPriority Priority)> elements = new List<(TElement, TPriority)>();
-
-    public int Count => elements.Count;
-
-    public void Enqueue(TElement element, TPriority priority)
-    {
-        elements.Add((element, priority));
-    }
-
-    public TElement Dequeue()
-    {
-        // Find the index of the item with the lowest priority
-        int bestIndex = 0;
-        for (int i = 1; i < elements.Count; i++)
-        {
-            if (elements[i].Priority.CompareTo(elements[bestIndex].Priority) < 0)
-                bestIndex = i;
-        }
-
-        TElement bestItem = elements[bestIndex].Element;
-        elements.RemoveAt(bestIndex);
-        return bestItem;
     }
 }
