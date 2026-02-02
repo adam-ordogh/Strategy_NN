@@ -32,31 +32,6 @@ public class BuildingManager : MonoBehaviour
         }
     }
 
-    //public Building PlaceBuilding(BuildingData template, Vector2Int pos, int ownerId)
-    //{
-    //    Building newBuilding = new Building(template, ownerId, pos);
-    //    PlayerProfile owner = gameManager.GetPlayerProfile(ownerId);
-
-    //    if (!CanAffordBuilding(template, owner) || !CanPlaceBuilding(template, pos, ownerId)) // Lehet kell majd jobb resource ellenőrzés, ezt csak rögtönöztem
-    //        return null;
-
-    //    UpdateOccupancy(newBuilding, true);
-    //    mapData.buildings[pos] = newBuilding;
-
-    //    if (owner != null)
-    //    {
-    //        owner.myBuildings.Add(newBuilding);
-    //    }
-
-    //    influenceManager.AddBuildingToReachGrid(newBuilding);
-    //    influenceManager.RecalculateInfluence(newBuilding);
-
-    //    owner.SpendResources(template.goldCost, template.woodCost, 0);
-
-    //    // Később itt eventeket hívhatunk meg, pl. OnBuildingPlaced?.Invoke(temp);
-    //    OnBuildingPlaced?.Invoke(newBuilding);
-    //    return newBuilding;
-    //}
     public Building PlaceBuilding(BuildingData template, Vector2Int pos, int ownerId)
     {
         Building newBuilding = new Building(template, ownerId, pos);
@@ -74,30 +49,25 @@ public class BuildingManager : MonoBehaviour
             owner.SpendResources(template.goldCost, template.woodCost, 0);
         }
 
-        // Logic Split: Instant vs. Construction
         if (newBuilding.isConstructed)
         {
-            // Instant build (e.g. Roads with 0 turns)
-            ActivateBuildingEffects(newBuilding);
+            ApplyBuildingEffects(newBuilding, true);
         }
         else
         {
-            // Start Construction
             buildingsUnderConstruction.Add(newBuilding);
         }
 
-        OnBuildingPlaced?.Invoke(newBuilding); // Spawns Scaffold
+        OnBuildingPlaced?.Invoke(newBuilding); // Scaffold event
         return newBuilding;
     }
 
     public void AdvanceConstruction(int activePlayerId)
     {
-        // Iterate backwards so we can remove items safely
         for (int i = buildingsUnderConstruction.Count - 1; i >= 0; i--)
         {
             Building b = buildingsUnderConstruction[i];
 
-            // Only advance construction if it's THIS player's building
             if (b.ownerId == activePlayerId)
             {
                 b.DecrementConstruction();
@@ -113,18 +83,9 @@ public class BuildingManager : MonoBehaviour
 
     private void CompleteBuilding(Building building)
     {
-        ActivateBuildingEffects(building);
-        OnConstructionCompleted?.Invoke(building); // Triggers visual swap
-    }
-
-    private void ActivateBuildingEffects(Building building)
-    {
-        // Now we apply the influence/stats
-        influenceManager.AddBuildingToReachGrid(building);
-        influenceManager.RecalculateInfluence(building);
-
-        // If it's a Barracks/Mine, register it to ProductionManager here
-        // productionManager.RegisterBuilding(building); 
+        building.DecrementConstruction(); 
+        ApplyBuildingEffects(building, true);
+        OnConstructionCompleted?.Invoke(building); 
     }
 
     public void RemoveBuilding(Building building)
@@ -132,9 +93,8 @@ public class BuildingManager : MonoBehaviour
         if (mapData.buildings.ContainsKey(building.position))
         {
             UpdateOccupancy(building, false);
+            ApplyBuildingEffects(building, false);
             mapData.buildings.Remove(building.position);
-            influenceManager.RemoveBuildingFromReachGrid(building);
-            influenceManager.RecalculateAllInfluences();
 
             PlayerProfile owner = gameManager.GetPlayerProfile(building.ownerId);
             if (owner != null)
@@ -257,20 +217,28 @@ public class BuildingManager : MonoBehaviour
         foreach (var tile in building.GetOccupiedTiles())
         {
             occupancyGrid[tile.x, tile.y] = isAdding ? building : null;
+        }
+    }
 
-            if (isAdding)
-            {
+    private void ApplyBuildingEffects(Building building, bool isApplying)
+    {
+        foreach (var tile in building.GetOccupiedTiles())
+        {
+            if (isApplying)
+            {   
                 mapData.moveCostMap[tile.x, tile.y] = building.data.movementCostModifier;
             }
             else
             {
-                if (!mapData.mapTiles[tile.x, tile.y].isPassable)
-                    mapData.moveCostMap[tile.x, tile.y] = Mathf.Infinity;
-                else if (mapData.mapTiles[tile.x, tile.y].type == MapData.TileType.Forest)
-                    mapData.moveCostMap[tile.x, tile.y] = 2.0f;
-                else
-                    mapData.moveCostMap[tile.x, tile.y] = 1.0f;
+                mapData.moveCostMap[tile.x, tile.y] = mapData.mapTiles[tile.x, tile.y].isPassable ? 1f : Mathf.Infinity;
             }
         }
+
+        if (isApplying)
+        {
+            influenceManager.AddBuildingToReachGrid(building);
+            influenceManager.RecalculateInfluence(building);
+        }
     }
+
 }

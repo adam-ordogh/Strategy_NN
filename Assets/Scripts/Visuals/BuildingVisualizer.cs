@@ -37,17 +37,14 @@ public class BuildingVisualizer
             trimSr.sortingLayerName = "WorldObjects";
 
             RenderSorter.SortBuilding(instance, building.position.y);
-            //trimSr.transform.localPosition = new Vector3(0, 0, -0.01f);
         }
-        //baseSr.sprite = building.data.buildingSprite;
 
-        //trimSr.sprite = building.data.buildingColorTrim;
+        // Állapot alapján sprite és skálázás beállítása
         if (!building.isConstructed && building.data.constructionSprite != null)
         {
             baseSr.sprite = building.data.constructionSprite;
             trimSr.enabled = false;
 
-            // CONSTRUCTION SCALING: Squash to fit the footprint exactly
             float spriteW = baseSr.sprite.bounds.size.x;
             float spriteH = baseSr.sprite.bounds.size.y;
 
@@ -62,7 +59,6 @@ public class BuildingVisualizer
             trimSr.sprite = building.data.buildingColorTrim;
             trimSr.enabled = true;
 
-            // FINISHED SCALING: Uniform scale based on width to keep "extrusion" height
             float spriteW = baseSr.sprite.bounds.size.x;
             float horizontalScale = building.data.size.x / spriteW;
 
@@ -85,13 +81,11 @@ public class BuildingVisualizer
             trimSr.sprite = building.data.buildingColorTrim;
             trimSr.enabled = true;
 
-            // Reset to UNIFORM scale so the building looks tall again
             float spriteW = baseSr.sprite.bounds.size.x;
             float horizontalScale = building.data.size.x / spriteW;
 
             go.transform.localScale = new Vector3(horizontalScale, horizontalScale, 1);
 
-            // Ensure color is updated
             trimSr.color = GetPlayerColor(building.ownerId);
         }
     }

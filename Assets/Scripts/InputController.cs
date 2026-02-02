@@ -84,8 +84,6 @@ public class InputController : MonoBehaviour
 
         if (buildingAtPos != null && buildingAtPos.data.isSelectable == true && buildingAtPos.ownerId == gameManager.currentPlayerId)
         {
-            //SelectBuilding(buildingAtPos);
-            //return;
             if (buildingAtPos.isConstructed)
             {
                 SelectBuilding(buildingAtPos);

@@ -88,7 +88,7 @@ public class UnitVisualizer
             return;
         }
 
-        // Queue the death so it happens AFTER any movement finishes
+        // Queue hogy előbb a mozgás animációk lefussanak
         EnqueueAnimation(AnimateDeath(unit));
     }
 
@@ -100,10 +100,8 @@ public class UnitVisualizer
 
         for (int i = 1; i < path.Count; i++)
         {
-            // Target the center-bottom of the tile
             Vector3 targetPos = new Vector3(path[i].x + 0.5f, path[i].y, 0);
 
-            // Flip logic (using 0.5f offset comparison)
             if (targetPos.x < unitGO.transform.position.x)
                 unitGO.transform.localScale = new Vector3(-1, 1, 1);
             else if (targetPos.x > unitGO.transform.position.x)
