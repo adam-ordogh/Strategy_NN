@@ -67,6 +67,7 @@ public class GameManager
         PlayerProfile activePlayer = CurrentPlayer;
         Debug.Log($"Starting Turn for Player {activePlayer.playerId}");
 
+        buildingManager.AdvanceConstruction(currentPlayerId);
         productionManager.ProcessTurn(currentPlayerId);
         economyManager.ProcessTurn(activePlayer);
     }

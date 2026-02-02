@@ -18,9 +18,12 @@ MonoBehaviour:
   influenceRadius: 6
   populationProvided: 0
   jobSlotsProvided: 0
+  constructionTurns: 4
   goldCost: 0
   woodCost: 0
   maxHealth: 10
   armorType: 3
   buildingSprite: {fileID: 21300000, guid: e39ff5561522bb24aa8330473b87d953, type: 3}
+  buildingColorTrim: {fileID: 0}
+  constructionSprite: {fileID: 21300000, guid: fb41e74c22cc792498a65e3e2216f42b, type: 3}
   isSelectable: 1

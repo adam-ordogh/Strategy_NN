@@ -64,7 +64,6 @@ public class GameInitializer : MonoBehaviour
         mapGenerator = new MapGenerator(mapManager);
         mapVisualizer = new MapVisualizer(map, featureMap, tileRegistry);
         unitVisualizer = new UnitVisualizer(unitBasePrefab, highlightMap, tileRegistry.GetTile(MapData.TileType.MovementHighlight));
-        //unitVisualizer = new UnitVisualizer(unitMap, highlightMap, tileRegistry.GetTile(MapData.TileType.MovementHighlight));
         buildingVisualizer = new BuildingVisualizer(buildingMap, buildingBasePrefab);
         influenceVisualizer = new InfluenceVisualizer(influenceMap, tileRegistry.GetTile(MapData.TileType.Border));
 
@@ -120,6 +119,7 @@ public class GameInitializer : MonoBehaviour
         influenceManager.OnInfluenceChanged += influenceVisualizer.DrawBorders;
         buildingManager.OnBuildingPlaced += buildingVisualizer.ShowBuilding;
         buildingManager.OnBuildingRemoved += buildingVisualizer.RemoveBuilding;
+        buildingManager.OnConstructionCompleted += buildingVisualizer.UpdateVisualsToFinished;
 
         // Felhasználói felület események
         inputController.OnSelectionChanged += gameUiController.RefreshSelectedBuildingUI;

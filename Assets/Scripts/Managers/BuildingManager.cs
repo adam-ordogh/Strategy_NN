@@ -12,8 +12,11 @@ public class BuildingManager : MonoBehaviour
     public InfluenceManager influenceManager;
     public GameManager gameManager;
 
+    private List<Building> buildingsUnderConstruction = new List<Building>();
+
     public event System.Action<Building> OnBuildingPlaced;
     public event System.Action<Building> OnBuildingRemoved;
+    public event System.Action<Building> OnConstructionCompleted;
 
     public void Initialize(MapData mapData, InfluenceManager influenceManager, GameManager gameManager)
     {
@@ -29,12 +32,37 @@ public class BuildingManager : MonoBehaviour
         }
     }
 
+    //public Building PlaceBuilding(BuildingData template, Vector2Int pos, int ownerId)
+    //{
+    //    Building newBuilding = new Building(template, ownerId, pos);
+    //    PlayerProfile owner = gameManager.GetPlayerProfile(ownerId);
+
+    //    if (!CanAffordBuilding(template, owner) || !CanPlaceBuilding(template, pos, ownerId)) // Lehet kell majd jobb resource ellenőrzés, ezt csak rögtönöztem
+    //        return null;
+
+    //    UpdateOccupancy(newBuilding, true);
+    //    mapData.buildings[pos] = newBuilding;
+
+    //    if (owner != null)
+    //    {
+    //        owner.myBuildings.Add(newBuilding);
+    //    }
+
+    //    influenceManager.AddBuildingToReachGrid(newBuilding);
+    //    influenceManager.RecalculateInfluence(newBuilding);
+
+    //    owner.SpendResources(template.goldCost, template.woodCost, 0);
+
+    //    // Később itt eventeket hívhatunk meg, pl. OnBuildingPlaced?.Invoke(temp);
+    //    OnBuildingPlaced?.Invoke(newBuilding);
+    //    return newBuilding;
+    //}
     public Building PlaceBuilding(BuildingData template, Vector2Int pos, int ownerId)
     {
         Building newBuilding = new Building(template, ownerId, pos);
         PlayerProfile owner = gameManager.GetPlayerProfile(ownerId);
 
-        if (!CanAffordBuilding(template, owner) || !CanPlaceBuilding(template, pos, ownerId)) // Lehet kell majd jobb resource ellenőrzés, ezt csak rögtönöztem
+        if (!CanAffordBuilding(template, owner) || !CanPlaceBuilding(template, pos, ownerId))
             return null;
 
         UpdateOccupancy(newBuilding, true);
@@ -43,16 +71,60 @@ public class BuildingManager : MonoBehaviour
         if (owner != null)
         {
             owner.myBuildings.Add(newBuilding);
+            owner.SpendResources(template.goldCost, template.woodCost, 0);
         }
 
-        influenceManager.AddBuildingToReachGrid(newBuilding);
-        influenceManager.RecalculateInfluence(newBuilding);
+        // Logic Split: Instant vs. Construction
+        if (newBuilding.isConstructed)
+        {
+            // Instant build (e.g. Roads with 0 turns)
+            ActivateBuildingEffects(newBuilding);
+        }
+        else
+        {
+            // Start Construction
+            buildingsUnderConstruction.Add(newBuilding);
+        }
 
-        owner.SpendResources(template.goldCost, template.woodCost, 0);
-
-        // Később itt eventeket hívhatunk meg, pl. OnBuildingPlaced?.Invoke(temp);
-        OnBuildingPlaced?.Invoke(newBuilding);
+        OnBuildingPlaced?.Invoke(newBuilding); // Spawns Scaffold
         return newBuilding;
+    }
+
+    public void AdvanceConstruction(int activePlayerId)
+    {
+        // Iterate backwards so we can remove items safely
+        for (int i = buildingsUnderConstruction.Count - 1; i >= 0; i--)
+        {
+            Building b = buildingsUnderConstruction[i];
+
+            // Only advance construction if it's THIS player's building
+            if (b.ownerId == activePlayerId)
+            {
+                b.DecrementConstruction();
+
+                if (b.isConstructed)
+                {
+                    CompleteBuilding(b);
+                    buildingsUnderConstruction.RemoveAt(i);
+                }
+            }
+        }
+    }
+
+    private void CompleteBuilding(Building building)
+    {
+        ActivateBuildingEffects(building);
+        OnConstructionCompleted?.Invoke(building); // Triggers visual swap
+    }
+
+    private void ActivateBuildingEffects(Building building)
+    {
+        // Now we apply the influence/stats
+        influenceManager.AddBuildingToReachGrid(building);
+        influenceManager.RecalculateInfluence(building);
+
+        // If it's a Barracks/Mine, register it to ProductionManager here
+        // productionManager.RegisterBuilding(building); 
     }
 
     public void RemoveBuilding(Building building)

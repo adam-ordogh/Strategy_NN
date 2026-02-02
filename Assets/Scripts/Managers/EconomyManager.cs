@@ -46,6 +46,8 @@ public class EconomyManager : MonoBehaviour
 
         foreach (var building in player.myBuildings)
         {
+            if(building.isConstructed == false) continue;
+
             player.maxPopulation += building.data.populationProvided;
             switch(building.data.buildingType)
             {

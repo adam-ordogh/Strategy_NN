@@ -12,6 +12,8 @@ public class BuildingData : ScriptableObject
     public int populationProvided;
     public int jobSlotsProvided;
 
+    public int constructionTurns;
+
     public int goldCost;
     public int woodCost;
 
@@ -22,6 +24,7 @@ public class BuildingData : ScriptableObject
     [Header("Visuals")]
     public Sprite buildingSprite;
     public Sprite buildingColorTrim;
+    public Sprite constructionSprite;
 
     [Header("User Interaction")]
     public bool isSelectable;

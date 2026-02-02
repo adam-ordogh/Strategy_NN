@@ -20,6 +20,8 @@ public class Building
     public int ownerId;
     public Vector2Int position; 
     public int currentHp;
+    public int turnsRemaining;
+    public bool isConstructed { get; private set; } = false;
 
     public BuildingType buildingType => data.buildingType;
     public int maxHealth => data.maxHealth;
@@ -31,12 +33,24 @@ public class Building
         this.ownerId = ownerId;
         this.position = position;
         this.currentHp = data.maxHealth;
+        this.turnsRemaining = data.constructionTurns;
+        this.isConstructed = data.constructionTurns <= 0;
     }
 
     public void TakeDamage(int amount)
     {
         currentHp -= amount;
         Debug.Log($"Building at {position} took {amount} damage. HP: {currentHp}/{data.maxHealth}");
+    }
+
+    public void DecrementConstruction()
+    {
+        turnsRemaining--;
+        if (turnsRemaining <= 0)
+        {
+            isConstructed = true;
+            turnsRemaining = 0;
+        }
     }
 
     public List<Vector2Int> GetOccupiedTiles()
