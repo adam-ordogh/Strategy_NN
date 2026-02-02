@@ -24,4 +24,4 @@ MonoBehaviour:
   goldCost: 0
   foodCost: 20
   woodCost: 30
-  unitTile: {fileID: 11400000, guid: 4b392001588b4514e9c4522a824ff820, type: 2}
+  unitSprite: {fileID: 21300000, guid: 7f06027608caec543b7608fc2f6dee04, type: 3}

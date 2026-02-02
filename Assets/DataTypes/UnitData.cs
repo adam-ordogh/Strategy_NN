@@ -24,5 +24,5 @@ public class UnitData : ScriptableObject
     public int woodCost;
 
     [Header("Visuals")]
-    public TileBase unitTile;
+    public Sprite unitSprite;
 }

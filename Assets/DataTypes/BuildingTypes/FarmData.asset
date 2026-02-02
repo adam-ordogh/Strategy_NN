@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
   buildingType: 4
   size: {x: 2, y: 2}
+  movementCostModifier: Infinity
   influenceRadius: 0
   populationProvided: 0
   jobSlotsProvided: 3
@@ -21,5 +22,5 @@ MonoBehaviour:
   woodCost: 20
   maxHealth: 50
   armorType: 3
-  buildingTile: {fileID: 11400000, guid: 004ca3e2f8204a14187e7dd755d1e164, type: 2}
+  buildingSprite: {fileID: 21300000, guid: 27989dd812ac11f459b7dca4641714f3, type: 3}
   isSelectable: 1

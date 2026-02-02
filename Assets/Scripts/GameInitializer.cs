@@ -18,6 +18,9 @@ public class GameInitializer : MonoBehaviour
     public Tilemap unitMap;
     public Tilemap buildingMap;
 
+    public GameObject buildingBasePrefab;
+    public GameObject unitBasePrefab;
+
     public TileRegistry tileRegistry;
     public MapVisualizer mapVisualizer;
     private UnitVisualizer unitVisualizer;
@@ -60,8 +63,9 @@ public class GameInitializer : MonoBehaviour
     {
         mapGenerator = new MapGenerator(mapManager);
         mapVisualizer = new MapVisualizer(map, featureMap, tileRegistry);
-        unitVisualizer = new UnitVisualizer(unitMap, highlightMap, tileRegistry.GetTile(MapData.TileType.MovementHighlight));
-        buildingVisualizer = new BuildingVisualizer(buildingMap);
+        unitVisualizer = new UnitVisualizer(unitBasePrefab, highlightMap, tileRegistry.GetTile(MapData.TileType.MovementHighlight));
+        //unitVisualizer = new UnitVisualizer(unitMap, highlightMap, tileRegistry.GetTile(MapData.TileType.MovementHighlight));
+        buildingVisualizer = new BuildingVisualizer(buildingMap, buildingBasePrefab);
         influenceVisualizer = new InfluenceVisualizer(influenceMap, tileRegistry.GetTile(MapData.TileType.Border));
 
         gameManager = new GameManager(mapManager, unitManager, buildingManager, productionManager, economyManager, unitVisualizer, buildingVisualizer);
@@ -82,8 +86,8 @@ public class GameInitializer : MonoBehaviour
             inputController.unitVisualizer = unitVisualizer;
             inputController.buildingVisualizer = buildingVisualizer;
             inputController.buildingManager = buildingManager;
-            inputController.gameManager = gameManager;   
-            
+            inputController.gameManager = gameManager;
+
             gameUiController.UpdateUI();
         }
     }
@@ -103,10 +107,12 @@ public class GameInitializer : MonoBehaviour
         unitManager.OnUnitMoved += unitVisualizer.HandleUnitMoved;
         unitManager.OnUnitDestroyed += unitVisualizer.HandleUnitDied;
         unitManager.OnUnitCreated += unitVisualizer.ShowUnitAt;
-        unitManager.OnUnitCreated += (unit, pos) => {
+        unitManager.OnUnitCreated += (unit, pos) =>
+        {
             gameUiController.UpdateUI();
         };
-        unitManager.OnUnitDestroyed += (unit) => {
+        unitManager.OnUnitDestroyed += (unit) =>
+        {
             gameUiController.UpdateUI();
         };
 
@@ -120,24 +126,27 @@ public class GameInitializer : MonoBehaviour
 
         gameUiController.Subscribe(buildingManager, productionManager);
 
-            // Ez csak teszt jelleggel van itt, nem fog minden játékosra feliratkozni
+        // Ez csak teszt jelleggel van itt, nem fog minden játékosra feliratkozni
         gameUiController.SubscribeToPlayerUpdates(gameManager.players[0]);
         gameUiController.SubscribeToPlayerUpdates(gameManager.players[1]);
     }
 
     public void AddEconomyListeners()
     {
-        buildingManager.OnBuildingPlaced += (building) => {
+        buildingManager.OnBuildingPlaced += (building) =>
+        {
             PlayerProfile owner = gameManager.GetPlayerProfile(building.ownerId);
             economyManager.RecalculateCapacities(owner);
         };
 
-        buildingManager.OnBuildingRemoved += (building) => {
+        buildingManager.OnBuildingRemoved += (building) =>
+        {
             PlayerProfile owner = gameManager.GetPlayerProfile(building.ownerId);
             economyManager.RecalculateCapacities(owner);
         };
 
-        buildingManager.OnBuildingRemoved += (building) => {
+        buildingManager.OnBuildingRemoved += (building) =>
+        {
             // Gyártási sor törlése, ha gyártási épületről van szó
             if (building.buildingType == Building.BuildingType.Barracks)
             {
@@ -149,8 +158,8 @@ public class GameInitializer : MonoBehaviour
     public void StartGame()
     {
         mapGenerator.Generate();
-        
-        if(!isTrainingMode)
+
+        if (!isTrainingMode)
         {
             mapVisualizer.DrawMap(mapManager.mapData, mapManager.mapWidth, mapManager.mapHeight);
         }

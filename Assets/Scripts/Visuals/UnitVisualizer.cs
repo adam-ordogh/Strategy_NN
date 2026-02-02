@@ -7,7 +7,9 @@ using System.Linq;
 
 public class UnitVisualizer
 {
-    private Tilemap unitTilemap;
+    //private Tilemap unitTilemap;
+    private Dictionary<Unit, GameObject> spawnedUnits = new Dictionary<Unit, GameObject>();
+    private GameObject unitPrefab;
 
     private Tilemap highlightTilemap;
     private TileBase highlightTile;
@@ -22,9 +24,9 @@ public class UnitVisualizer
 
     public bool IsBusy() => isProcessingQueue || animationQueue.Count > 0;
 
-    public UnitVisualizer(Tilemap unitTilemap, Tilemap highlightTilemap, TileBase highlightTile)
+    public UnitVisualizer(GameObject unitPrefab, Tilemap highlightTilemap, TileBase highlightTile)
     {
-        this.unitTilemap = unitTilemap;
+        this.unitPrefab = unitPrefab;
         this.highlightTilemap = highlightTilemap;
         this.highlightTile = highlightTile;
     }
@@ -63,20 +65,18 @@ public class UnitVisualizer
     public void FastForward()
     {
         moveSpeed = fastForwardMoveSpeed;
-    }   
+    }
 
     // ---------------------- EVENT HANDLERS ----------------------
-
     public void HandleUnitMoved(Unit unit, List<Vector2Int> path)
     {
         if (runner == null || path == null || path.Count < 2)
         {
-            MoveUnit(unit, path[0], path.Last());
+            TeleportUnit(unit, path.Last());
             return;
         }
 
-        Sprite unitSprite = GetUnitSprite(unit);
-        IEnumerator marchJob = AnimateMarch(unit, path, unitSprite);
+        IEnumerator marchJob = AnimateMarch(unit, path);
         EnqueueAnimation(marchJob);
     }
 
@@ -84,96 +84,90 @@ public class UnitVisualizer
     {
         if (runner == null)
         {
-            RemoveUnit(unit.position);
+            RemoveUnit(unit);
             return;
         }
 
-        EnqueueAnimation(AnimateDeath(unit.position));
+        // Queue the death so it happens AFTER any movement finishes
+        EnqueueAnimation(AnimateDeath(unit));
     }
 
     // ---------------------- ANIMATION ROUTINES ----------------------
-
-    private IEnumerator AnimateMarch(Unit unit, List<Vector2Int> path, Sprite sprite)
+    private IEnumerator AnimateMarch(Unit unit, List<Vector2Int> path)
     {
-        Vector3Int startCell = new Vector3Int(path[0].x, path[0].y, 0);
-
-        GameObject walker = new GameObject($"Walker_{unit.data.unitType}");
-        SpriteRenderer sr = walker.AddComponent<SpriteRenderer>();
-        sr.sprite = sprite;
-        sr.color = GetPlayerColor(unit.ownerId);
-        sr.sortingOrder = 10;
-
-        walker.transform.position = unitTilemap.GetCellCenterWorld(startCell);
-
-        unitTilemap.SetTile(startCell, null);
+        if (!spawnedUnits.TryGetValue(unit, out GameObject unitGO)) yield break;
+        SpriteRenderer sr = unitGO.GetComponent<SpriteRenderer>(); // Cache the renderer
 
         for (int i = 1; i < path.Count; i++)
         {
-            Vector3 targetPos = unitTilemap.GetCellCenterWorld(new Vector3Int(path[i].x, path[i].y, 0));
+            // Target the center-bottom of the tile
+            Vector3 targetPos = new Vector3(path[i].x + 0.5f, path[i].y, 0);
 
-            while (Vector3.Distance(walker.transform.position, targetPos) > 0.05f)
+            // Flip logic (using 0.5f offset comparison)
+            if (targetPos.x < unitGO.transform.position.x)
+                unitGO.transform.localScale = new Vector3(-1, 1, 1);
+            else if (targetPos.x > unitGO.transform.position.x)
+                unitGO.transform.localScale = new Vector3(1, 1, 1);
+
+            while (Vector3.Distance(unitGO.transform.position, targetPos) > 0.01f)
             {
-                walker.transform.position = Vector3.MoveTowards(
-                    walker.transform.position,
+                unitGO.transform.position = Vector3.MoveTowards(
+                    unitGO.transform.position,
                     targetPos,
                     moveSpeed * Time.deltaTime
                 );
+
+                RenderSorter.Sort(sr, unitGO.transform.position.y);
+
                 yield return null;
             }
+            unitGO.transform.position = targetPos;
         }
-
-        GameObject.Destroy(walker);
-
-        ShowUnitAt(unit, path.Last());
     }
 
-    private IEnumerator AnimateDeath(Vector2Int pos)
+    private IEnumerator AnimateDeath(Unit unit)
     {
-        // Később egy rövid késleltetésetést vagy "villanás" effektust is hozzáadhatunk ide
+        // Add death animation/particles here later!
         // yield return new WaitForSeconds(0.2f);
 
-        RemoveUnit(pos);
+        RemoveUnit(unit);
         yield return null;
     }
 
     // ---------------------- HELPERS ----------------------
-
-    private Sprite GetUnitSprite(Unit unit)
-    {
-        var tileType = unit.data.unitTile;
-
-        if (tileType is Tile tile) return tile.sprite;
-        return null;
-    }
-
     public void ShowUnitAt(Unit unit, Vector2Int pos)
     {
-        Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
+        if (spawnedUnits.ContainsKey(unit)) return;
 
-        unitTilemap.SetTile(tilePos, unit.data.unitTile);
-        unitTilemap.SetTileFlags(tilePos, TileFlags.None);
-        unitTilemap.SetColor(tilePos, GetPlayerColor(unit.ownerId));
+        Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y, 0);
+        GameObject instance = Object.Instantiate(unitPrefab, worldPos, Quaternion.identity);
+
+        SpriteRenderer sr = instance.GetComponent<SpriteRenderer>();
+        sr.sprite = unit.data.unitSprite;
+        sr.color = GetPlayerColor(unit.ownerId);
+
+        sr.sortingLayerName = "WorldObjects";
+
+        RenderSorter.Sort(sr, worldPos.y);
+
+        spawnedUnits[unit] = instance;
     }
 
-    private Color GetPlayerColor(int playerId)
+    public void TeleportUnit(Unit unit, Vector2Int to)
     {
-        return playerId switch
+        if (spawnedUnits.TryGetValue(unit, out GameObject go))
         {
-            1 => Color.cyan,
-            2 => new Color(1f, 0.3f, 0.3f), // Soft red
-            _ => Color.white
-        };
+            go.transform.position = new Vector3(to.x, to.y, 0);
+        }
     }
 
-    public void MoveUnit(Unit unit, Vector2Int from, Vector2Int to)
+    public void RemoveUnit(Unit unit)
     {
-        unitTilemap.SetTile(new Vector3Int(from.x, from.y, 0), null);
-        ShowUnitAt(unit, to);
-    }
-
-    public void RemoveUnit(Vector2Int pos)
-    {
-        unitTilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), null);
+        if (spawnedUnits.TryGetValue(unit, out GameObject go))
+        {
+            Object.Destroy(go);
+            spawnedUnits.Remove(unit);
+        }
     }
 
     public void ShowHighlights(IEnumerable<Vector2Int> positions, Color color)
@@ -191,6 +185,15 @@ public class UnitVisualizer
     public void ClearHighlights()
     {
         highlightTilemap.ClearAllTiles();
+    }
+    private Color GetPlayerColor(int playerId)
+    {
+        return playerId switch
+        {
+            1 => Color.cyan,
+            2 => new Color(1f, 0.3f, 0.3f), // Soft red
+            _ => Color.white
+        };
     }
 
 }

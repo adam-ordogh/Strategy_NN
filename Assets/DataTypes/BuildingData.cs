@@ -20,7 +20,8 @@ public class BuildingData : ScriptableObject
     public ArmorType armorType = ArmorType.Structure;
 
     [Header("Visuals")]
-    public TileBase buildingTile;
+    public Sprite buildingSprite;
+    public Sprite buildingColorTrim;
 
     [Header("User Interaction")]
     public bool isSelectable;

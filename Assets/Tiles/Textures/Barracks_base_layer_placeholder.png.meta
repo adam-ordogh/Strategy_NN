@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 0ed92434a63a45e4b8faae7665b237b0
+guid: d32b2bdeb4c3c3b4492d48c425371a94
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2944583857397830032
-    second: TH_placeholder_sprite_0
+      213: -5323331245128289127
+    second: Barracks_base_layer_placeholder 1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -50,8 +50,8 @@ TextureImporter:
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 6
-  spritePivot: {x: 0, y: 0}
-  spritePixelsToUnits: 128
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 256
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -113,23 +113,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TH_placeholder_sprite_0
+      name: Barracks_base_layer_placeholder 1_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 256
-        height: 256
+        x: 6
+        y: 44
+        width: 464
+        height: 320
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 07ee370359cb227d0800000000000000
-      internalID: -2944583857397830032
+      spriteID: 994f360df6abf16b0800000000000000
+      internalID: -5323331245128289127
       vertices: []
       indices: 
       edges: []
@@ -139,7 +139,7 @@ TextureImporter:
     physicsShape: []
     bones: []
     spriteID: 5e97eb03825dee720800000000000000
-    internalID: 1537655665
+    internalID: 0
     vertices: []
     indices: 
     edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      TH_placeholder_sprite_0: -2944583857397830032
+      Barracks_base_layer_placeholder 1_0: -5323331245128289127
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

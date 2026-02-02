@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: d39f2452adf062c42bf891cd5ba55a50
+guid: 7f06027608caec543b7608fc2f6dee04
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6591667904480365850
-    second: Catapult_placeholder_sprite_0
+      213: -3131844385946326806
+    second: Archer_placeholder_sprite_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -49,8 +49,8 @@ TextureImporter:
   spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
-  alignment: 0
-  spritePivot: {x: 0.5, y: 0.5}
+  alignment: 7
+  spritePivot: {x: 0.48632866, y: 0.09482975}
   spritePixelsToUnits: 256
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
@@ -113,23 +113,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Catapult_placeholder_sprite_0
+      name: Archer_placeholder_sprite_0
       rect:
         serializedVersion: 2
-        x: 15
-        y: 11
-        width: 232
-        height: 232
+        x: 6
+        y: 24
+        width: 242
+        height: 210
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a1d45e3f80f4a7b50800000000000000
-      internalID: 6591667904480365850
+      spriteID: ae82edbcf147984d0800000000000000
+      internalID: -3131844385946326806
       vertices: []
       indices: 
       edges: []
@@ -139,7 +139,7 @@ TextureImporter:
     physicsShape: []
     bones: []
     spriteID: 5e97eb03825dee720800000000000000
-    internalID: 0
+    internalID: 1537655665
     vertices: []
     indices: 
     edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Catapult_placeholder_sprite_0: 6591667904480365850
+      Archer_placeholder_sprite_0: -3131844385946326806
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

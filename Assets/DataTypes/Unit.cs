@@ -12,14 +12,9 @@ public class Unit
 
     public UnitData data;
 
-    //public UnitType unitType;
     public int ownerId;
     public int currentHealth;
-    //public int health;
-    //public int attackPower;
-    //public int attackRange;
     public bool canAttack = true;
-    //public float movementPoints;
     public float remainingMovementPoints;
     public Vector2Int position;
 
@@ -29,12 +24,8 @@ public class Unit
     public Unit(UnitData data, int ownerId, Vector2Int startPos)
     {
         this.data = data;
-        //this.unitType = data.unitType;
         this.ownerId = ownerId;
         this.currentHealth = data.maxHealth;
-        //this.attackPower = data.attackPower;
-        //this.attackRange = data.attackRange;
-        //this.movementPoints = (float)data.movementRange;
         this.remainingMovementPoints = data.movementRange;
         this.position = startPos;
     }

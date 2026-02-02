@@ -235,7 +235,6 @@ public class InputController : MonoBehaviour
         Vector2Int mousePos = GetGridPositionFromMouse();
 
         // Létrehozunk egy "szellem" épületet a kurzor pozíciójában
-        //BuildingData template = buildingManager.buildingTemplates.Find(t => t.buildingType == activeBuildingType.Value);
         Building ghost = new Building(activeBuildingType, gameManager.currentPlayerId, mousePos);
         var footprint = ghost.GetOccupiedTiles();
 
