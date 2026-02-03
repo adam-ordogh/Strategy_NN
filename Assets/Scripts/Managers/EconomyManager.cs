@@ -12,62 +12,18 @@ public struct IncomeReport
 
 public class EconomyManager : MonoBehaviour
 {
-    // Könyvtár a különböző épülettípusok termelési görbéihez
-    private Dictionary<Building.BuildingType, Func<int, int>> productionCurves =
-        new Dictionary<Building.BuildingType, Func<int, int>>();
-
     void Start()
     {
-        productionCurves[Building.BuildingType.Mine] = (workers) =>
-        {
-            // Mine: Erős kezdet, gyors csökkenés
-            if (workers <= 0) return 0;
-            if (workers == 1) return 4;  // Erős kezdés
-            if (workers == 2) return 6;  // +2
-            if (workers == 3) return 7;  // +1
-            return 7;  // Cap at 7
-        };
-
-        productionCurves[Building.BuildingType.Lumberyard] = (workers) =>
-        {
-            // Lumberyard: Lineáris de jobb skálázódás
-            if (workers <= 0) return 0;
-            if (workers == 1) return 3;
-            if (workers == 2) return 6;  // +3 
-            if (workers == 3) return 9;  // +3 
-            return 9 + (workers - 3);  // Lineáris 3 után
-        };
-
-        productionCurves[Building.BuildingType.Farm] = (workers) =>
-        {
-            // Farm: Exponenciális növekedés (öntözést/együttműködést reprezentálja)
-            if (workers <= 0) return 0;
-            if (workers == 1) return 2;  // Alacsony kezdet
-            if (workers == 2) return 5;  // +3
-            if (workers == 3) return 9;  // +4
-            if (workers == 4) return 14; // +5
-            return 14 + (workers - 4) * 2; // Lineáris 4 után
-        };
+        
     }
 
     private int GetProductionFromWorkers(Building building)
     {
-        if (productionCurves.TryGetValue(building.buildingType, out var curve))
-        {
-            return curve(building.assignedWorkers);
-        }
+       
+       return building.data.GetWorkerOutput(building.assignedWorkers); 
 
-        // Alap visszatérés, ha nincs definiált görbe
-        return CalculateDefaultProduction(building.assignedWorkers);
     }
 
-    private int CalculateDefaultProduction(int workerCount)
-    {
-        if (workerCount <= 0) return 0;
-        if (workerCount == 1) return 3;
-        if (workerCount == 2) return 5;
-        return 6;
-    }
 
     public void ProcessTurn(PlayerProfile player)
     {

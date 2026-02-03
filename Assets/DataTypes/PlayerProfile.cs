@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -43,6 +43,9 @@ public class PlayerProfile
     }
     public int availablePopulation => maxPopulation - CurrentUsedPopulation;
 
+    //public int currentGoldSlot;
+    //public int maxWoodSlots;
+    //public int maxFoodSlots;
     public int maxPopulation;
 
     public event System.Action OnResourcesChanged;

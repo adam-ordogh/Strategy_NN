@@ -1,3 +1,4 @@
+using Google.Protobuf.WellKnownTypes;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -18,6 +19,22 @@ public class BuildingData : ScriptableObject
     public int populationProvided;
     public int storageProvided;
     public int jobSlotsProvided;
+    [Header("Production")]
+    [Tooltip("Termelés munkásonként. Index 0 = 1 munkás, Index 1 = 2 munkás, stb.")]
+    public int[] productionPerWorkerCount;
+
+    public int GetWorkerOutput(int workers)
+    {
+        if (workers <= 0) return 0;
+        if (workers <= productionPerWorkerCount.Length)
+        {
+            return productionPerWorkerCount[workers - 1];
+        }
+
+        int lastValue = productionPerWorkerCount[productionPerWorkerCount.Length - 1];
+
+        return lastValue + (workers - productionPerWorkerCount.Length);
+    }
 
     [Header("Combat Stats")]
     public int maxHealth;

@@ -15,12 +15,14 @@ MonoBehaviour:
   buildingType: 3
   size: {x: 1, y: 1}
   movementCostModifier: Infinity
-  influenceRadius: 0
-  populationProvided: 0
-  jobSlotsProvided: 3
   constructionTurns: 1
+  influenceRadius: 0
   goldCost: 30
   woodCost: 0
+  populationProvided: 0
+  storageProvided: 0
+  jobSlotsProvided: 3
+  productionPerWorkerCount: 030000000600000009000000
   maxHealth: 40
   armorType: 3
   buildingSprite: {fileID: 21300000, guid: b0b3a5a22d55d164b86af645d23589fc, type: 3}

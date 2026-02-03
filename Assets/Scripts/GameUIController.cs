@@ -65,9 +65,9 @@ public class GameUIController : MonoBehaviour
         availablePopLabel.text = activePlayer.availablePopulation.ToString();
 
 
-        foodLabel.text = $"Food: {activePlayer.food}/{activePlayer.maxFood} {FormatIncome(report.foodNet)} ({totalGoldWorkers.ToString()} workers)";
+        foodLabel.text = $"Food: {activePlayer.food}/{activePlayer.maxFood} {FormatIncome(report.foodNet)} ({totalFoodWorkers.ToString()} workers)";
         woodLabel.text = $"Wood: {activePlayer.wood}/{activePlayer.maxWood} {FormatIncome(report.woodNet)} ({totalWoodWorkers.ToString()} workers)";
-        goldLabel.text = $"Gold: {activePlayer.gold}/{activePlayer.maxGold} {FormatIncome(report.goldNet)} ({totalFoodWorkers.ToString()} workers)";
+        goldLabel.text = $"Gold: {activePlayer.gold}/{activePlayer.maxGold} {FormatIncome(report.goldNet)} ({totalGoldWorkers.ToString()} workers)";
     }
 
     private string FormatIncome(int income)
