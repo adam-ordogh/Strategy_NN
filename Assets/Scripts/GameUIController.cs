@@ -59,11 +59,8 @@ public class GameUIController : MonoBehaviour
             if (b.buildingType == Building.BuildingType.Farm) totalFoodWorkers += b.assignedWorkers;
         }
 
-        //goldWorkersLabel.text = totalGoldWorkers.ToString();
-        //woodWorkersLabel.text = totalWoodWorkers.ToString();
-        //foodWorkersLabel.text = totalFoodWorkers.ToString();
-        availablePopLabel.text = activePlayer.availablePopulation.ToString();
-
+        string housingColor = activePlayer.currentPopulation >= activePlayer.housingCapacity ? "red" : "white";
+        availablePopLabel.text = $"{activePlayer.availablePopulation} / {activePlayer.currentPopulation} <color={housingColor}>[Cap: {activePlayer.housingCapacity}]</color>";
 
         foodLabel.text = $"Food: {activePlayer.food}/{activePlayer.maxFood} {FormatIncome(report.foodNet)} ({totalFoodWorkers.ToString()} workers)";
         woodLabel.text = $"Wood: {activePlayer.wood}/{activePlayer.maxWood} {FormatIncome(report.woodNet)} ({totalWoodWorkers.ToString()} workers)";
@@ -189,7 +186,7 @@ public class GameUIController : MonoBehaviour
         }
     }
 
-    // Worker assignment buttons inside building UI
+    // Munkás hozzárendelés kezelése UI gombokkal
     public void OnAddWorkerClicked()
     {
         Building selected = initializer.inputController.selectedBuilding;

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [System.Serializable]
@@ -10,6 +11,7 @@ public class PlayerProfile
     public List<Unit> myUnits = new List<Unit>();
     public List<Building> myBuildings = new List<Building>();
 
+    // Nyersanyagok
     public int gold;
     public int wood;
     public int food;
@@ -22,31 +24,27 @@ public class PlayerProfile
     public int baseWoodIncome = 2;
     public int baseFoodIncome = 2;
 
-    public int totalPopulation;
     public int currentGoldWorkers;
     public int currentWoodWorkers;
     public int currentFoodWorkers;
+
+    // Populáció és dolgozók
+    public int currentPopulation = 3;
+    public int housingCapacity;
+
     public int queuedPopulation;
 
     public int CurrentUsedPopulation
     {
         get
         {
-            int unitPop = 0;
-            foreach (var u in myUnits) unitPop += u.data.populationCost;
-
-            int workerPop = 0;
-            foreach (var b in myBuildings) workerPop += b.assignedWorkers;
-
+            int unitPop = myUnits.Sum(u => u.data.populationCost);
+            int workerPop = myBuildings.Sum(b => b.assignedWorkers);
             return unitPop + workerPop + queuedPopulation;
         }
     }
-    public int availablePopulation => maxPopulation - CurrentUsedPopulation;
+    public int availablePopulation => currentPopulation - CurrentUsedPopulation;
 
-    //public int currentGoldSlot;
-    //public int maxWoodSlots;
-    //public int maxFoodSlots;
-    public int maxPopulation;
 
     public event System.Action OnResourcesChanged;
 

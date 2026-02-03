@@ -19,6 +19,7 @@ public class UnitData : ScriptableObject
 
     [Header("Production Costs")]
     public int populationCost;
+    public int goldUpkeep;
     public int goldCost;
     public int foodCost;
     public int woodCost;

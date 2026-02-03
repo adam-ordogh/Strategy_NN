@@ -12,16 +12,9 @@ public struct IncomeReport
 
 public class EconomyManager : MonoBehaviour
 {
-    void Start()
-    {
-        
-    }
-
     private int GetProductionFromWorkers(Building building)
-    {
-       
+    {       
        return building.data.GetWorkerOutput(building.assignedWorkers); 
-
     }
 
 
@@ -29,37 +22,37 @@ public class EconomyManager : MonoBehaviour
     {
         RecalculateCapacities(player);
 
-        int totalGoldGenerated = 0;
-        int totalWoodGenerated = 0;
-        int totalFoodGenerated = 0;
-        int totalWorkers = 0;
+        IncomeReport report = GetProjectedIncome(player);
 
-        foreach (Building b in player.myBuildings)
+        if (report.foodNet > 0)
         {
-            if (!b.isConstructed) continue;
-
-            int production = GetProductionFromWorkers(b);
-            totalWorkers += b.assignedWorkers;
-
-            switch (b.buildingType)
+            if (player.currentPopulation < 5)
             {
-                case Building.BuildingType.Mine:
-                    totalGoldGenerated += production;
-                    break;
-                case Building.BuildingType.Lumberyard:
-                    totalWoodGenerated += production;
-                    break;
-                case Building.BuildingType.Farm:
-                    totalFoodGenerated += production;
-                    break;
+                player.currentPopulation += 1;
+            }
+            else
+            {
+                int newPeople = report.foodNet / 5;
+                player.currentPopulation = Mathf.Min(player.currentPopulation + newPeople, player.housingCapacity);
             }
         }
+        else if (report.foodNet < 0)
+        {
+            int deaths = Mathf.Max(1, Mathf.Abs(report.foodNet) / 5);
+            player.currentPopulation = Mathf.Max(0, player.currentPopulation - deaths);
 
-        int totalConsumption = player.myUnits.Count + totalWorkers;
+            // Ha a populáció csökken, ellenőrizzük a dolgozókat és egységeket, esetleg meghalhatnak?
+        }
+        if (player.availablePopulation > (player.currentPopulation * 0.5f))
+        {
+            report.goldNet -= 5;
+            Debug.Log("High unemployment! Losing gold.");
+        }
 
-        player.gold = Mathf.Clamp(player.gold + player.baseGoldIncome + totalGoldGenerated, 0, player.maxGold);
-        player.wood = Mathf.Clamp(player.wood + player.baseWoodIncome + totalWoodGenerated, 0, player.maxWood);
-        player.food = Mathf.Clamp(player.food + (player.baseFoodIncome + totalFoodGenerated - totalConsumption), 0, player.maxFood);
+        player.gold = Mathf.Clamp(player.gold + report.goldNet, 0, player.maxGold);
+        player.wood = Mathf.Clamp(player.wood + report.woodNet, 0, player.maxWood);
+        player.food = Mathf.Clamp(player.food + report.foodNet, 0, player.maxFood);
+
     }
 
     public void RecalculateCapacities(PlayerProfile player)
@@ -70,14 +63,15 @@ public class EconomyManager : MonoBehaviour
         player.maxGold = 0;
         player.maxWood = 0;
         player.maxFood = 0;
-        player.maxPopulation = 0; // Base pop
+        player.housingCapacity = 0;
 
         foreach (var building in player.myBuildings)
         {
             if(building.isConstructed == false) continue;
 
-            player.maxPopulation += building.data.populationProvided;
-            switch(building.data.buildingType)
+            player.housingCapacity += building.data.populationProvided;
+
+            switch (building.data.buildingType)
             {
                 case Building.BuildingType.Mine:
                     player.currentGoldWorkers += building.assignedWorkers;
@@ -130,11 +124,17 @@ public class EconomyManager : MonoBehaviour
             }
         }
 
+        int unitUpkeep = 0;
+        foreach (var unit in player.myUnits)
+        {
+            unitUpkeep += unit.data.goldUpkeep;
+        }
+
         int totalConsumption = player.myUnits.Count + totalWorkers;
 
         return new IncomeReport
         {
-            goldNet = player.baseGoldIncome + totalGoldGenerated,
+            goldNet = player.baseGoldIncome + totalGoldGenerated - unitUpkeep,
             woodNet = player.baseWoodIncome + totalWoodGenerated,
             foodNet = player.baseFoodIncome + totalFoodGenerated - totalConsumption
         };
