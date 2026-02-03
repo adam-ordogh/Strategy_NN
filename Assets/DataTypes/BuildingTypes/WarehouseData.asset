@@ -10,21 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4963c817adea2bb4ea91182658aeb31d, type: 3}
-  m_Name: FarmData
+  m_Name: WarehouseData
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  buildingType: 4
-  size: {x: 2, y: 2}
+  buildingType: 8
+  size: {x: 3, y: 2}
   movementCostModifier: Infinity
-  constructionTurns: 2
+  constructionTurns: 3
   influenceRadius: 0
   goldCost: 0
-  woodCost: 20
+  woodCost: 50
   populationProvided: 0
-  storageProvided: 0
-  jobSlotsProvided: 4
-  maxHealth: 50
+  storageProvided: 100
+  jobSlotsProvided: 0
+  maxHealth: 100
   armorType: 3
-  buildingSprite: {fileID: 21300000, guid: 27989dd812ac11f459b7dca4641714f3, type: 3}
+  buildingSprite: {fileID: 21300000, guid: df25c138b9db08b40a00a7a47eb8a19f, type: 3}
   buildingColorTrim: {fileID: 0}
   constructionSprite: {fileID: 21300000, guid: fb41e74c22cc792498a65e3e2216f42b, type: 3}
-  isSelectable: 1
+  isSelectable: 0

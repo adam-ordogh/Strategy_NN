@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System;
+using UnityEngine;
 
 public enum ResourceType { Food, Wood, Gold }
 public struct IncomeReport
@@ -10,38 +12,108 @@ public struct IncomeReport
 
 public class EconomyManager : MonoBehaviour
 {
-    public void ProcessTurn(PlayerProfile player)
+    // Könyvtár a különböző épülettípusok termelési görbéihez
+    private Dictionary<Building.BuildingType, Func<int, int>> productionCurves =
+        new Dictionary<Building.BuildingType, Func<int, int>>();
+
+    void Start()
     {
-        // Újraszámolás a kapacitásokra
-        // (Ha mondjuk egy épület le lett rombolva, tudjunk róla)
-        RecalculateCapacities(player);
-
-        int goldFromWorkers = player.assignedGoldWorkers * 5;
-        int woodFromWorkers = player.assignedWoodWorkers * 5;
-        int foodFromWorkers = player.assignedFoodWorkers * 5;
-
-        player.gold += (player.baseGoldIncome + goldFromWorkers);
-        player.wood += (player.baseWoodIncome + woodFromWorkers);
-        player.food += (player.baseFoodIncome + foodFromWorkers);
-
-        // Minden egység és dolgozó elfogyaszt 1 élelmet
-        int totalPopulation = player.myUnits.Count + player.assignedGoldWorkers + player.assignedWoodWorkers + player.assignedFoodWorkers;
-        player.food -= totalPopulation;
-
-        // Éhezés esetén büntetés (még nem biztos hogy marad)
-        if (player.food < 0)
+        productionCurves[Building.BuildingType.Mine] = (workers) =>
         {
-            Debug.LogWarning($"Player {player.playerId} is starving!");
+            // Mine: Erős kezdet, gyors csökkenés
+            if (workers <= 0) return 0;
+            if (workers == 1) return 4;  // Erős kezdés
+            if (workers == 2) return 6;  // +2
+            if (workers == 3) return 7;  // +1
+            return 7;  // Cap at 7
+        };
+
+        productionCurves[Building.BuildingType.Lumberyard] = (workers) =>
+        {
+            // Lumberyard: Lineáris de jobb skálázódás
+            if (workers <= 0) return 0;
+            if (workers == 1) return 3;
+            if (workers == 2) return 6;  // +3 
+            if (workers == 3) return 9;  // +3 
+            return 9 + (workers - 3);  // Lineáris 3 után
+        };
+
+        productionCurves[Building.BuildingType.Farm] = (workers) =>
+        {
+            // Farm: Exponenciális növekedés (öntözést/együttműködést reprezentálja)
+            if (workers <= 0) return 0;
+            if (workers == 1) return 2;  // Alacsony kezdet
+            if (workers == 2) return 5;  // +3
+            if (workers == 3) return 9;  // +4
+            if (workers == 4) return 14; // +5
+            return 14 + (workers - 4) * 2; // Lineáris 4 után
+        };
+    }
+
+    private int GetProductionFromWorkers(Building building)
+    {
+        if (productionCurves.TryGetValue(building.buildingType, out var curve))
+        {
+            return curve(building.assignedWorkers);
         }
 
-        Debug.Log($"Economy Update P{player.playerId}: +{player.baseGoldIncome + goldFromWorkers}G +{player.baseWoodIncome + woodFromWorkers}W. Food Status: {player.food}");
+        // Alap visszatérés, ha nincs definiált görbe
+        return CalculateDefaultProduction(building.assignedWorkers);
+    }
+
+    private int CalculateDefaultProduction(int workerCount)
+    {
+        if (workerCount <= 0) return 0;
+        if (workerCount == 1) return 3;
+        if (workerCount == 2) return 5;
+        return 6;
+    }
+
+    public void ProcessTurn(PlayerProfile player)
+    {
+        RecalculateCapacities(player);
+
+        int totalGoldGenerated = 0;
+        int totalWoodGenerated = 0;
+        int totalFoodGenerated = 0;
+        int totalWorkers = 0;
+
+        foreach (Building b in player.myBuildings)
+        {
+            if (!b.isConstructed) continue;
+
+            int production = GetProductionFromWorkers(b);
+            totalWorkers += b.assignedWorkers;
+
+            switch (b.buildingType)
+            {
+                case Building.BuildingType.Mine:
+                    totalGoldGenerated += production;
+                    break;
+                case Building.BuildingType.Lumberyard:
+                    totalWoodGenerated += production;
+                    break;
+                case Building.BuildingType.Farm:
+                    totalFoodGenerated += production;
+                    break;
+            }
+        }
+
+        int totalConsumption = player.myUnits.Count + totalWorkers;
+
+        player.gold = Mathf.Clamp(player.gold + player.baseGoldIncome + totalGoldGenerated, 0, player.maxGold);
+        player.wood = Mathf.Clamp(player.wood + player.baseWoodIncome + totalWoodGenerated, 0, player.maxWood);
+        player.food = Mathf.Clamp(player.food + (player.baseFoodIncome + totalFoodGenerated - totalConsumption), 0, player.maxFood);
     }
 
     public void RecalculateCapacities(PlayerProfile player)
     {
-        player.maxGoldSlots = 0;
-        player.maxWoodSlots = 0;
-        player.maxFoodSlots = 0;
+        player.currentGoldWorkers = 0;
+        player.currentWoodWorkers = 0;
+        player.currentFoodWorkers = 0;
+        player.maxGold = 0;
+        player.maxWood = 0;
+        player.maxFood = 0;
         player.maxPopulation = 0; // Base pop
 
         foreach (var building in player.myBuildings)
@@ -52,81 +124,63 @@ public class EconomyManager : MonoBehaviour
             switch(building.data.buildingType)
             {
                 case Building.BuildingType.Mine:
-                    player.maxGoldSlots += building.data.jobSlotsProvided;
+                    player.currentGoldWorkers += building.assignedWorkers;
                     break;
                 case Building.BuildingType.Lumberyard:
-                    player.maxWoodSlots += building.data.jobSlotsProvided;
+                    player.currentWoodWorkers += building.assignedWorkers;
                     break;
                 case Building.BuildingType.Farm:
-                    player.maxFoodSlots += building.data.jobSlotsProvided;
+                    player.currentFoodWorkers += building.assignedWorkers;
+                    break;
+                case Building.BuildingType.Warehouse:
+                    player.maxGold += building.data.storageProvided;
+                    player.maxWood += building.data.storageProvided;
+                    player.maxFood += building.data.storageProvided;
+                    break;
+                case Building.BuildingType.TownHall:
+                    player.maxGold += building.data.storageProvided;
+                    player.maxWood += building.data.storageProvided;
+                    player.maxFood += building.data.storageProvided;
                     break;
             }
         }
-
-        player.assignedGoldWorkers = Mathf.Clamp(player.assignedGoldWorkers, 0, player.maxGoldSlots);
-        player.assignedWoodWorkers = Mathf.Clamp(player.assignedWoodWorkers, 0, player.maxWoodSlots);
-        player.assignedFoodWorkers = Mathf.Clamp(player.assignedFoodWorkers, 0, player.maxFoodSlots);
-
-        // Ha netán max levesz dolgozákat, megnézni hgoy vissza-e kapjuk elérhető populáció ként
-    }
-    public bool ChangeWorkerAssignment(PlayerProfile player, ResourceType resource, int amount)
-    {
-        if (amount > 0)
-        {
-            if (player.availablePopulation < amount) return false;
-
-            switch (resource)
-            {
-                case ResourceType.Food:
-                    if (player.assignedFoodWorkers + amount > player.maxFoodSlots) return false;
-                    player.assignedFoodWorkers += amount;
-                    break;
-                case ResourceType.Wood:
-                    if (player.assignedWoodWorkers + amount > player.maxWoodSlots) return false;
-                    player.assignedWoodWorkers += amount;
-                    break;
-                case ResourceType.Gold:
-                    if (player.assignedGoldWorkers + amount > player.maxGoldSlots) return false;
-                    player.assignedGoldWorkers += amount;
-                    break;
-            }
-        }
-        else
-        {
-            int absoluteAmount = Mathf.Abs(amount);
-            switch (resource)
-            {
-                case ResourceType.Food:
-                    if (player.assignedFoodWorkers < absoluteAmount) return false;
-                    player.assignedFoodWorkers -= absoluteAmount;
-                    break;
-                case ResourceType.Wood:
-                    if (player.assignedWoodWorkers < absoluteAmount) return false;
-                    player.assignedWoodWorkers -= absoluteAmount;
-                    break;
-                case ResourceType.Gold:
-                    if (player.assignedGoldWorkers < absoluteAmount) return false;
-                    player.assignedGoldWorkers -= absoluteAmount;
-                    break;
-            }
-        }
-
-        return true;
     }
 
     public IncomeReport GetProjectedIncome(PlayerProfile player)
     {
-        int gold = player.baseGoldIncome + (player.assignedGoldWorkers * 5);
-        int wood = player.baseWoodIncome + (player.assignedWoodWorkers * 5);
+        int totalGoldGenerated = 0;
+        int totalWoodGenerated = 0;
+        int totalFoodGenerated = 0;
+        int totalWorkers = 0;
 
-        int foodIncome = player.baseFoodIncome + (player.assignedFoodWorkers * 5);
-        int foodCons = player.CurrentUsedPopulation;
+        foreach (Building b in player.myBuildings)
+        {
+            if (!b.isConstructed) continue;
+
+            int production = GetProductionFromWorkers(b);
+            totalWorkers += b.assignedWorkers;
+
+            switch (b.buildingType)
+            {
+                case Building.BuildingType.Mine:
+                    totalGoldGenerated += production;
+                    break;
+                case Building.BuildingType.Lumberyard:
+                    totalWoodGenerated += production;
+                    break;
+                case Building.BuildingType.Farm:
+                    totalFoodGenerated += production;
+                    break;
+            }
+        }
+
+        int totalConsumption = player.myUnits.Count + totalWorkers;
 
         return new IncomeReport
         {
-            goldNet = gold,
-            woodNet = wood,
-            foodNet = foodIncome - foodCons
+            goldNet = player.baseGoldIncome + totalGoldGenerated,
+            woodNet = player.baseWoodIncome + totalWoodGenerated,
+            foodNet = player.baseFoodIncome + totalFoodGenerated - totalConsumption
         };
     }
 }

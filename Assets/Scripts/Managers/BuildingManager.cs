@@ -170,7 +170,7 @@ public class BuildingManager : MonoBehaviour
                         //}
 
                         // ---  1 mezőnyi rés ---
-                        if (neighborBuilding.buildingType == Building.BuildingType.Barracks)
+                        if (neighborBuilding.buildingType == Building.BuildingType.Barracks || neighborBuilding.buildingType == Building.BuildingType.TownHall)
                         {
                             return false;
                         }
@@ -178,14 +178,6 @@ public class BuildingManager : MonoBehaviour
                     }
                 }
             }
-
-            // --- Muszáj utat érinteni ---
-            //if (playerHasBuildings && !touchesRoad)
-            //{
-            //    // Building must be next to a road (except for the very first building)
-            //    return false;
-            //}
-
         }
         return true;
     }

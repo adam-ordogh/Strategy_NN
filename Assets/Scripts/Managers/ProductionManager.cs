@@ -33,6 +33,12 @@ public class ProductionManager : MonoBehaviour
 
     public void QueueUnit(Building factory, UnitData unitType)
     {
+        if (!CanProduceUnit(factory))
+        {
+            Debug.LogWarning("This building cannot produce units yet!");
+            return;
+        }
+
         PlayerProfile owner = gameManager.GetPlayerProfile(factory.ownerId);
 
         if (productionQueues.ContainsKey(factory) && productionQueues[factory].Count >= maxQueueSize)
@@ -56,7 +62,7 @@ public class ProductionManager : MonoBehaviour
         owner.SpendResources(unitType.goldCost, unitType.woodCost, unitType.foodCost);
         owner.queuedPopulation += unitType.populationCost;
 
-        if (!CanProduceUnit(factory)) return;
+        //if (!CanProduceUnit(factory)) return;
 
         if (!productionQueues.ContainsKey(factory))
         {
@@ -186,6 +192,7 @@ public class ProductionManager : MonoBehaviour
     public bool CanProduceUnit(Building factory)
     {
         if (factory.buildingType != Building.BuildingType.Barracks) return false;
+        if (!factory.isConstructed) return false;
         return true;
         // Nem nézzük a spawnt itt, mert lehet, hogy lesz hely mire kész a egység
     }

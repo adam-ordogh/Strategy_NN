@@ -28,7 +28,7 @@ public class MapVisualizer
                 if (tileData.type == MapData.TileType.Forest || tileData.type == MapData.TileType.Mountain)
                 {
                     featureMap.SetTile(pos, tileRegistry.GetTile(tileData.type));
-                    Debug.Log($"Set feature tile at ({x},{y}) to {tileData.type}");
+                    //Debug.Log($"Set feature tile at ({x},{y}) to {tileData.type}");
                 }
                 else
                 {

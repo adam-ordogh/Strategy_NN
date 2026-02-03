@@ -14,14 +14,18 @@ public class PlayerProfile
     public int wood;
     public int food;
 
+    public int maxGold = 0;
+    public int maxWood = 0;
+    public int maxFood = 0;
+
     public int baseGoldIncome = 2;
     public int baseWoodIncome = 2;
     public int baseFoodIncome = 2;
 
     public int totalPopulation;
-    public int assignedGoldWorkers;
-    public int assignedWoodWorkers;
-    public int assignedFoodWorkers;
+    public int currentGoldWorkers;
+    public int currentWoodWorkers;
+    public int currentFoodWorkers;
     public int queuedPopulation;
 
     public int CurrentUsedPopulation
@@ -31,16 +35,14 @@ public class PlayerProfile
             int unitPop = 0;
             foreach (var u in myUnits) unitPop += u.data.populationCost;
 
-            int workerPop = assignedGoldWorkers + assignedWoodWorkers + assignedFoodWorkers;
+            int workerPop = 0;
+            foreach (var b in myBuildings) workerPop += b.assignedWorkers;
 
             return unitPop + workerPop + queuedPopulation;
         }
     }
     public int availablePopulation => maxPopulation - CurrentUsedPopulation;
 
-    public int maxGoldSlots;
-    public int maxWoodSlots;
-    public int maxFoodSlots;
     public int maxPopulation;
 
     public event System.Action OnResourcesChanged;

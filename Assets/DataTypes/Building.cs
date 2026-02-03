@@ -12,7 +12,8 @@ public class Building
         Farm,
         Mine,
         Outpost,
-        Road
+        Road,
+        Warehouse
     };
 
     public BuildingData data;
@@ -21,6 +22,8 @@ public class Building
     public Vector2Int position; 
     public int currentHp;
     public int turnsRemaining;
+    public int assignedWorkers;
+
     public bool isConstructed { get; private set; } = false;
 
     public BuildingType buildingType => data.buildingType;
@@ -51,6 +54,32 @@ public class Building
             isConstructed = true;
             turnsRemaining = 0;
         }
+    }
+
+    public bool CanAcceptWorker()
+    {
+        return isConstructed && assignedWorkers < data.jobSlotsProvided;
+    }
+    public bool TryAssignWorker(PlayerProfile player)
+    {
+        if (CanAcceptWorker() && player.availablePopulation > 0)
+        {
+            assignedWorkers++;
+            //player.OnResourcesChanged?.Invoke();
+            return true;
+        }
+        return false;
+    }
+
+    public bool TryRemoveWorker(PlayerProfile player)
+    {
+        if (assignedWorkers > 0)
+        {
+            assignedWorkers--;
+            //player.OnResourcesChanged?.Invoke();
+            return true;
+        }
+        return false;
     }
 
     public List<Vector2Int> GetOccupiedTiles()

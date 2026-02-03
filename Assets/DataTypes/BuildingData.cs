@@ -8,14 +8,16 @@ public class BuildingData : ScriptableObject
     public Building.BuildingType buildingType;
     public Vector2Int size;
     public float movementCostModifier = Mathf.Infinity;
-    public int influenceRadius;
-    public int populationProvided;
-    public int jobSlotsProvided;
-
     public int constructionTurns;
+    public int influenceRadius;
 
+    [Header("Economy Stats")]
     public int goldCost;
     public int woodCost;
+    
+    public int populationProvided;
+    public int storageProvided;
+    public int jobSlotsProvided;
 
     [Header("Combat Stats")]
     public int maxHealth;

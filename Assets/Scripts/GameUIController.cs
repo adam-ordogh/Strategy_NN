@@ -13,13 +13,13 @@ public class GameUIController : MonoBehaviour
     public TMPro.TextMeshProUGUI woodLabel;
     public TMPro.TextMeshProUGUI goldLabel;
     public TMPro.TextMeshProUGUI availablePopLabel;
-    public TMPro.TextMeshProUGUI foodWorkersLabel;
-    public TMPro.TextMeshProUGUI woodWorkersLabel;
-    public TMPro.TextMeshProUGUI goldWorkersLabel;
 
     // Production panel
     public GameObject productionPanel;
     public TMPro.TextMeshProUGUI queueText;
+
+    public GameObject workerPanel; // Assign in Inspector
+    public TMPro.TextMeshProUGUI workerCountText;
 
     // Building panel
     public GameObject buildingPanelOpened;
@@ -48,13 +48,26 @@ public class GameUIController : MonoBehaviour
         PlayerProfile activePlayer = initializer.gameManager.CurrentPlayer;
         var report = initializer.economyManager.GetProjectedIncome(activePlayer);
 
-        foodLabel.text = $"Food: {activePlayer.food} {FormatIncome(report.foodNet)}";
-        woodLabel.text = $"Wood: {activePlayer.wood} {FormatIncome(report.woodNet)}";
-        goldLabel.text = $"Gold: {activePlayer.gold} {FormatIncome(report.goldNet)}";
-        availablePopLabel.text = $"Population: {activePlayer.availablePopulation}/{activePlayer.maxPopulation}";
-        foodWorkersLabel.text = $"Food Workers: {activePlayer.assignedFoodWorkers}/{activePlayer.maxFoodSlots}";
-        woodWorkersLabel.text = $"Wood Workers: {activePlayer.assignedWoodWorkers}/{activePlayer.maxWoodSlots}";
-        goldWorkersLabel.text = $"Gold Workers: {activePlayer.assignedGoldWorkers}/{activePlayer.maxGoldSlots}";
+        int totalGoldWorkers = 0;
+        int totalWoodWorkers = 0;
+        int totalFoodWorkers = 0;
+
+        foreach (var b in activePlayer.myBuildings)
+        {
+            if (b.buildingType == Building.BuildingType.Mine) totalGoldWorkers += b.assignedWorkers;
+            if (b.buildingType == Building.BuildingType.Lumberyard) totalWoodWorkers += b.assignedWorkers;
+            if (b.buildingType == Building.BuildingType.Farm) totalFoodWorkers += b.assignedWorkers;
+        }
+
+        //goldWorkersLabel.text = totalGoldWorkers.ToString();
+        //woodWorkersLabel.text = totalWoodWorkers.ToString();
+        //foodWorkersLabel.text = totalFoodWorkers.ToString();
+        availablePopLabel.text = activePlayer.availablePopulation.ToString();
+
+
+        foodLabel.text = $"Food: {activePlayer.food}/{activePlayer.maxFood} {FormatIncome(report.foodNet)} ({totalGoldWorkers.ToString()} workers)";
+        woodLabel.text = $"Wood: {activePlayer.wood}/{activePlayer.maxWood} {FormatIncome(report.woodNet)} ({totalWoodWorkers.ToString()} workers)";
+        goldLabel.text = $"Gold: {activePlayer.gold}/{activePlayer.maxGold} {FormatIncome(report.goldNet)} ({totalFoodWorkers.ToString()} workers)";
     }
 
     private string FormatIncome(int income)
@@ -83,54 +96,6 @@ public class GameUIController : MonoBehaviour
         bm.OnBuildingPlaced -= HandleBuildingEvent;
         bm.OnBuildingRemoved -= HandleBuildingEvent;
         // Kezelni kell a ProductionManager eseményeit is, ha szükséges
-    }
-
-    public void AddFoodWorker()
-    {
-        var player = initializer.gameManager.CurrentPlayer;
-        if (initializer.economyManager.ChangeWorkerAssignment(player, ResourceType.Food, 1))
-        {
-            UpdateUI(); 
-        }
-    }
-
-    public void RemoveFoodWorker()
-    {
-        var player = initializer.gameManager.CurrentPlayer;
-        initializer.economyManager.ChangeWorkerAssignment(player, ResourceType.Food, -1);
-        UpdateUI();
-    }
-
-    public void AddWoodWorker()
-    {
-        var player = initializer.gameManager.CurrentPlayer;
-        if (initializer.economyManager.ChangeWorkerAssignment(player, ResourceType.Wood, 1))
-        {
-            UpdateUI();
-        }
-    }
-
-    public void RemoveWoodWorker()
-    {
-        var player = initializer.gameManager.CurrentPlayer;
-        initializer.economyManager.ChangeWorkerAssignment(player, ResourceType.Wood, -1);
-        UpdateUI();
-    }
-
-    public void AddGoldWorker()
-    {
-        var player = initializer.gameManager.CurrentPlayer;
-        if (initializer.economyManager.ChangeWorkerAssignment(player, ResourceType.Gold, 1))
-        {
-            UpdateUI(); 
-        }
-    }
-
-    public void RemoveGoldWorker()
-    {
-        var player = initializer.gameManager.CurrentPlayer;
-        initializer.economyManager.ChangeWorkerAssignment(player, ResourceType.Gold, -1);
-        UpdateUI();
     }
 
     public void TrainUnit(UnitData unitData)
@@ -167,8 +132,19 @@ public class GameUIController : MonoBehaviour
 
         if (selected == null)
         {
+            workerPanel.SetActive(false);
             productionPanel.SetActive(false);
             return;
+        }
+
+        if (selected.data.jobSlotsProvided > 0 && selected.isConstructed)
+        {
+            workerPanel.SetActive(true);
+            workerCountText.text = $"{selected.assignedWorkers} / {selected.data.jobSlotsProvided}";
+        }
+        else
+        {
+            workerPanel.SetActive(false);
         }
 
         if (selected.buildingType == Building.BuildingType.Barracks && initializer.gameManager.currentPlayerId == selected.ownerId)
@@ -210,6 +186,37 @@ public class GameUIController : MonoBehaviour
             initializer.productionManager.CancelSpecificUnit(selected, queue.Count - 1);
             UpdateUI();
             RefreshSelectedBuildingUI();
+        }
+    }
+
+    // Worker assignment buttons inside building UI
+    public void OnAddWorkerClicked()
+    {
+        Building selected = initializer.inputController.selectedBuilding;
+        PlayerProfile player = initializer.gameManager.GetPlayerProfile(selected.ownerId);
+
+        if (selected != null && selected.ownerId == initializer.gameManager.currentPlayerId)
+        {
+            if (selected.TryAssignWorker(player))
+            {
+                RefreshSelectedBuildingUI();
+                UpdateUI();
+            }
+        }
+    }
+
+    public void OnRemoveWorkerClicked()
+    {
+        Building selected = initializer.inputController.selectedBuilding;
+        PlayerProfile player = initializer.gameManager.GetPlayerProfile(selected.ownerId);
+
+        if (selected != null && selected.ownerId == initializer.gameManager.currentPlayerId)
+        {
+            if (selected.TryRemoveWorker(player))
+            {
+                RefreshSelectedBuildingUI();
+                UpdateUI();
+            }
         }
     }
 }
