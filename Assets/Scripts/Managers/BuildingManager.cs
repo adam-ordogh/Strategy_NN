@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using static MapData;
 using static Unit;
 using static UnityEditor.PlayerSettings;
 
@@ -120,6 +121,12 @@ public class BuildingManager : MonoBehaviour
 
     public bool CanPlaceBuilding(BuildingData building, Vector2Int pos, int ownerId)
     {
+        if (!CheckEnvironmentalRequirements(building, pos))
+        {
+            Debug.Log("Placement Failed: Environmental requirements not met.");
+            return false;
+        }
+
         // --- Van-e épülete a játékosnak ---
         bool playerHasBuildings = false;
         foreach (var b in mapData.buildings.Values)
@@ -189,6 +196,47 @@ public class BuildingManager : MonoBehaviour
             return null;
 
         return occupancyGrid[pos.x, pos.y];
+    }
+
+    private bool CheckEnvironmentalRequirements(BuildingData template, Vector2Int pos)
+    {
+        // 1. Mines must be next to a Mountain
+        if (template.buildingType == Building.BuildingType.Mine)
+        {
+            return HasAdjacentTileType(pos, TileType.Mountain);
+        }
+
+        // 2. Lumberyards must be next to a Forest
+        if (template.buildingType == Building.BuildingType.Lumberyard)
+        {
+            return HasAdjacentTileType(pos, TileType.Forest);
+        }
+
+        return true;
+    }
+
+    private bool HasAdjacentTileType(Vector2Int center, TileType type)
+    {
+        // Check 8 neighbors (including diagonals if you want, or just 4 cardinals)
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                if (x == 0 && y == 0) continue;
+
+                Vector2Int checkPos = new Vector2Int(center.x + x, center.y + y);
+
+                // Boundary check
+                if (checkPos.x < 0 || checkPos.x >= mapData.mapWidth ||
+                    checkPos.y < 0 || checkPos.y >= mapData.mapHeight) continue;
+
+                if (mapData.mapTiles[checkPos.x, checkPos.y].type == type)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private bool IsTileValidForPlacement(Vector2Int pos, Building.BuildingType type)

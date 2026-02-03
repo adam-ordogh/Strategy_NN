@@ -98,6 +98,7 @@ public class GameInitializer : MonoBehaviour
         buildingManager.Initialize(mapManager.mapData, influenceManager, gameManager);
         influenceManager.Initialize(mapManager.mapData);
         productionManager.Initialize(mapManager.mapData, unitManager, buildingManager, gameManager);
+        economyManager.Initialize(mapManager.mapData, buildingManager);
     }
 
     public void AddVisualEventListeners()
@@ -153,6 +154,14 @@ public class GameInitializer : MonoBehaviour
                 productionManager.CancelProductionForBuilding(building);
             }
         };
+
+        //buildingManager.OnConstructionCompleted += (building) => economyManager.InvalidateTileCache(gameManager.GetPlayerProfile(building.ownerId));
+        //buildingManager.OnBuildingRemoved += (building) => economyManager.InvalidateTileCache(gameManager.GetPlayerProfile(building.ownerId));
+    }
+
+    private void BuildingManager_OnConstructionCompleted(Building obj)
+    {
+        throw new System.NotImplementedException();
     }
 
     public void StartGame()

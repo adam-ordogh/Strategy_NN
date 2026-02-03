@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System;
 using UnityEngine;
+using static MapData;
+using UnityEditor.U2D.Aseprite;
 
 public enum ResourceType { Food, Wood, Gold }
 public struct IncomeReport
@@ -12,14 +14,44 @@ public struct IncomeReport
 
 public class EconomyManager : MonoBehaviour
 {
+    private MapData mapData;
+    private BuildingManager buildingManager;
+
+    public void Initialize(MapData mapData, BuildingManager buildingManager)
+    {
+        this.mapData = mapData;
+        this.buildingManager = buildingManager;
+    }
     private int GetProductionFromWorkers(Building building)
-    {       
-       return building.data.GetWorkerOutput(building.assignedWorkers); 
+    {
+        //return building.data.GetWorkerOutput(building.assignedWorkers); 
+        int baseOutput = building.data.GetWorkerOutput(building.assignedWorkers);
+        if (baseOutput == 0) return 0;
+
+        int finalOutput = baseOutput;
+
+        // Környezeti bónuszok
+        if (building.buildingType == Building.BuildingType.Lumberyard)
+        {
+            int forestCount = CountAdjacentTiles(building.position, TileType.Forest);
+            // Minden 2 erdőszomszéd után +1 bónusz termelés dolgozónként
+            int bonusPerWorker = forestCount / 2;
+            finalOutput += (bonusPerWorker * building.assignedWorkers);
+        }
+
+        // Út csatlakozás bónusz (ha csatlakozik a városházához)
+        if (building.isConnectedToCapital)
+        {
+            finalOutput += 1;
+        }
+
+        return finalOutput;
     }
 
 
     public void ProcessTurn(PlayerProfile player)
     {
+        RecalculateRoadNetwork(player);
         RecalculateCapacities(player);
 
         IncomeReport report = GetProjectedIncome(player);
@@ -98,6 +130,8 @@ public class EconomyManager : MonoBehaviour
 
     public IncomeReport GetProjectedIncome(PlayerProfile player)
     {
+        RecalculateRoadNetwork(player);
+
         int totalGoldGenerated = 0;
         int totalWoodGenerated = 0;
         int totalFoodGenerated = 0;
@@ -138,5 +172,89 @@ public class EconomyManager : MonoBehaviour
             woodNet = player.baseWoodIncome + totalWoodGenerated,
             foodNet = player.baseFoodIncome + totalFoodGenerated - totalConsumption
         };
+    }
+
+    private void RecalculateRoadNetwork(PlayerProfile player)
+    {
+        foreach (var b in player.myBuildings) b.isConnectedToCapital = false;
+
+        Queue<Vector2Int> queue = new Queue<Vector2Int>();
+        HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
+
+        // Minden városházát hozzáadunk a kezdőpontokhoz
+        foreach (var b in player.myBuildings)
+        {
+            if (b.buildingType == Building.BuildingType.TownHall && b.isConstructed)
+            {
+                foreach (var tile in b.GetOccupiedTiles())
+                {
+                    if (!visited.Contains(tile))
+                    {
+                        queue.Enqueue(tile);
+                        visited.Add(tile);
+                    }
+                }
+                b.isConnectedToCapital = true;
+            }
+        }
+
+        // Flood Fill
+        while (queue.Count > 0)
+        {
+            Vector2Int current = queue.Dequeue();
+
+            foreach (var dir in Pathfinder.Directions)
+            {
+                Vector2Int next = current + dir;
+                if (visited.Contains(next) || !IsInsideMap(next)) continue;
+
+                Building b = buildingManager.GetBuildingAtTile(next);
+                                
+                if (b != null && b.isConstructed && b.ownerId == player.playerId)
+                {
+                    visited.Add(next);
+                    b.isConnectedToCapital = true;
+
+                    if (b.buildingType == Building.BuildingType.Road)
+                    {
+                        queue.Enqueue(next);
+                    }
+                    else
+                    {
+                        foreach (var t in b.GetOccupiedTiles()) visited.Add(t);
+                    }
+                }
+            }
+        }
+    }
+
+    private bool IsInsideMap(Vector2Int pos)
+    {
+        return pos.x >= 0 && pos.x < mapData.mapWidth &&
+               pos.y >= 0 && pos.y < mapData.mapHeight;
+    }
+
+    private int CountAdjacentTiles(Vector2Int center, TileType type)
+    {
+        int count = 0;
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                if (x == 0 && y == 0) continue;
+
+                Vector2Int checkPos = new Vector2Int(center.x + x, center.y + y);
+
+                if (checkPos.x < 0 || checkPos.x >= mapData.mapWidth ||
+                    checkPos.y < 0 || checkPos.y >= mapData.mapHeight) continue;
+
+                if (mapData.mapTiles[checkPos.x, checkPos.y].type == type)
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 }

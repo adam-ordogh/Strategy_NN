@@ -25,6 +25,7 @@ public class Building
     public int assignedWorkers;
 
     public bool isConstructed { get; private set; } = false;
+    public bool isConnectedToCapital;
 
     public BuildingType buildingType => data.buildingType;
     public int maxHealth => data.maxHealth;
