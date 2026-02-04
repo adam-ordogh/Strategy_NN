@@ -19,8 +19,9 @@ MonoBehaviour:
   attackPower: 10
   attackRange: 1
   movementRange: 4
-  trainingTime: 1
+  trainingTime: 2
   populationCost: 1
+  goldUpkeep: 1
   goldCost: 20
   foodCost: 20
   woodCost: 0

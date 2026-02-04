@@ -17,11 +17,12 @@ MonoBehaviour:
   movementCostModifier: Infinity
   constructionTurns: 0
   influenceRadius: 6
-  goldCost: 100
-  woodCost: 100
+  goldCost: 150
+  woodCost: 150
   populationProvided: 10
-  storageProvided: 50
+  storageProvided: 75
   jobSlotsProvided: 0
+  productionPerWorkerCount: 
   maxHealth: 200
   armorType: 3
   buildingSprite: {fileID: 21300000, guid: 0ed92434a63a45e4b8faae7665b237b0, type: 3}

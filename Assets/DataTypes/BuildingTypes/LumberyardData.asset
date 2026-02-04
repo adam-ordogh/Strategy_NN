@@ -15,10 +15,10 @@ MonoBehaviour:
   buildingType: 3
   size: {x: 1, y: 1}
   movementCostModifier: Infinity
-  constructionTurns: 1
+  constructionTurns: 2
   influenceRadius: 0
-  goldCost: 30
-  woodCost: 0
+  goldCost: 20
+  woodCost: 20
   populationProvided: 0
   storageProvided: 0
   jobSlotsProvided: 3

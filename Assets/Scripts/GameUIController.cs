@@ -2,6 +2,16 @@
 
 public class GameUIController : MonoBehaviour
 {
+    //public static class UIFormat
+    //{
+    //    public static string Gold(int val) => $"<sprite name=gold_resource_icon> {val}";
+    //    public static string Wood(int val) => $"<sprite name=wood_resource_icon> {val}";
+    //    public static string Food(int val) => $"<sprite name=food_resource_icon> {val}";
+    //    public static string Pop(int current, int max) => $"<sprite name=population_resource_icon> {current}/{max}";
+    //    public static string Housing(int val) => $"<sprite name=housing_resource_icon> {val}";
+    //    public static string Worker(int val) => $"<sprite name=population_resource_icon> {val}";
+    //}
+
     public GameInitializer initializer;
 
     // Turn panel
@@ -59,12 +69,20 @@ public class GameUIController : MonoBehaviour
             if (b.buildingType == Building.BuildingType.Farm) totalFoodWorkers += b.assignedWorkers;
         }
 
-        string housingColor = activePlayer.currentPopulation >= activePlayer.housingCapacity ? "red" : "white";
-        availablePopLabel.text = $"{activePlayer.availablePopulation} / {activePlayer.currentPopulation} <color={housingColor}>[Cap: {activePlayer.housingCapacity}]</color>";
+        //string housingColor = activePlayer.currentPopulation >= activePlayer.housingCapacity ? "red" : "white";
+        //availablePopLabel.text = $"{activePlayer.availablePopulation} / {activePlayer.currentPopulation} <color={housingColor}>[Cap: {activePlayer.housingCapacity}]</color>";
 
-        foodLabel.text = $"Food: {activePlayer.food}/{activePlayer.maxFood} {FormatIncome(report.foodNet)} ({totalFoodWorkers.ToString()} workers)";
-        woodLabel.text = $"Wood: {activePlayer.wood}/{activePlayer.maxWood} {FormatIncome(report.woodNet)} ({totalWoodWorkers.ToString()} workers)";
-        goldLabel.text = $"Gold: {activePlayer.gold}/{activePlayer.maxGold} {FormatIncome(report.goldNet)} ({totalGoldWorkers.ToString()} workers)";
+        //foodLabel.text = $"Food: {activePlayer.food}/{activePlayer.maxFood} {FormatIncome(report.foodNet)} ({totalFoodWorkers.ToString()} workers)";
+        //woodLabel.text = $"Wood: {activePlayer.wood}/{activePlayer.maxWood} {FormatIncome(report.woodNet)} ({totalWoodWorkers.ToString()} workers)";
+        //goldLabel.text = $"Gold: {activePlayer.gold}/{activePlayer.maxGold} {FormatIncome(report.goldNet)} ({totalGoldWorkers.ToString()} workers)";
+        // Housing/Population line
+        string housingColor = activePlayer.currentPopulation >= activePlayer.housingCapacity ? "red" : "white";
+
+        availablePopLabel.text = $"{activePlayer.availablePopulation} / {activePlayer.currentPopulation} <sprite name=\"population_resource_icon\"> <color={housingColor}>[Cap: {activePlayer.housingCapacity}]</color> <sprite name=\"housing_resource_icon\">";
+
+        foodLabel.text = $"<sprite name=\"food_resource_icon\"> {activePlayer.food}/{activePlayer.maxFood} {FormatIncome(report.foodNet)} ({totalFoodWorkers} <sprite name=\"population_resource_icon\">)";
+        woodLabel.text = $"<sprite name=\"wood_resource_icon\"> {activePlayer.wood}/{activePlayer.maxWood} {FormatIncome(report.woodNet)} ({totalWoodWorkers} <sprite name=\"population_resource_icon\">)";
+        goldLabel.text = $"<sprite name=\"gold_resource_icon\"> {activePlayer.gold}/{activePlayer.maxGold} {FormatIncome(report.goldNet)} ({totalGoldWorkers} <sprite name=\"population_resource_icon\">)";
     }
 
     private string FormatIncome(int income)

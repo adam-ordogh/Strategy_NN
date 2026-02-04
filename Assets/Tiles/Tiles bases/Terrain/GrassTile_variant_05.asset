@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fdb29b8a9d2144c45b916beb1435cec6, type: 3}
-  m_Name: GrassTile
+  m_Name: GrassTile_variant_05
   m_EditorClassIdentifier: Assembly-CSharp::ColorTile
-  m_Sprite: {fileID: -8774579561408971138, guid: d589023fb61d5114582baaf9384e14ed, type: 3}
-  m_Color: {r: 0.29411766, g: 0.54509807, b: 0.23137255, a: 1}
+  m_Sprite: {fileID: 6281422082187718540, guid: 4e030657ea9293c4aa52b6d5cc93c432, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1
     e01: 0
