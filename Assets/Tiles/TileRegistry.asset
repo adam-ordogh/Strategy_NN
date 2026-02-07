@@ -23,17 +23,29 @@ MonoBehaviour:
     - {fileID: 11400000, guid: feec444efcad33a478e00f2e880be848, type: 2}
     - {fileID: 11400000, guid: a69eb07125731a9439a658b37a33ec0e, type: 2}
     - {fileID: 11400000, guid: 1acee30c5ac0a45428e9795c6482a714, type: 2}
+    - {fileID: 11400000, guid: b0501118f7be2144a9fe4e9175267400, type: 2}
   - type: 2
     variants:
-    - {fileID: 11400000, guid: 304acc82377dfc543ba5270d787864cb, type: 2}
-  - type: 3
-    variants:
-    - {fileID: 11400000, guid: 901440130b9655144813bc096b4e65dd, type: 2}
+    - {fileID: 11400000, guid: d070cf5e07a67d04ba0e5b1dd06bc0f0, type: 2}
   - type: 4
     variants:
     - {fileID: 11400000, guid: 9a5560f6c63a8af4fb1615c11ab19daf, type: 2}
   - type: 5
-    variants: []
-  - type: 5
     variants:
     - {fileID: 11400000, guid: ea5262df122ca604c941ae42a846a3c4, type: 2}
+  featurePrefabs:
+  - type: 1
+    prefabs:
+    - {fileID: 4913933315765767106, guid: 283d872871202954aa15435e45da03cf, type: 3}
+    - {fileID: 3979943073001523152, guid: 2bfe8c59b017f104ea4fe4c4eb5b4680, type: 3}
+    - {fileID: 3979943073001523152, guid: d681201b8cc1ad5429df1d2501abdb38, type: 3}
+  mountainPrefabs:
+  - width: 3
+    prefabs:
+    - {fileID: 3979943073001523152, guid: a54ad9e0b72bc0241ac866ac7f5ace50, type: 3}
+  - width: 2
+    prefabs:
+    - {fileID: 3979943073001523152, guid: f544796dd651907439b8829db67a617a, type: 3}
+  - width: 1
+    prefabs:
+    - {fileID: 3979943073001523152, guid: e8c8034a077e9734aba1989e3f6f0731, type: 3}

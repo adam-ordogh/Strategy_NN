@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: 47a05c0bac404b040aa25032460bb5fc
+guid: 7e9d1610743e2de48b952f35556bc0ec
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 3301514309848207359
-    second: Grass_sprite_04_0
+      213: -9111269859762049092
+    second: tree_sprites_0
+  - first:
+      213: 7615690710881723222
+    second: tree_sprites_1
+  - first:
+      213: -7873408072638429366
+    second: tree_sprites_2
+  - first:
+      213: 49635384858091419
+    second: tree_sprites_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +46,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -113,23 +122,89 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Grass_sprite_04_0
+      name: tree_sprites_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 64
-        height: 64
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 6
+        y: 419
+        width: 85
+        height: 80
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: fff0f5bc5c551dd20800000000000000
-      internalID: 3301514309848207359
+      spriteID: cbfe82c06544e8180800000000000000
+      internalID: -9111269859762049092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tree_sprites_1
+      rect:
+        serializedVersion: 2
+        x: 94
+        y: 415
+        width: 67
+        height: 58
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 653e8551a5e50b960800000000000000
+      internalID: 7615690710881723222
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tree_sprites_2
+      rect:
+        serializedVersion: 2
+        x: 168
+        y: 408
+        width: 68
+        height: 62
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4781b2b2190cb290800000000000000
+      internalID: -7873408072638429366
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tree_sprites_3
+      rect:
+        serializedVersion: 2
+        x: 252
+        y: 423
+        width: 87
+        height: 77
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9f91ca9e1750b000800000000000000
+      internalID: 49635384858091419
       vertices: []
       indices: 
       edges: []
@@ -138,7 +213,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 66b0bc9baee788e4e8736b8fec936dfd
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +223,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Grass_sprite_04_0: 3301514309848207359
+      tree_sprites_0: -9111269859762049092
+      tree_sprites_1: 7615690710881723222
+      tree_sprites_2: -7873408072638429366
+      tree_sprites_3: 49635384858091419
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

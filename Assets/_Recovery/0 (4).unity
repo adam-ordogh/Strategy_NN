@@ -517,6 +517,37 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &111906537
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 111906538}
+  m_Layer: 0
+  m_Name: Terrain features
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &111906538
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 111906537}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1128334569}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &115572622
 GameObject:
   m_ObjectHideFlags: 0
@@ -1374,7 +1405,7 @@ MonoBehaviour:
   buildingMap: {fileID: 419390864}
   buildingBasePrefab: {fileID: 3022595312593997230, guid: 0fb192b3068b5eb41a482a427b4209f3, type: 3}
   unitBasePrefab: {fileID: 5403078191684729072, guid: 2ba69daaec2e94e4887e06470a3f685d, type: 3}
-  terrainFeaturesContainer: {fileID: 2016476110}
+  terrainFeaturesContainer: {fileID: 111906538}
   tileRegistry: {fileID: 11400000, guid: 774a2b478a623834da1c640f2f8430ee, type: 2}
   mapManager: {fileID: 580468270}
   buildingManager: {fileID: 489162583}
@@ -4374,6 +4405,7 @@ Transform:
   - {fileID: 386602577}
   - {fileID: 419390862}
   - {fileID: 41913889}
+  - {fileID: 111906538}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1130689406

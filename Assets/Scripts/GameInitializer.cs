@@ -21,6 +21,7 @@ public class GameInitializer : MonoBehaviour
     public GameObject buildingBasePrefab;
     public GameObject unitBasePrefab;
 
+    public Transform terrainFeaturesContainer;
     public TileRegistry tileRegistry;
     public MapVisualizer mapVisualizer;
     private UnitVisualizer unitVisualizer;
@@ -62,7 +63,7 @@ public class GameInitializer : MonoBehaviour
     public void InstantiateComponents()
     {
         mapGenerator = new MapGenerator(mapManager);
-        mapVisualizer = new MapVisualizer(map, featureMap, tileRegistry);
+        mapVisualizer = new MapVisualizer(map, featureMap, tileRegistry, terrainFeaturesContainer);
         unitVisualizer = new UnitVisualizer(unitBasePrefab, highlightMap, tileRegistry.GetTile(MapData.TileType.MovementHighlight));
         buildingVisualizer = new BuildingVisualizer(buildingMap, buildingBasePrefab);
         influenceVisualizer = new InfluenceVisualizer(influenceMap, tileRegistry.GetTile(MapData.TileType.Border));

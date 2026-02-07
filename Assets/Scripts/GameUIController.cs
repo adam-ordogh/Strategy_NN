@@ -78,9 +78,9 @@ public class GameUIController : MonoBehaviour
         // Housing/Population line
         string housingColor = activePlayer.currentPopulation >= activePlayer.housingCapacity ? "red" : "white";
 
-        availablePopLabel.text = $"{activePlayer.availablePopulation} / {activePlayer.currentPopulation} <sprite name=\"population_resource_icon\"> <color={housingColor}>[Cap: {activePlayer.housingCapacity}]</color> <sprite name=\"housing_resource_icon\">";
+        availablePopLabel.text = $"{activePlayer.availablePopulation} / {activePlayer.currentPopulation} <sprite name=\"population_resource_icon\"> <color={housingColor}>[{activePlayer.housingCapacity}]</color> <sprite name=\"housing_resource_icon\">";
 
-        foodLabel.text = $"<sprite name=\"food_resource_icon\"> {activePlayer.food}/{activePlayer.maxFood} {FormatIncome(report.foodNet)} ({totalFoodWorkers} <sprite name=\"population_resource_icon\">)";
+        foodLabel.text = $"<sprite name=\"food_resource_icon_02\"> {activePlayer.food}/{activePlayer.maxFood} {FormatIncome(report.foodNet)} ({totalFoodWorkers} <sprite name=\"population_resource_icon\">)";
         woodLabel.text = $"<sprite name=\"wood_resource_icon\"> {activePlayer.wood}/{activePlayer.maxWood} {FormatIncome(report.woodNet)} ({totalWoodWorkers} <sprite name=\"population_resource_icon\">)";
         goldLabel.text = $"<sprite name=\"gold_resource_icon\"> {activePlayer.gold}/{activePlayer.maxGold} {FormatIncome(report.goldNet)} ({totalGoldWorkers} <sprite name=\"population_resource_icon\">)";
     }
