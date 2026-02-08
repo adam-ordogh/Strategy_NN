@@ -45,16 +45,27 @@ public class BuildingVisualizer
             baseSr.sprite = building.data.constructionSprite;
             trimSr.enabled = false;
 
-            float spriteW = baseSr.sprite.bounds.size.x;
-            float spriteH = baseSr.sprite.bounds.size.y;
+            //float spriteW = baseSr.sprite.bounds.size.x;
+            //float spriteH = baseSr.sprite.bounds.size.y;
 
-            float scaleX = building.data.size.x / spriteW;
-            float scaleY = building.data.size.y / spriteH;
+            //float scaleX = building.data.size.x / spriteW;
+            //float scaleY = building.data.size.y / spriteH;
 
-            instance.transform.localScale = new Vector3(scaleX, scaleY, 1);
+            //instance.transform.localScale = new Vector3(scaleX, scaleY, 1);
+            instance.transform.localScale = Vector3.one;
+
+            // Set the SpriteRenderer to Tiled mode
+            baseSr.drawMode = SpriteDrawMode.Tiled;
+            baseSr.tileMode = SpriteTileMode.Continuous;
+
+            // Set the size to match the building's logical size (e.g., 2x1 tiles)
+            // This will repeat the middle ropes/dirt instead of stretching them
+            baseSr.size = new Vector2(building.data.size.x, building.data.size.y);
         }
         else
         {
+            baseSr.drawMode = SpriteDrawMode.Simple;
+
             baseSr.sprite = building.data.buildingSprite;
             trimSr.sprite = building.data.buildingColorTrim;
             trimSr.enabled = true;

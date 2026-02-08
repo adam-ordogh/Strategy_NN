@@ -39,13 +39,22 @@ MonoBehaviour:
     - {fileID: 4913933315765767106, guid: 283d872871202954aa15435e45da03cf, type: 3}
     - {fileID: 3979943073001523152, guid: 2bfe8c59b017f104ea4fe4c4eb5b4680, type: 3}
     - {fileID: 3979943073001523152, guid: d681201b8cc1ad5429df1d2501abdb38, type: 3}
-  mountainPrefabs:
+  mountainVariations:
   - width: 3
-    prefabs:
+    tallPeakPrefabs:
     - {fileID: 3979943073001523152, guid: a54ad9e0b72bc0241ac866ac7f5ace50, type: 3}
+    wideLaidOutPrefabs:
+    - {fileID: 3979943073001523152, guid: a35fa7a80c80ee04389ae79764fd083b, type: 3}
+    - {fileID: 3979943073001523152, guid: f5a83949b25bb2a438fdd8a6ab745a10, type: 3}
   - width: 2
-    prefabs:
+    tallPeakPrefabs:
     - {fileID: 3979943073001523152, guid: f544796dd651907439b8829db67a617a, type: 3}
+    wideLaidOutPrefabs:
+    - {fileID: 3979943073001523152, guid: 7669ea1e012779d4d88a4675185b57f3, type: 3}
+    - {fileID: 3979943073001523152, guid: a0a9a44d2fa2e474aa39e6dee22b7e03, type: 3}
   - width: 1
-    prefabs:
+    tallPeakPrefabs:
     - {fileID: 3979943073001523152, guid: e8c8034a077e9734aba1989e3f6f0731, type: 3}
+    wideLaidOutPrefabs:
+    - {fileID: 3979943073001523152, guid: 1486ecadffe3a714ea30c3ab885aad3e, type: 3}
+    - {fileID: 3979943073001523152, guid: bcdaa5e9dc71ee746995cc9e2fbd5829, type: 3}

@@ -51,34 +51,77 @@ public class MapVisualizer
         }
     }
 
+    //private void HandleMountainSpawning(MapData data, int x, int y, int width, int height)
+    //{
+    //    int runLength = 1;
+    //    while (x + runLength < width &&
+    //           data.GetTileData(x + runLength, y).type == MapData.TileType.Mountain &&
+    //           runLength < 3)
+    //    {
+    //        runLength++;
+    //    }
+
+    //    GameObject prefab = tileRegistry.GetMountainPrefab(runLength);
+
+    //    if (prefab != null)
+    //    {
+    //        float minYOffset = 0f; 
+    //        float maxYOffset = 0.2f; 
+
+    //        float randomY = y + Random.Range(minYOffset, maxYOffset);
+
+    //        Vector3 spawnPos = new Vector3(x, randomY, 0);
+    //        GameObject mountain = Object.Instantiate(prefab, spawnPos, Quaternion.identity, featureContainer);
+
+    //        SpriteRenderer sr = mountain.GetComponent<SpriteRenderer>();
+    //        if (sr != null)
+    //        {
+    //            RenderSorter.Sort(sr, randomY); 
+    //        }
+
+    //        for (int i = 0; i < runLength; i++)
+    //        {
+    //            occupiedTiles.Add(new Vector2Int(x + i, y));
+    //        }
+    //    }
+    //}
     private void HandleMountainSpawning(MapData data, int x, int y, int width, int height)
     {
         int runLength = 1;
         while (x + runLength < width &&
                data.GetTileData(x + runLength, y).type == MapData.TileType.Mountain &&
-               runLength < 3)
+               runLength < 3 &&
+               !occupiedTiles.Contains(new Vector2Int(x + runLength, y))) // Check if next tile is free
         {
             runLength++;
         }
 
-        GameObject prefab = tileRegistry.GetMountainPrefab(runLength);
+        // RANDOMIZATION: Pick a random width between 1 and the available runLength
+        //int chosenWidth = Random.Range(1, runLength + 1);
+
+        // NEIGHBOR CHECK: Is there a mountain ABOVE or to the LEFT?
+        bool hasMountainAbove = (y + 1 < height) && (data.GetTileData(x, y + 1).type == MapData.TileType.Mountain);
+        bool hasMountainLeft = (x - 1 >= 0) && (data.GetTileData(x - 1, y).type == MapData.TileType.Mountain);
+        
+        // If it's an edge (nothing above or left), we MUST use the tall variant for unit visibility
+        bool mustUseTallVariant = !hasMountainAbove || !hasMountainLeft;
+
+        GameObject prefab = tileRegistry.GetSpecificMountainPrefab(runLength, mustUseTallVariant);
 
         if (prefab != null)
         {
-            float minYOffset = 0f; 
-            float maxYOffset = 0.2f; 
-
-            float randomY = y + Random.Range(minYOffset, maxYOffset);
-
+            float randomY = y + Random.Range(0f, 0.2f);
             Vector3 spawnPos = new Vector3(x, randomY, 0);
+
             GameObject mountain = Object.Instantiate(prefab, spawnPos, Quaternion.identity, featureContainer);
 
             SpriteRenderer sr = mountain.GetComponent<SpriteRenderer>();
             if (sr != null)
             {
-                RenderSorter.Sort(sr, randomY); 
+                RenderSorter.Sort(sr, randomY);
             }
 
+            // Mark tiles as occupied based on the CHOSEN width
             for (int i = 0; i < runLength; i++)
             {
                 occupiedTiles.Add(new Vector2Int(x + i, y));

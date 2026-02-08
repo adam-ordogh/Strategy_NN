@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 8f728d246efd68f4295d7e15faff145c
+guid: bac8f8f3391a0324c96714dea8f61a45
 TextureImporter:
   internalIDToNameTable:
   - first:
@@ -20,6 +20,15 @@ TextureImporter:
   - first:
       213: 6560331238614016287
     second: mountain_sprites 1_5
+  - first:
+      213: -4730982023691326241
+    second: mountain_sprites 1_6
+  - first:
+      213: -5050660594752222351
+    second: mountain_sprites 1_7
+  - first:
+      213: -5697881035867234161
+    second: mountain_sprites 1_8
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -128,11 +137,11 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: mountain_sprites 1_0
+      name: mountain_sprites_peak3_1
       rect:
         serializedVersion: 2
-        x: 14
-        y: 394
+        x: 1
+        y: 410
         width: 160
         height: 95
       alignment: 6
@@ -150,11 +159,11 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mountain_sprites 1_1
+      name: mountain_sprites_peak2_1
       rect:
         serializedVersion: 2
-        x: 196
-        y: 391
+        x: 170
+        y: 407
         width: 121
         height: 85
       alignment: 6
@@ -172,11 +181,11 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mountain_sprites 1_2
+      name: mountain_sprites_peak1_1
       rect:
         serializedVersion: 2
-        x: 324
-        y: 392
+        x: 321
+        y: 409
         width: 59
         height: 68
       alignment: 6
@@ -194,13 +203,13 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mountain_sprites 1_3
+      name: mountain_sprites_flat3_1
       rect:
         serializedVersion: 2
-        x: 3
-        y: 266
+        x: 5
+        y: 307
         width: 160
-        height: 95
+        height: 85
       alignment: 6
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -216,13 +225,13 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mountain_sprites 1_4
+      name: mountain_sprites_flat2_1
       rect:
         serializedVersion: 2
-        x: 172
-        y: 263
+        x: 186
+        y: 304
         width: 121
-        height: 85
+        height: 81
       alignment: 6
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -238,11 +247,11 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mountain_sprites 1_5
+      name: mountain_sprites_flat1_1
       rect:
         serializedVersion: 2
-        x: 323
-        y: 265
+        x: 337
+        y: 306
         width: 59
         height: 68
       alignment: 6
@@ -259,11 +268,77 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: mountain_sprites_flat3_2
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 212
+        width: 150
+        height: 84
+      alignment: 6
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fdcae1f4aec285eb0800000000000000
+      internalID: -4730982023691326241
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mountain_sprites_flat2_2
+      rect:
+        serializedVersion: 2
+        x: 199
+        y: 203
+        width: 107
+        height: 87
+      alignment: 6
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17b0bb8d2f278e9b0800000000000000
+      internalID: -5050660594752222351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mountain_sprites_flat1_2
+      rect:
+        serializedVersion: 2
+        x: 327
+        y: 205
+        width: 49
+        height: 74
+      alignment: 6
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f80e2b4f26f0de0b0800000000000000
+      internalID: -5697881035867234161
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: b2e90225784714d4cbe4ded07bcc7e9e
+    spriteID: 143b3985458a313459b09626c195c011
     internalID: 0
     vertices: []
     indices: 
@@ -273,12 +348,15 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      mountain_sprites 1_0: -2685775944678312466
-      mountain_sprites 1_1: 1913318458189704500
-      mountain_sprites 1_2: -6207222977163529122
-      mountain_sprites 1_3: -5882390920706622292
-      mountain_sprites 1_4: -1068324657348789953
-      mountain_sprites 1_5: 6560331238614016287
+      mountain_sprites_flat1_1: 6560331238614016287
+      mountain_sprites_flat1_2: -5697881035867234161
+      mountain_sprites_flat2_1: -1068324657348789953
+      mountain_sprites_flat2_2: -5050660594752222351
+      mountain_sprites_flat3_1: -5882390920706622292
+      mountain_sprites_flat3_2: -4730982023691326241
+      mountain_sprites_peak1_1: -6207222977163529122
+      mountain_sprites_peak2_1: 1913318458189704500
+      mountain_sprites_peak3_1: -2685775944678312466
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

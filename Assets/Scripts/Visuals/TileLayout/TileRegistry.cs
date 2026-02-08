@@ -20,15 +20,16 @@ public class TileRegistry : ScriptableObject
     }
 
     [System.Serializable]
-    public struct MountainFeatureEntry
+    public struct MountainVariation
     {
-        public int width; // 1, 2, vagy 3
-        public GameObject[] prefabs;
+        public int width; // 1, 2, or 3
+        public GameObject[] tallPeakPrefabs;   // Use arrays for even more variety!
+        public GameObject[] wideLaidOutPrefabs;
     }
 
     public List<TileEntry> tiles;
     public List<FeatureEntry> featurePrefabs;
-    public List<MountainFeatureEntry> mountainPrefabs;
+    public List<MountainVariation> mountainVariations;
 
     private Dictionary<MapData.TileType, TileBase[]> lookup;
 
@@ -57,10 +58,49 @@ public class TileRegistry : ScriptableObject
         return entry.prefabs[Random.Range(0, entry.prefabs.Length)];
     }
 
-    public GameObject GetMountainPrefab(int width)
+    //public GameObject GetMountainPrefab(int width)
+    //{
+    //    var entry = mountainPrefabs.Find(e => e.width == width);
+    //    if (entry.prefabs == null || entry.prefabs.Length == 0) return null;
+    //    return entry.prefabs[Random.Range(0, entry.prefabs.Length)];
+    //}
+    //public GameObject GetSpecificMountainPrefab(int width, bool useTallVariant)
+    //{
+    //    MountainVariation variation = mountainVariations.Find(v => v.width == width);
+
+    //    // Check if we found a valid variation
+    //    if (variation.width == 0) return null;
+
+    //    if (useTallVariant)
+    //    {
+    //        if (variation.tallPeakPrefabs == null || variation.tallPeakPrefabs.Length == 0) return null;
+    //        return variation.tallPeakPrefabs[Random.Range(0, variation.tallPeakPrefabs.Length)];
+    //    }
+    //    else
+    //    {
+    //        if (variation.wideLaidOutPrefabs == null || variation.wideLaidOutPrefabs.Length == 0) return null;
+    //        return variation.wideLaidOutPrefabs[Random.Range(0, variation.wideLaidOutPrefabs.Length)];
+    //    }
+    //}
+
+    public GameObject GetSpecificMountainPrefab(int width, bool useTallVariant)
     {
-        var entry = mountainPrefabs.Find(e => e.width == width);
-        if (entry.prefabs == null || entry.prefabs.Length == 0) return null;
-        return entry.prefabs[Random.Range(0, entry.prefabs.Length)];
+        // Find the specific width entry
+        MountainVariation variation = mountainVariations.Find(v => v.width == width);
+
+        if (variation.width == 0) return null;
+
+        if (useTallVariant)
+        {
+            // Randomly pick from the 'Tall' array
+            if (variation.tallPeakPrefabs == null || variation.tallPeakPrefabs.Length == 0) return null;
+            return variation.tallPeakPrefabs[Random.Range(0, variation.tallPeakPrefabs.Length)];
+        }
+        else
+        {
+            // Randomly pick from the 'Wide/Flat' array
+            if (variation.wideLaidOutPrefabs == null || variation.wideLaidOutPrefabs.Length == 0) return null;
+            return variation.wideLaidOutPrefabs[Random.Range(0, variation.wideLaidOutPrefabs.Length)];
+        }
     }
 }

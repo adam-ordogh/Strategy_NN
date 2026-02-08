@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8870240739748740059}
   - component: {fileID: 2878523520304997389}
   m_Layer: 0
-  m_Name: mountain_01
+  m_Name: mountain_flat2_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -79,12 +79,12 @@ SpriteRenderer:
   m_SortingLayerID: 1638693551
   m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: -5882390920706622292, guid: 8f728d246efd68f4295d7e15faff145c, type: 3}
+  m_Sprite: {fileID: -5050660594752222351, guid: bac8f8f3391a0324c96714dea8f61a45, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 2.5, y: 1.484375}
+  m_Size: {x: 1.671875, y: 1.359375}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
