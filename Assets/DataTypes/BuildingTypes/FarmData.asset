@@ -18,14 +18,14 @@ MonoBehaviour:
   constructionTurns: 3
   influenceRadius: 0
   goldCost: 10
-  woodCost: 31
+  woodCost: 30
   populationProvided: 0
   storageProvided: 0
   jobSlotsProvided: 4
   productionPerWorkerCount: 03000000070000000c0000001200000016000000
   maxHealth: 50
   armorType: 3
-  buildingSprite: {fileID: 21300000, guid: 27989dd812ac11f459b7dca4641714f3, type: 3}
-  buildingColorTrim: {fileID: 0}
+  buildingSprite: {fileID: 21300000, guid: 3c90634929b34c2419f59db544cde559, type: 3}
+  buildingColorTrim: {fileID: 21300000, guid: 86640117dce167c46a110b8e220eb459, type: 3}
   constructionSprite: {fileID: -8306583155516149243, guid: b46974bf0cb5ecb4e9fcad78e196cb9f, type: 3}
   isSelectable: 1

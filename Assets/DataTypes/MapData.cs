@@ -12,7 +12,8 @@ public class MapData
         Mountain,
         Gold,     
         MovementHighlight,
-        Border
+        Border,
+        Road
     };
 
     [System.Serializable]

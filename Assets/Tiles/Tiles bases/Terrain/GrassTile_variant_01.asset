@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdb29b8a9d2144c45b916beb1435cec6, type: 3}
   m_Name: GrassTile_variant_01
   m_EditorClassIdentifier: Assembly-CSharp::ColorTile
-  m_Sprite: {fileID: -8515587444050811148, guid: 811ad2fa6638fb04fbbd5a2e050bc401, type: 3}
+  m_Sprite: {fileID: -1190249424, guid: 5444b2ae82c9151489bad9f69ebdf69c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1

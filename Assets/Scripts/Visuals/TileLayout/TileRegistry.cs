@@ -5,6 +5,9 @@ using UnityEngine.Tilemaps;
 [CreateAssetMenu(menuName = "Custom/TileRegistry")]
 public class TileRegistry : ScriptableObject
 {
+    [Header("Road System")]
+    public TileBase roadRuleTile;
+
     [System.Serializable]
     public struct TileEntry
     {
@@ -57,31 +60,6 @@ public class TileRegistry : ScriptableObject
         if (entry.prefabs == null || entry.prefabs.Length == 0) return null;
         return entry.prefabs[Random.Range(0, entry.prefabs.Length)];
     }
-
-    //public GameObject GetMountainPrefab(int width)
-    //{
-    //    var entry = mountainPrefabs.Find(e => e.width == width);
-    //    if (entry.prefabs == null || entry.prefabs.Length == 0) return null;
-    //    return entry.prefabs[Random.Range(0, entry.prefabs.Length)];
-    //}
-    //public GameObject GetSpecificMountainPrefab(int width, bool useTallVariant)
-    //{
-    //    MountainVariation variation = mountainVariations.Find(v => v.width == width);
-
-    //    // Check if we found a valid variation
-    //    if (variation.width == 0) return null;
-
-    //    if (useTallVariant)
-    //    {
-    //        if (variation.tallPeakPrefabs == null || variation.tallPeakPrefabs.Length == 0) return null;
-    //        return variation.tallPeakPrefabs[Random.Range(0, variation.tallPeakPrefabs.Length)];
-    //    }
-    //    else
-    //    {
-    //        if (variation.wideLaidOutPrefabs == null || variation.wideLaidOutPrefabs.Length == 0) return null;
-    //        return variation.wideLaidOutPrefabs[Random.Range(0, variation.wideLaidOutPrefabs.Length)];
-    //    }
-    //}
 
     public GameObject GetSpecificMountainPrefab(int width, bool useTallVariant)
     {

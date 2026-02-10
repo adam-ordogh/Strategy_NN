@@ -553,7 +553,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: terrain_tiles_20
+      name: grass01
       rect:
         serializedVersion: 2
         x: 0
@@ -575,7 +575,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: terrain_tiles_21
+      name: grass02
       rect:
         serializedVersion: 2
         x: 64
@@ -597,7 +597,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: terrain_tiles_22
+      name: grass03
       rect:
         serializedVersion: 2
         x: 128
@@ -619,7 +619,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: terrain_tiles_23
+      name: grass04
       rect:
         serializedVersion: 2
         x: 192
@@ -641,7 +641,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: terrain_tiles_24
+      name: grass05
       rect:
         serializedVersion: 2
         x: 256
@@ -663,7 +663,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: terrain_tiles_25
+      name: grass06
       rect:
         serializedVersion: 2
         x: 320
@@ -700,6 +700,12 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
+      grass01: -1190249424
+      grass02: 421271610
+      grass03: -1642896573
+      grass04: -53750524
+      grass05: -1872030511
+      grass06: -149649628
       terrain_tiles_0: -5807110336295036272
       terrain_tiles_1: -903350712
       terrain_tiles_10: -1289440065
@@ -713,12 +719,6 @@ TextureImporter:
       terrain_tiles_18: -1361963092
       terrain_tiles_19: 461572738
       terrain_tiles_2: -2015725412
-      terrain_tiles_20: -1190249424
-      terrain_tiles_21: 421271610
-      terrain_tiles_22: -1642896573
-      terrain_tiles_23: -53750524
-      terrain_tiles_24: -1872030511
-      terrain_tiles_25: -149649628
       terrain_tiles_3: 1612395542
       terrain_tiles_4: -152583986
       terrain_tiles_5: -494578433

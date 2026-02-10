@@ -15,7 +15,7 @@ MonoBehaviour:
   buildingType: 0
   size: {x: 3, y: 3}
   movementCostModifier: Infinity
-  constructionTurns: 0
+  constructionTurns: 1
   influenceRadius: 6
   goldCost: 150
   woodCost: 150
@@ -25,7 +25,7 @@ MonoBehaviour:
   productionPerWorkerCount: 
   maxHealth: 200
   armorType: 3
-  buildingSprite: {fileID: 21300000, guid: 0ed92434a63a45e4b8faae7665b237b0, type: 3}
+  buildingSprite: {fileID: 3267121844204002541, guid: e8797e1d4bb3ab9498f7595c000c7917, type: 3}
   buildingColorTrim: {fileID: 0}
   constructionSprite: {fileID: -8306583155516149243, guid: b46974bf0cb5ecb4e9fcad78e196cb9f, type: 3}
   isSelectable: 1

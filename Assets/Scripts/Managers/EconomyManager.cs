@@ -75,11 +75,6 @@ public class EconomyManager : MonoBehaviour
 
             // Ha a populáció csökken, ellenőrizzük a dolgozókat és egységeket, esetleg meghalhatnak?
         }
-        if (player.availablePopulation > (player.currentPopulation * 0.5f))
-        {
-            report.goldNet -= 5;
-            Debug.Log("High unemployment! Losing gold.");
-        }
 
         //player.gold = Mathf.Clamp(player.gold + report.goldNet, 0, player.maxGold);
         //player.wood = Mathf.Clamp(player.wood + report.woodNet, 0, player.maxWood);
@@ -180,6 +175,12 @@ public class EconomyManager : MonoBehaviour
         }
 
         int totalConsumption = player.myUnits.Count + totalWorkers;
+
+        if (player.availablePopulation > (player.currentPopulation * 0.5f))
+        {
+            totalGoldGenerated -= 5;
+            Debug.Log("High unemployment! Losing gold.");
+        }
 
         return new IncomeReport
         {

@@ -30,6 +30,7 @@ public class InfluenceManager : MonoBehaviour
         {
             for (int y = 0; y < mapData.mapHeight; y++)
             {
+                if (mapData.mapTiles[x, y].type == MapData.TileType.Mountain) continue;
                 mapData.influenceMap[x, y] = GetDominantPlayerAt(new Vector2Int(x, y));
             }
         }
@@ -51,6 +52,7 @@ public class InfluenceManager : MonoBehaviour
         {
             for (int y = startY; y <= endY; y++)
             {
+                if (mapData.mapTiles[x, y].type == MapData.TileType.Mountain) continue; // Nem számoljuk újra a hegyeket
                 mapData.influenceMap[x, y] = GetDominantPlayerAt(new Vector2Int(x, y));
             }
         }

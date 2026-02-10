@@ -25,7 +25,7 @@ MonoBehaviour:
   productionPerWorkerCount: 
   maxHealth: 30
   armorType: 3
-  buildingSprite: {fileID: 21300000, guid: d879f39899d6999448d6711c39f49a5e, type: 3}
-  buildingColorTrim: {fileID: 0}
+  buildingSprite: {fileID: 21300000, guid: 8961700be21014548ba8f51187564765, type: 3}
+  buildingColorTrim: {fileID: 21300000, guid: 57378c36cb594bf4895eab2fdb310371, type: 3}
   constructionSprite: {fileID: -8306583155516149243, guid: b46974bf0cb5ecb4e9fcad78e196cb9f, type: 3}
   isSelectable: 1
