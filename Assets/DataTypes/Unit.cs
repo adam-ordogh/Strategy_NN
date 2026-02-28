@@ -18,8 +18,8 @@ public class Unit
     public float remainingMovementPoints;
     public Vector2Int position;
 
-
     public event System.Action<Unit> OnUnitDeath;
+    public event System.Action<int, int> OnUnitHealthChanged;
 
     public Unit(UnitData data, int ownerId, Vector2Int startPos)
     {
@@ -38,6 +38,9 @@ public class Unit
     public void TakeDamage(int damage)
     {
         this.currentHealth -= damage;
+        currentHealth = Mathf.Max(0, currentHealth);
+
+        OnUnitHealthChanged?.Invoke(currentHealth, data.maxHealth);
         if (this.currentHealth <= 0)
         {
             OnUnitDeath?.Invoke(this);

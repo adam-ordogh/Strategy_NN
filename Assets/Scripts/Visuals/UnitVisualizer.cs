@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using System.Collections;
 using System.Linq;
+using UnityEngine.UIElements;
 
 public class UnitVisualizer
 {
     //private Tilemap unitTilemap;
     private Dictionary<Unit, GameObject> spawnedUnits = new Dictionary<Unit, GameObject>();
     private GameObject unitPrefab;
+    private GameObject healthBarPrefab;
 
     private Tilemap highlightTilemap;
     private TileBase highlightTile;
@@ -24,11 +26,12 @@ public class UnitVisualizer
 
     public bool IsBusy() => isProcessingQueue || animationQueue.Count > 0;
 
-    public UnitVisualizer(GameObject unitPrefab, Tilemap highlightTilemap, TileBase highlightTile)
+    public UnitVisualizer(GameObject unitPrefab, Tilemap highlightTilemap, TileBase highlightTile, GameObject healthBarPrefab)
     {
         this.unitPrefab = unitPrefab;
         this.highlightTilemap = highlightTilemap;
         this.highlightTile = highlightTile;
+        this.healthBarPrefab = healthBarPrefab;
     }
 
     public void SetAnimationRunner(VisualsManager runner)
@@ -139,6 +142,17 @@ public class UnitVisualizer
 
         Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y, 0);
         GameObject instance = Object.Instantiate(unitPrefab, worldPos, Quaternion.identity);
+
+        // ------
+        GameObject hpBarInstance = Object.Instantiate(healthBarPrefab, instance.transform);
+
+        hpBarInstance.transform.localScale = new Vector3(0.005f, 0.01f, 0.01f); 
+        hpBarInstance.transform.localPosition = new Vector3(0f, 1.2f, 0);
+
+        HealthBarController hb = hpBarInstance.GetComponent<HealthBarController>();
+        if (hb != null) hb.SetupForUnits(unit);
+
+        // ---------------------
 
         SpriteRenderer sr = instance.GetComponent<SpriteRenderer>();
         sr.sprite = unit.data.unitSprite;

@@ -31,6 +31,8 @@ public class Building
     public int maxHealth => data.maxHealth;
     public Vector2Int size => data.size;
 
+    public event System.Action<int, int> OnBuildingHealthChanged;
+
     public Building(BuildingData data, int ownerId, Vector2Int position)
     {
         this.data = data;
@@ -44,6 +46,10 @@ public class Building
     public void TakeDamage(int amount)
     {
         currentHp -= amount;
+        currentHp = Mathf.Max(0, currentHp);
+
+        OnBuildingHealthChanged?.Invoke(currentHp, maxHealth);
+
         Debug.Log($"Building at {position} took {amount} damage. HP: {currentHp}/{data.maxHealth}");
     }
 

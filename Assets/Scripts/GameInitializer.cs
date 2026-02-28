@@ -18,6 +18,7 @@ public class GameInitializer : MonoBehaviour
     public Tilemap unitMap;
     public Tilemap buildingMap;
 
+    public GameObject healthBarPrefab;
     public GameObject buildingBasePrefab;
     public GameObject unitBasePrefab;
 
@@ -64,8 +65,8 @@ public class GameInitializer : MonoBehaviour
     {
         mapGenerator = new MapGenerator(mapManager);
         mapVisualizer = new MapVisualizer(map, featureMap, tileRegistry, terrainFeaturesContainer);
-        unitVisualizer = new UnitVisualizer(unitBasePrefab, highlightMap, tileRegistry.GetTile(MapData.TileType.MovementHighlight));
-        buildingVisualizer = new BuildingVisualizer(buildingMap, buildingBasePrefab);
+        unitVisualizer = new UnitVisualizer(unitBasePrefab, highlightMap, tileRegistry.GetTile(MapData.TileType.MovementHighlight), healthBarPrefab);
+        buildingVisualizer = new BuildingVisualizer(buildingMap, buildingBasePrefab, healthBarPrefab);
         influenceVisualizer = new InfluenceVisualizer(influenceMap, tileRegistry.GetTile(MapData.TileType.Border));
 
         gameManager = new GameManager(mapManager, unitManager, buildingManager, productionManager, economyManager, unitVisualizer, buildingVisualizer);

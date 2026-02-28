@@ -7,57 +7,57 @@ public class BuildingVisualizer
     private Tilemap buildingTilemap;
     private Dictionary<Building, GameObject> spawnedBuildings = new Dictionary<Building, GameObject>();
     private GameObject buildingPrefab;
+    private GameObject healthBarPrefab;
     private TileRegistry tileRegistry => Resources.Load<TileRegistry>("TileRegistry");
 
-    public BuildingVisualizer(Tilemap buildingTilemap, GameObject buildingBasePrefab)
+    public BuildingVisualizer(Tilemap buildingTilemap, GameObject buildingBasePrefab, GameObject healthBarPrefab)
     {
         this.buildingTilemap = buildingTilemap;
         this.buildingPrefab = buildingBasePrefab;
+        this.healthBarPrefab = healthBarPrefab;
     }
 
     public void ShowBuilding(Building building)
     {
-        // 1. Handle Roads (Tilemap only, no prefab)
         if (building.data.buildingType == Building.BuildingType.Road && building.isConstructed)
         {
             SetRoadTiles(building, tileRegistry.roadRuleTile);
             return;
         }
 
-        // 2. Instantiate Prefab
-        // Since Pivot is Bottom-Left, instantiating at integer coordinates (position.x, position.y)
-        // aligns the sprite's bottom-left corner with the grid cell corner.
         Vector3 worldPos = new Vector3(building.position.x, building.position.y, 0);
         GameObject instance = Object.Instantiate(buildingPrefab, worldPos, Quaternion.identity);
 
-        // 3. Configure Renderer based on state
+        GameObject hpBarInstance = Object.Instantiate(healthBarPrefab, instance.transform);
+
+        hpBarInstance.transform.localPosition = new Vector3(building.data.size.x / 2f, building.data.size.y + 0.2f, 0);
+        HealthBarController hb = instance.GetComponentInChildren<HealthBarController>();
+        if (hb != null)
+        {
+            hb.SetupForBuildings(building);
+        }
+
         UpdateRendererState(instance, building);
 
-        // 4. Track instance
         spawnedBuildings[building] = instance;
     }
 
     public void UpdateVisualsToFinished(Building building)
     {
-        // 1. Set the footprint on the tilemap (Roads/Foundations)
         SetRoadTiles(building, tileRegistry.roadRuleTile);
 
-        // 2. Handle Logic
         if (building.data.buildingType == Building.BuildingType.Road)
         {
-            // If it was a construction site, destroy it and leave just the tiles
             RemoveBuilding(building);
         }
         else
         {
             if (spawnedBuildings.TryGetValue(building, out GameObject instance))
             {
-                // Re-run the renderer configuration to switch from Construction -> Finished
                 UpdateRendererState(instance, building);
             }
             else
             {
-                // Fallback: If for some reason the building isn't tracked, spawn it now
                 ShowBuilding(building);
             }
         }
@@ -65,14 +65,12 @@ public class BuildingVisualizer
 
     private void UpdateRendererState(GameObject instance, Building building)
     {
-        // 1. Get references to the permanent building visuals
         Transform mainSpriteTrans = instance.transform.Find("MainSprite");
         Transform trimTrans = instance.transform.Find("ColorTrim");
 
         SpriteRenderer baseSr = mainSpriteTrans.GetComponent<SpriteRenderer>();
         SpriteRenderer trimSr = trimTrans.GetComponent<SpriteRenderer>();
 
-        // 2. Handle Layer Sorting (Same as before)
         if (building.data.buildingType == Building.BuildingType.Road)
         {
             baseSr.sortingLayerName = "GroundObjects";
@@ -86,7 +84,6 @@ public class BuildingVisualizer
             RenderSorter.SortBuilding(instance, building.position.y);
         }
 
-        // 3. LOGIC SPLIT: Construction vs Finished
         string constructionObjName = "ConstructionLayer_TEMP";
         Transform existingConstruction = instance.transform.Find(constructionObjName);
 
@@ -96,11 +93,9 @@ public class BuildingVisualizer
             // STATE: UNDER CONSTRUCTION
             // ============================
 
-            // A. Hide the actual building visuals completely
             baseSr.enabled = false;
             trimSr.enabled = false;
 
-            // B. Create (or get) the temporary construction object
             GameObject constructionGO;
             SpriteRenderer constructionSr;
 
@@ -119,10 +114,9 @@ public class BuildingVisualizer
                 constructionSr = constructionGO.GetComponent<SpriteRenderer>();
             }
 
-            // C. Setup the Construction Sprite (Tiled)
             constructionSr.sprite = building.data.constructionSprite;
             constructionSr.sortingLayerName = baseSr.sortingLayerName;
-            constructionSr.sortingOrder = baseSr.sortingOrder; // Same sort order as building
+            constructionSr.sortingOrder = baseSr.sortingOrder;
 
             constructionSr.drawMode = SpriteDrawMode.Tiled;
             constructionSr.tileMode = SpriteTileMode.Continuous;
@@ -134,31 +128,25 @@ public class BuildingVisualizer
             // STATE: FINISHED
             // ============================
 
-            // A. Destroy the temporary construction object if it exists
             if (existingConstruction != null)
             {
                 Object.Destroy(existingConstruction.gameObject);
             }
 
-            // B. Enable and Reset the Main Base Sprite
             baseSr.enabled = true;
             baseSr.sprite = building.data.buildingSprite;
 
-            // STRICT RESET: Ensure no previous settings linger
             baseSr.drawMode = SpriteDrawMode.Simple;
             mainSpriteTrans.localScale = Vector3.one;
             mainSpriteTrans.localPosition = Vector3.zero;
 
-            // C. Enable and Reset the Trim Sprite
             trimSr.enabled = true;
             trimSr.sprite = building.data.buildingColorTrim;
 
-            // STRICT RESET: Ensure no previous settings linger
             trimSr.drawMode = SpriteDrawMode.Simple;
             trimTrans.localScale = Vector3.one;
             trimTrans.localPosition = Vector3.zero;
 
-            // Apply Color
             if (trimSr.sprite != null)
             {
                 trimSr.color = GetPlayerColor(building.ownerId);
@@ -168,7 +156,6 @@ public class BuildingVisualizer
                 trimSr.enabled = false;
             }
 
-            // Ensure the main parent object is also scale 1
             instance.transform.localScale = Vector3.one;
         }
     }
@@ -183,6 +170,7 @@ public class BuildingVisualizer
         {
             Object.Destroy(spawnedBuildings[building]);
             spawnedBuildings.Remove(building);
+
         }
     }
 
