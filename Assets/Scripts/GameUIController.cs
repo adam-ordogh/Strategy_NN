@@ -65,16 +65,10 @@ public class GameUIController : MonoBehaviour
         foreach (var b in activePlayer.myBuildings)
         {
             if (b.buildingType == Building.BuildingType.Mine) totalGoldWorkers += b.assignedWorkers;
-            if (b.buildingType == Building.BuildingType.Lumberyard) totalWoodWorkers += b.assignedWorkers;
+            if (b.buildingType == Building.BuildingType.Woodcutter) totalWoodWorkers += b.assignedWorkers;
             if (b.buildingType == Building.BuildingType.Farm) totalFoodWorkers += b.assignedWorkers;
         }
 
-        //string housingColor = activePlayer.currentPopulation >= activePlayer.housingCapacity ? "red" : "white";
-        //availablePopLabel.text = $"{activePlayer.availablePopulation} / {activePlayer.currentPopulation} <color={housingColor}>[Cap: {activePlayer.housingCapacity}]</color>";
-
-        //foodLabel.text = $"Food: {activePlayer.food}/{activePlayer.maxFood} {FormatIncome(report.foodNet)} ({totalFoodWorkers.ToString()} workers)";
-        //woodLabel.text = $"Wood: {activePlayer.wood}/{activePlayer.maxWood} {FormatIncome(report.woodNet)} ({totalWoodWorkers.ToString()} workers)";
-        //goldLabel.text = $"Gold: {activePlayer.gold}/{activePlayer.maxGold} {FormatIncome(report.goldNet)} ({totalGoldWorkers.ToString()} workers)";
         // Housing/Population line
         string housingColor = activePlayer.currentPopulation >= activePlayer.housingCapacity ? "red" : "white";
 

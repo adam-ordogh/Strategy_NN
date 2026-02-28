@@ -177,7 +177,7 @@ public class BuildingManager : MonoBehaviour
                         //}
 
                         // ---  1 mezőnyi rés ---
-                        if (neighborBuilding.buildingType == Building.BuildingType.Barracks || neighborBuilding.buildingType == Building.BuildingType.TownHall)
+                        if (neighborBuilding.buildingType == Building.BuildingType.Barracks || neighborBuilding.buildingType == Building.BuildingType.TownCenter)
                         {
                             return false;
                         }
@@ -207,7 +207,7 @@ public class BuildingManager : MonoBehaviour
         }
 
         // 2. Lumberyards must be next to a Forest
-        if (template.buildingType == Building.BuildingType.Lumberyard)
+        if (template.buildingType == Building.BuildingType.Woodcutter)
         {
             return HasAdjacentTileType(pos, TileType.Forest);
         }

@@ -31,7 +31,7 @@ public class EconomyManager : MonoBehaviour
         int finalOutput = baseOutput;
 
         // Környezeti bónuszok
-        if (building.buildingType == Building.BuildingType.Lumberyard)
+        if (building.buildingType == Building.BuildingType.Woodcutter)
         {
             int forestCount = CountAdjacentTiles(building.position, TileType.Forest);
             // Minden 2 erdőszomszéd után +1 bónusz termelés dolgozónként
@@ -118,7 +118,7 @@ public class EconomyManager : MonoBehaviour
                 case Building.BuildingType.Mine:
                     player.currentGoldWorkers += building.assignedWorkers;
                     break;
-                case Building.BuildingType.Lumberyard:
+                case Building.BuildingType.Woodcutter:
                     player.currentWoodWorkers += building.assignedWorkers;
                     break;
                 case Building.BuildingType.Farm:
@@ -129,7 +129,7 @@ public class EconomyManager : MonoBehaviour
                     player.maxWood += building.data.storageProvided;
                     player.maxFood += building.data.storageProvided;
                     break;
-                case Building.BuildingType.TownHall:
+                case Building.BuildingType.TownCenter:
                     player.maxGold += building.data.storageProvided;
                     player.maxWood += building.data.storageProvided;
                     player.maxFood += building.data.storageProvided;
@@ -159,7 +159,7 @@ public class EconomyManager : MonoBehaviour
                 case Building.BuildingType.Mine:
                     totalGoldGenerated += production;
                     break;
-                case Building.BuildingType.Lumberyard:
+                case Building.BuildingType.Woodcutter:
                     totalWoodGenerated += production;
                     break;
                 case Building.BuildingType.Farm:
@@ -200,7 +200,7 @@ public class EconomyManager : MonoBehaviour
         // Minden városházát hozzáadunk a kezdőpontokhoz
         foreach (var b in player.myBuildings)
         {
-            if (b.buildingType == Building.BuildingType.TownHall && b.isConstructed)
+            if (b.buildingType == Building.BuildingType.TownCenter && b.isConstructed)
             {
                 foreach (var tile in b.GetOccupiedTiles())
                 {

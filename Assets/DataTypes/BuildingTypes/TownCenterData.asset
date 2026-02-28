@@ -10,22 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4963c817adea2bb4ea91182658aeb31d, type: 3}
-  m_Name: LumberyardData
+  m_Name: TownCenterData
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  buildingType: 3
-  size: {x: 1, y: 1}
+  buildingType: 0
+  size: {x: 3, y: 3}
   movementCostModifier: Infinity
-  constructionTurns: 2
-  influenceRadius: 0
-  goldCost: 20
-  woodCost: 20
-  populationProvided: 0
-  storageProvided: 0
-  jobSlotsProvided: 3
-  productionPerWorkerCount: 030000000600000009000000
-  maxHealth: 40
+  constructionTurns: 1
+  influenceRadius: 6
+  goldCost: 150
+  woodCost: 150
+  populationProvided: 10
+  storageProvided: 75
+  jobSlotsProvided: 0
+  productionPerWorkerCount: 
+  maxHealth: 200
   armorType: 3
-  buildingSprite: {fileID: 21300000, guid: 610d32bca19a560478f792f9efff3956, type: 3}
-  buildingColorTrim: {fileID: 21300000, guid: 357578664bec09940ae8d2a5bec3ee3b, type: 3}
+  buildingSprite: {fileID: 21300000, guid: fd8a87235f16662479ea568dfd898f21, type: 3}
+  buildingColorTrim: {fileID: 21300000, guid: 03f599c07251b60419cc14621b1a4ee1, type: 3}
   constructionSprite: {fileID: -8306583155516149243, guid: b46974bf0cb5ecb4e9fcad78e196cb9f, type: 3}
   isSelectable: 1

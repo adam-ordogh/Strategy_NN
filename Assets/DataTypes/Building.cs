@@ -5,10 +5,10 @@ public class Building
 {
     public enum BuildingType
     {
-        TownHall,
+        TownCenter,
         Barracks,
         House,
-        Lumberyard, //Woodcamp jobban hangzik
+        Woodcutter, //Woodcamp jobban hangzik
         Farm,
         Mine,
         Outpost,
