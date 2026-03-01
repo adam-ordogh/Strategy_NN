@@ -32,6 +32,7 @@ public class Building
     public Vector2Int size => data.size;
 
     public event System.Action<int, int> OnBuildingHealthChanged;
+    public event System.Action<int> OnWorkersChanged;
 
     public Building(BuildingData data, int ownerId, Vector2Int position)
     {
@@ -73,6 +74,7 @@ public class Building
         {
             assignedWorkers++;
             //player.OnResourcesChanged?.Invoke();
+            OnWorkersChanged?.Invoke(assignedWorkers);
             return true;
         }
         return false;
@@ -84,6 +86,7 @@ public class Building
         {
             assignedWorkers--;
             //player.OnResourcesChanged?.Invoke();
+            OnWorkersChanged?.Invoke(assignedWorkers);
             return true;
         }
         return false;

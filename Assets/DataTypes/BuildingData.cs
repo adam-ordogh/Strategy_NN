@@ -47,4 +47,5 @@ public class BuildingData : ScriptableObject
 
     [Header("User Interaction")]
     public bool isSelectable;
+    public string description;
 }

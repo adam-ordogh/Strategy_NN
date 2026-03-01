@@ -24,6 +24,7 @@ public class InputController : MonoBehaviour
     private Vector2Int? selectedUnitPos;
     public BuildingData activeBuildingType;
     public Building selectedBuilding;
+    private Building currentlyHoveredBuilding;
 
     private Vector2Int? dragStartPos;
     private List<Vector2Int> previewRoadPath = new List<Vector2Int>();
@@ -37,6 +38,9 @@ public class InputController : MonoBehaviour
         {
             return;
         }
+
+        HandleGlobalUIInput();
+        HandleHoverLogic();
 
         if (activeBuildingType != null)
         {
@@ -339,6 +343,43 @@ public class InputController : MonoBehaviour
             dragStartPos = null;
             previewRoadPath = null;
             unitVisualizer.ClearHighlights();
+        }
+    }
+
+    private void HandleGlobalUIInput()
+    {
+        bool isAltPressed = Keyboard.current.leftAltKey.isPressed;
+
+        WorkerBarController.OnToggleGlobalShow?.Invoke(isAltPressed);
+    }
+
+    private void HandleHoverLogic()
+    {
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        Vector3 worldPos = mainCamera.ScreenToWorldPoint(mousePos);
+        Vector2Int tilePos = new Vector2Int(Mathf.FloorToInt(worldPos.x), Mathf.FloorToInt(worldPos.y));
+
+        Building hovered = buildingManager.GetBuildingAtTile(tilePos);
+
+        if (hovered != currentlyHoveredBuilding)
+        {
+            if (currentlyHoveredBuilding != null)
+                ToggleWorkerBar(currentlyHoveredBuilding, false);
+
+            if (hovered != null)
+                ToggleWorkerBar(hovered, true);
+
+            currentlyHoveredBuilding = hovered;
+        }
+    }
+
+    private void ToggleWorkerBar(Building building, bool show)
+    {
+        GameObject visual = buildingVisualizer.GetVisualInstance(building);
+        if (visual != null)
+        {
+            var wb = visual.GetComponentInChildren<WorkerBarController>(true);
+            if (wb != null) wb.SetHovered(show);
         }
     }
 }

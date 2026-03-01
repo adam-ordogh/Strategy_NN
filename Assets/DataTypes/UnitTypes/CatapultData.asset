@@ -15,7 +15,7 @@ MonoBehaviour:
   unitType: 3
   attackType: 3
   armorType: 2
-  maxHealth: 120
+  maxHealth: 80
   attackPower: 15
   attackRange: 4
   movementRange: 3

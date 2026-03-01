@@ -1,25 +1,31 @@
 fileFormatVersion: 2
-guid: f1afd36239a4595419351a2c313991eb
+guid: d783232ffaf9d4843864f8587bf5a189
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3954634823792190095
-    second: resource_icons 1_0
+      213: 5718652077665772799
+    second: UI_icons 1_0
   - first:
-      213: 7240226198455798008
-    second: resource_icons 1_1
+      213: 7139734586359901013
+    second: UI_icons 1_1
   - first:
-      213: -8430924045400529488
-    second: resource_icons 1_2
+      213: -8299865889565138594
+    second: UI_icons 1_2
   - first:
-      213: 8758563564223807618
-    second: resource_icons 1_3
+      213: 3079647216538166869
+    second: UI_icons 1_3
   - first:
-      213: -4083140924035399584
-    second: resource_icons 1_4
+      213: 8216218300591019976
+    second: UI_icons 1_4
   - first:
-      213: 2074170620640453185
-    second: resource_icons 1_5
+      213: -5386414246205620078
+    second: UI_icons 1_5
+  - first:
+      213: -9080636892078673615
+    second: UI_icons 1_6
+  - first:
+      213: -8763430414807720218
+    second: UI_icons 1_7
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -52,7 +58,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -66,7 +72,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 64
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -90,7 +96,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -128,133 +134,177 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: gold_resource_icon
+      name: UI_icons 1_0
       rect:
         serializedVersion: 2
-        x: 14
-        y: 471
-        width: 35
-        height: 22
+        x: 13
+        y: 22
+        width: 37
+        height: 24
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 17d1a7f84905e19c0800000000000000
-      internalID: -3954634823792190095
+      spriteID: ff4615314cbbc5f40800000000000000
+      internalID: 5718652077665772799
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: food_resource_icon_01
+      name: UI_icons 1_1
       rect:
         serializedVersion: 2
-        x: 70
-        y: 464
-        width: 54
-        height: 29
+        x: 69
+        y: 15
+        width: 56
+        height: 31
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8f84f6cfd537a7460800000000000000
-      internalID: 7240226198455798008
+      spriteID: 55b6d8247ce651360800000000000000
+      internalID: 7139734586359901013
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: food_resource_icon_02
+      name: UI_icons 1_2
       rect:
         serializedVersion: 2
-        x: 147
-        y: 463
-        width: 29
-        height: 37
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0b52a99ef375ffa80800000000000000
-      internalID: -8430924045400529488
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wood_resource_icon
-      rect:
-        serializedVersion: 2
-        x: 206
-        y: 462
-        width: 38
+        x: 146
+        y: 14
+        width: 31
         height: 39
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2804d34282bac8970800000000000000
-      internalID: 8758563564223807618
+      spriteID: e51a611b2f3f0dc80800000000000000
+      internalID: -8299865889565138594
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: population_resource_icon
+      name: UI_icons 1_3
       rect:
         serializedVersion: 2
-        x: 270
-        y: 457
-        width: 36
-        height: 44
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 060820786f4c557c0800000000000000
-      internalID: -4083140924035399584
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: housing_resource_icon
-      rect:
-        serializedVersion: 2
-        x: 332
-        y: 461
+        x: 205
+        y: 13
         width: 40
-        height: 43
+        height: 41
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 14263d6a03fe8cc10800000000000000
-      internalID: 2074170620640453185
+      spriteID: 5562747a3da1dba20800000000000000
+      internalID: 3079647216538166869
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_icons 1_4
+      rect:
+        serializedVersion: 2
+        x: 269
+        y: 8
+        width: 38
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8c79ac3530fd50270800000000000000
+      internalID: 8216218300591019976
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_icons 1_5
+      rect:
+        serializedVersion: 2
+        x: 331
+        y: 12
+        width: 42
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2908fc118cc9f35b0800000000000000
+      internalID: -5386414246205620078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_icons 1_6
+      rect:
+        serializedVersion: 2
+        x: 393
+        y: 9
+        width: 48
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 131f751abd81bf180800000000000000
+      internalID: -9080636892078673615
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UI_icons 1_7
+      rect:
+        serializedVersion: 2
+        x: 458
+        y: 9
+        width: 48
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ee1887e77a026680800000000000000
+      internalID: -8763430414807720218
       vertices: []
       indices: 
       edges: []
@@ -263,7 +313,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 2038877884947de4ea9e298d850569dc
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -273,12 +323,14 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      food_resource_icon_01: 7240226198455798008
-      food_resource_icon_02: -8430924045400529488
-      gold_resource_icon: -3954634823792190095
-      housing_resource_icon: 2074170620640453185
-      population_resource_icon: -4083140924035399584
-      wood_resource_icon: 8758563564223807618
+      UI_icons 1_0: 5718652077665772799
+      UI_icons 1_1: 7139734586359901013
+      UI_icons 1_2: -8299865889565138594
+      UI_icons 1_3: 3079647216538166869
+      UI_icons 1_4: 8216218300591019976
+      UI_icons 1_5: -5386414246205620078
+      UI_icons 1_6: -9080636892078673615
+      UI_icons 1_7: -8763430414807720218
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

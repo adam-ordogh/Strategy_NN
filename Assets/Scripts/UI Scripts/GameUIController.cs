@@ -2,16 +2,6 @@
 
 public class GameUIController : MonoBehaviour
 {
-    //public static class UIFormat
-    //{
-    //    public static string Gold(int val) => $"<sprite name=gold_resource_icon> {val}";
-    //    public static string Wood(int val) => $"<sprite name=wood_resource_icon> {val}";
-    //    public static string Food(int val) => $"<sprite name=food_resource_icon> {val}";
-    //    public static string Pop(int current, int max) => $"<sprite name=population_resource_icon> {current}/{max}";
-    //    public static string Housing(int val) => $"<sprite name=housing_resource_icon> {val}";
-    //    public static string Worker(int val) => $"<sprite name=population_resource_icon> {val}";
-    //}
-
     public GameInitializer initializer;
 
     // Turn panel

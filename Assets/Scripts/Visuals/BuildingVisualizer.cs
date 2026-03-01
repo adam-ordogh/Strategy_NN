@@ -8,13 +8,15 @@ public class BuildingVisualizer
     private Dictionary<Building, GameObject> spawnedBuildings = new Dictionary<Building, GameObject>();
     private GameObject buildingPrefab;
     private GameObject healthBarPrefab;
+    private GameObject workerBarPrefab;
     private TileRegistry tileRegistry => Resources.Load<TileRegistry>("TileRegistry");
 
-    public BuildingVisualizer(Tilemap buildingTilemap, GameObject buildingBasePrefab, GameObject healthBarPrefab)
+    public BuildingVisualizer(Tilemap buildingTilemap, GameObject buildingBasePrefab, GameObject healthBarPrefab, GameObject workerBarPrefab)
     {
         this.buildingTilemap = buildingTilemap;
         this.buildingPrefab = buildingBasePrefab;
         this.healthBarPrefab = healthBarPrefab;
+        this.workerBarPrefab = workerBarPrefab;
     }
 
     public void ShowBuilding(Building building)
@@ -29,12 +31,19 @@ public class BuildingVisualizer
         GameObject instance = Object.Instantiate(buildingPrefab, worldPos, Quaternion.identity);
 
         GameObject hpBarInstance = Object.Instantiate(healthBarPrefab, instance.transform);
-
         hpBarInstance.transform.localPosition = new Vector3(building.data.size.x / 2f, building.data.size.y + 0.2f, 0);
         HealthBarController hb = instance.GetComponentInChildren<HealthBarController>();
         if (hb != null)
         {
             hb.SetupForBuildings(building);
+        }
+
+        GameObject workerBarInstance = Object.Instantiate(workerBarPrefab, instance.transform);
+        workerBarInstance.transform.localPosition = new Vector3(building.data.size.x / 2f, building.data.size.y + 0.6f, 0);
+        WorkerBarController wb = workerBarInstance.GetComponent<WorkerBarController>();
+        if (wb != null)
+        {
+            wb.Setup(building);
         }
 
         UpdateRendererState(instance, building);
@@ -191,5 +200,14 @@ public class BuildingVisualizer
             2 => new Color(1f, 0.3f, 0.3f), // Soft red
             _ => Color.white
         };
+    }
+
+    public GameObject GetVisualInstance(Building building)
+    {
+        if (spawnedBuildings.TryGetValue(building, out GameObject instance))
+        {
+            return instance;
+        }
+        return null;
     }
 }
