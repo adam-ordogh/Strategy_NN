@@ -61,70 +61,90 @@ public class AiPlayerController
                 ExecuteMilitaryMicro();
                 break;
             case AIGoal.FocusExpansion:
-                // Expand logic
+                ExecuteExpansionMicro();
                 break;
         }
     }
 
     private void ExecuteEconomyMicro()
     {
-        // 1. First, move workers from low-priority jobs to high-priority needs
         RebalanceWorkers();
-
-        // 2. Assign any remaining idle workers (from new births)
         AssignIdleWorkers();
 
-        // 3. Proceed with building logic...
-        IncomeReport income = gameManager.economyManager.GetProjectedIncome(myProfile);
+        // Track what we've decided to build THIS TURN 
+        // This solves the "Income Blindness" problem
+        int farmsPlannedThisTurn = 0;
+        int woodPlannedThisTurn = 0;
+        int minesPlannedThisTurn = 0;
 
+        bool madeProgress = true;
         int safetyBreak = 0;
-        bool builtSomething = true;
 
-        while (builtSomething && safetyBreak < 10)
+        while (madeProgress && safetyBreak < 10)
         {
-            Debug.Log("AI trying to build.");
-
-            builtSomething = false;
+            madeProgress = false;
             safetyBreak++;
 
-            //IncomeReport income = gameManager.economyManager.GetProjectedIncome(myProfile);
+            IncomeReport income = gameManager.economyManager.GetProjectedIncome(myProfile);
 
-            // Count how many buildings of each type are ALREADY being built
-            // This prevents the AI from spamming 10 farms while waiting for the first one to finish
-            int farmsInConstruction = myProfile.myBuildings.Count(b => !b.isConstructed && b.buildingType == Building.BuildingType.Farm);
-            int woodsInConstruction = myProfile.myBuildings.Count(b => !b.isConstructed && b.buildingType == Building.BuildingType.Woodcutter);
-            int minesInConstruction = myProfile.myBuildings.Count(b => !b.isConstructed && b.buildingType == Building.BuildingType.Mine);
+            // Calculate "Effective Income" (Projected + what we just placed)
+            // Adjust the '5' based on your average building output
+            int effectiveFood = income.foodNet + (farmsPlannedThisTurn * 5);
+            int effectiveWood = income.woodNet + (woodPlannedThisTurn * 5);
+            int effectiveGold = income.goldNet + (minesPlannedThisTurn * 5);
 
-            // PRIORITY 1: HOUSING
-            // If we have 1 or fewer free people, OR we are at our max capacity, build a house.
-            if (myProfile.availablePopulation <= 1 || myProfile.currentPopulation >= myProfile.housingCapacity - 1)
+            int foodTarget = 5 + (myProfile.currentPopulation / 5);
+
+            // --- PRIORITY 1: UNEMPLOYMENT ---
+            if (IsSufferingUnemployment())
             {
-                if (TryBuild(Building.BuildingType.House)) { builtSomething = true; continue; }
+                // If food is low, try to build a farm. 
+                // If it succeeds, we 'madeProgress' and the loop continues.
+                if (effectiveFood < foodTarget)
+                {
+                    if (TryBuild(Building.BuildingType.Farm)) { farmsPlannedThisTurn++; madeProgress = true; }
+                }
+
+                // If we didn't build a farm (or food was already fine), check Wood/Gold
+                if (!madeProgress)
+                {
+                    // Better ratio: Try to keep Wood and Gold roughly equal (1:1)
+                    if (effectiveWood < effectiveGold)
+                    {
+                        if (TryBuild(Building.BuildingType.Woodcutter)) { woodPlannedThisTurn++; madeProgress = true; }
+                        // Fallback to mine if woodcutter failed
+                        else if (TryBuild(Building.BuildingType.Mine)) { minesPlannedThisTurn++; madeProgress = true; }
+                    }
+                    else
+                    {
+                        if (TryBuild(Building.BuildingType.Mine)) { minesPlannedThisTurn++; madeProgress = true; }
+                        // Fallback to woodcutter if mine failed
+                        else if (TryBuild(Building.BuildingType.Woodcutter)) { woodPlannedThisTurn++; madeProgress = true; }
+                    }
+                }
+            }
+            // --- PRIORITY 2: HOUSING (Only if no unemployment) ---
+            else if (effectiveFood > 2) // Simplified check
+            {
+                int totalJobSlots = myProfile.myBuildings.Sum(b => b.data.jobSlotsProvided);
+                int totalWorkers = myProfile.myBuildings.Sum(b => b.assignedWorkers);
+                if (totalJobSlots - totalWorkers <= 1)
+                {
+                    if (TryBuild(Building.BuildingType.House)) madeProgress = true;
+                }
             }
 
-            // PRIORITY 2: FOOD
-            // We assume a farm will eventually provide ~5 food. 
-            // If (current income + projected income from construction) is low, build one.
-            if (income.foodNet + (farmsInConstruction * 5) < 5)
-            {
-                if (TryBuild(Building.BuildingType.Farm)) { builtSomething = true; continue; }
-            }
-
-            // PRIORITY 3: WOOD
-            if (income.woodNet + (woodsInConstruction * 5) < 5)
-            {
-                Debug.Log("AI building woodcutter.");
-                if (TryBuild(Building.BuildingType.Woodcutter)) { builtSomething = true; continue; }
-            }
-
-            // PRIORITY 4: GOLD
-            if (income.goldNet + (minesInConstruction * 5) < 5)
-            {
-                if (TryBuild(Building.BuildingType.Mine)) { builtSomething = true; continue; }
-            }
+            // If we successfully placed a building, we might have new jobs to fill immediately
+            if (madeProgress) AssignIdleWorkers();
         }
     }
 
+    private void ExecuteExpansionMicro()
+    {
+        // 1. Can we build a new Town Hall?
+        // 2. If yes, find the best location and build it.
+        Debug.Log($"AI Player {playerId} is executing Expansion Micro.");
+    }
 
     private void ExecuteMilitaryMicro()
     {
@@ -134,16 +154,17 @@ public class AiPlayerController
         Debug.Log($"AI Player {playerId} is executing Military Micro.");
     }
 
+    private bool IsSufferingUnemployment()
+    {
+        return myProfile.availablePopulation > (myProfile.currentPopulation * 0.5f);
+    }
+
     private void RebalanceWorkers()
     {
-        // We check the projected income. If food is negative, we have an emergency.
         IncomeReport income = gameManager.economyManager.GetProjectedIncome(myProfile);
 
-        // EMERGENCY: Starvation/Zero Growth Prevention
-        // If food is low, take workers from Wood and Gold to fill Farms.
         if (income.foodNet < 2)
         {
-            // Get all workers currently in non-food buildings
             var resourceBuildings = myProfile.myBuildings
                 .Where(b => b.buildingType == Building.BuildingType.Woodcutter ||
                             b.buildingType == Building.BuildingType.Mine)
@@ -151,11 +172,9 @@ public class AiPlayerController
 
             foreach (var b in resourceBuildings)
             {
-                // Pull workers out until food is stable or building is empty
                 while (b.assignedWorkers > 0 && income.foodNet < 5)
                 {
                     b.TryRemoveWorker(myProfile);
-                    // Recalculate income after each removal to see if we've pulled enough
                     income = gameManager.economyManager.GetProjectedIncome(myProfile);
                 }
             }
@@ -184,47 +203,70 @@ public class AiPlayerController
         }
     }
 
+    //private Vector2Int? FindBestPlacementTile(BuildingData template)
+    //{
+    //    if (myProfile.myBuildings.Count == 0) return null;
+
+    //    Vector2Int center = myProfile.myBuildings[0].position;
+    //    Vector2Int bestTile = new Vector2Int(-1, -1);
+    //    float highestScore = float.MinValue;
+    //    bool foundAny = false;
+
+    //    int searchRadius = 10; // Itt az infulence bezőket kell néznie inkább
+
+    //    for (int x = -searchRadius; x <= searchRadius; x++)
+    //    {
+    //        for (int y = -searchRadius; y <= searchRadius; y++)
+    //        {
+    //            Vector2Int checkPos = new Vector2Int(center.x + x, center.y + y);
+
+    //            if (gameManager.buildingManager.CanPlaceBuilding(template, checkPos, playerId))
+    //            {
+    //                float currentScore = EvaluateTileScore(checkPos, template);
+    //                if (currentScore > highestScore)
+    //                {
+    //                    highestScore = currentScore;
+    //                    bestTile = checkPos;
+    //                    foundAny = true;
+    //                }
+    //            }
+    //        }
+    //    }
+
+    //    return foundAny ? bestTile : (Vector2Int?)null;
+    //}
     private Vector2Int? FindBestPlacementTile(BuildingData template)
     {
-        if (myProfile.myBuildings.Count == 0) return null;
+        var influenceManager = gameManager.buildingManager.influenceManager;
 
-        Vector2Int center = myProfile.myBuildings[0].position;
-        Vector2Int bestTile = new Vector2Int(-1, -1);
+        List<Vector2Int> myTerritory = influenceManager.GetTilesOwnedBy(playerId);
+        Debug.Log($"[AI {playerId}] Evaluating {myTerritory.Count} owned tiles for placing {template.buildingType}");
+
         float highestScore = float.MinValue;
-        bool foundAny = false;
+        Vector2Int? bestTile = null;
 
-        int searchRadius = 10; // Itt az infulence bezőket kell néznie inkább
-
-        for (int x = -searchRadius; x <= searchRadius; x++)
+        foreach (Vector2Int checkPos in myTerritory)
         {
-            for (int y = -searchRadius; y <= searchRadius; y++)
+            if (gameManager.buildingManager.CanPlaceBuilding(template, checkPos, playerId))
             {
-                Vector2Int checkPos = new Vector2Int(center.x + x, center.y + y);
+                float score = EvaluateTileScore(checkPos, template);
 
-                if (gameManager.buildingManager.CanPlaceBuilding(template, checkPos, playerId))
+                if (score > highestScore)
                 {
-                    float currentScore = EvaluateTileScore(checkPos, template);
-                    if (currentScore > highestScore)
-                    {
-                        highestScore = currentScore;
-                        bestTile = checkPos;
-                        foundAny = true;
-                    }
+                    highestScore = score;
+                    bestTile = checkPos;
                 }
             }
         }
 
-        return foundAny ? bestTile : (Vector2Int?)null;
+        return bestTile;
     }
 
     private BuildingData GetBuildingTemplate(Building.BuildingType type)
     {
-        // Finds the template from the manager's list
         return gameManager.buildingManager.buildingTemplates.Find(t => t.buildingType == type);
     }
 
-  
-    // Updated TryBuild to return a bool so the loop knows to continue
     private bool TryBuild(Building.BuildingType type)
     {
         myProfile.PrintResourceStatus();

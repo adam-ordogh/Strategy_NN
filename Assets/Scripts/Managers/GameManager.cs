@@ -64,6 +64,8 @@ public class GameManager
         // Repeat for AI
         Building p2Base = buildingManager.PlaceBuilding(buildingManager.buildingTemplates[0], new Vector2Int(43, 38), players[1].playerId);
         buildingManager.CompleteBuildingInstantly(p2Base);
+
+        buildingManager.influenceManager.RecalculateAllInfluences();
     }
 
     public PlayerProfile GetPlayerProfile(int id)

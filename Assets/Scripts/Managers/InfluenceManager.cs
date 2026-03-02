@@ -7,6 +7,8 @@ public class InfluenceManager : MonoBehaviour
     private MapData mapData;
     private List<Building>[,] buildingReachGrid;
 
+    private Dictionary<int, List<Vector2Int>> ownedTilesRegistry = new Dictionary<int, List<Vector2Int>>();
+
     public event System.Action<MapData> OnInfluenceChanged;
 
     public void Initialize(MapData mapData)
@@ -22,19 +24,48 @@ public class InfluenceManager : MonoBehaviour
     }
 
     // Amikor egy épület eltűnik, újraszámoljuk az egész térképet
+    //public void RecalculateAllInfluences()
+    //{
+    //    System.Array.Clear(mapData.influenceMap, 0, mapData.influenceMap.Length);
+
+    //    for (int x = 0; x < mapData.mapWidth; x++)
+    //    {
+    //        for (int y = 0; y < mapData.mapHeight; y++)
+    //        {
+    //            if (mapData.mapTiles[x, y].type == MapData.TileType.Mountain) continue;
+    //            mapData.influenceMap[x, y] = GetDominantPlayerAt(new Vector2Int(x, y));
+    //        }
+    //    }
+
+    //    OnInfluenceChanged?.Invoke(mapData);
+    //}
+
     public void RecalculateAllInfluences()
     {
+        // Clear the existing registries
+        ownedTilesRegistry.Clear();
         System.Array.Clear(mapData.influenceMap, 0, mapData.influenceMap.Length);
 
         for (int x = 0; x < mapData.mapWidth; x++)
         {
             for (int y = 0; y < mapData.mapHeight; y++)
             {
+                Vector2Int pos = new Vector2Int(x, y);
                 if (mapData.mapTiles[x, y].type == MapData.TileType.Mountain) continue;
-                mapData.influenceMap[x, y] = GetDominantPlayerAt(new Vector2Int(x, y));
+
+                int owner = GetDominantPlayerAt(pos);
+                mapData.influenceMap[x, y] = owner;
+
+                // 2. Register the tile to the owner
+                if (owner != 0) // Assuming 0 is neutral
+                {
+                    if (!ownedTilesRegistry.ContainsKey(owner))
+                        ownedTilesRegistry[owner] = new List<Vector2Int>();
+
+                    ownedTilesRegistry[owner].Add(pos);
+                }
             }
         }
-
         OnInfluenceChanged?.Invoke(mapData);
     }
 
@@ -146,6 +177,13 @@ public class InfluenceManager : MonoBehaviour
     {
         if (!IsInsideMap(pos)) return false;
         return mapData.influenceMap[pos.x, pos.y] == ownerId;
+    }
+
+    public List<Vector2Int> GetTilesOwnedBy(int playerId)
+    {
+        if (ownedTilesRegistry.TryGetValue(playerId, out var tiles))
+            return tiles;
+        return new List<Vector2Int>();
     }
 
     private bool IsInsideMap(Vector2Int pos)
