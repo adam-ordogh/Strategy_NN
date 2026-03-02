@@ -60,4 +60,9 @@ public class PlayerProfile
         food -= foodCost;
         OnResourcesChanged?.Invoke();
     }
+
+    public void PrintResourceStatus()
+    {
+        Debug.Log($"Player {playerId} - Gold: {gold}/{maxGold}, Wood: {wood}/{maxWood}, Food: {food}/{maxFood}, Population: {currentPopulation}/{housingCapacity} (Used: {CurrentUsedPopulation})");
+    }
 }

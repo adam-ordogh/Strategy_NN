@@ -38,9 +38,8 @@ public class BuildingManager : MonoBehaviour
         Building newBuilding = new Building(template, ownerId, pos);
         PlayerProfile owner = gameManager.GetPlayerProfile(ownerId);
 
-        if (!CanAffordBuilding(template, owner) || !CanPlaceBuilding(template, pos, ownerId))
-            return null;
-
+        if (!CanAffordBuilding(template, owner) || !CanPlaceBuilding(template, pos, ownerId)) return null;
+        
         UpdateOccupancy(newBuilding, true);
         mapData.buildings[pos] = newBuilding;
 
@@ -80,6 +79,21 @@ public class BuildingManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void CompleteBuildingInstantly(Building building)
+    {
+        if (building == null) return;
+
+        building.ForceComplete();
+        ApplyBuildingEffects(building, true);
+
+        if (buildingsUnderConstruction.Contains(building))
+        {
+            buildingsUnderConstruction.Remove(building);
+        }
+
+        OnConstructionCompleted?.Invoke(building);
     }
 
     private void CompleteBuilding(Building building)
@@ -123,7 +137,7 @@ public class BuildingManager : MonoBehaviour
     {
         if (!CheckEnvironmentalRequirements(building, pos))
         {
-            Debug.Log("Placement Failed: Environmental requirements not met.");
+            //Debug.Log("Placement Failed: Environmental requirements not met.");
             return false;
         }
 

@@ -101,7 +101,9 @@ public class GameInitializer : MonoBehaviour
         buildingManager.Initialize(mapManager.mapData, influenceManager, gameManager);
         influenceManager.Initialize(mapManager.mapData);
         productionManager.Initialize(mapManager.mapData, unitManager, buildingManager, gameManager);
-        economyManager.Initialize(mapManager.mapData, buildingManager);
+        economyManager.Initialize(mapManager.mapData, buildingManager);    
+        
+        gameManager.InitializePlayers();
     }
 
     public void AddVisualEventListeners()
@@ -132,7 +134,7 @@ public class GameInitializer : MonoBehaviour
 
         // Ez csak teszt jelleggel van itt, nem fog minden játékosra feliratkozni
         gameUiController.SubscribeToPlayerUpdates(gameManager.players[0]);
-        gameUiController.SubscribeToPlayerUpdates(gameManager.players[1]);
+        //gameUiController.SubscribeToPlayerUpdates(gameManager.players[1]);
     }
 
     public void AddEconomyListeners()
@@ -176,6 +178,7 @@ public class GameInitializer : MonoBehaviour
             mapVisualizer.DrawMap(mapManager.mapData, mapManager.mapWidth, mapManager.mapHeight);
         }
 
+        gameManager.InitializeStartingTownCenters();
         gameManager.Start();
     }
 }

@@ -179,7 +179,7 @@ public class EconomyManager : MonoBehaviour
         if (player.availablePopulation > (player.currentPopulation * 0.5f))
         {
             totalGoldGenerated -= 5;
-            Debug.Log("High unemployment! Losing gold.");
+            //Debug.Log("High unemployment! Losing gold.");
         }
 
         return new IncomeReport

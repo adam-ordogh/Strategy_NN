@@ -64,6 +64,12 @@ public class Building
         }
     }
 
+    public void ForceComplete()
+    {
+        turnsRemaining = 0;
+        isConstructed = true;
+    }
+
     public bool CanAcceptWorker()
     {
         return isConstructed && assignedWorkers < data.jobSlotsProvided;
@@ -104,4 +110,5 @@ public class Building
         }
         return tiles;
     }
+
 }
