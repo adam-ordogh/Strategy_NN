@@ -70,6 +70,26 @@ public class InfluenceManager : MonoBehaviour
     }
 
     // Amikor egy új épület kerül a térképre, csak az érintett területet számoljuk újra
+    //public void RecalculateInfluence(Building newBuilding)
+    //{
+    //    int r = newBuilding.data.influenceRadius;
+
+    //    int startX = Mathf.Max(0, newBuilding.position.x - r);
+    //    int endX = Mathf.Min(mapData.mapWidth - 1, newBuilding.position.x + newBuilding.data.size.x + r);
+    //    int startY = Mathf.Max(0, newBuilding.position.y - r);
+    //    int endY = Mathf.Min(mapData.mapHeight - 1, newBuilding.position.y + newBuilding.data.size.y + r);
+
+    //    for (int x = startX; x <= endX; x++)
+    //    {
+    //        for (int y = startY; y <= endY; y++)
+    //        {
+    //            if (mapData.mapTiles[x, y].type == MapData.TileType.Mountain) continue; // Nem számoljuk újra a hegyeket
+    //            mapData.influenceMap[x, y] = GetDominantPlayerAt(new Vector2Int(x, y));
+    //        }
+    //    }
+
+    //    OnInfluenceChanged?.Invoke(mapData);
+    //}
     public void RecalculateInfluence(Building newBuilding)
     {
         int r = newBuilding.data.influenceRadius;
@@ -83,8 +103,38 @@ public class InfluenceManager : MonoBehaviour
         {
             for (int y = startY; y <= endY; y++)
             {
-                if (mapData.mapTiles[x, y].type == MapData.TileType.Mountain) continue; // Nem számoljuk újra a hegyeket
-                mapData.influenceMap[x, y] = GetDominantPlayerAt(new Vector2Int(x, y));
+                Vector2Int pos = new Vector2Int(x, y);
+                if (mapData.mapTiles[x, y].type == MapData.TileType.Mountain) continue;
+
+                // 1. Store the previous owner
+                int oldOwner = mapData.influenceMap[x, y];
+
+                // 2. Calculate new owner
+                int newOwner = GetDominantPlayerAt(pos);
+
+                // 3. If the owner changed, update the registry
+                if (oldOwner != newOwner)
+                {
+                    // Remove from old registry
+                    if (oldOwner != 0 && ownedTilesRegistry.ContainsKey(oldOwner))
+                    {
+                        ownedTilesRegistry[oldOwner].Remove(pos);
+                    }
+
+                    // Add to new registry
+                    if (newOwner != 0)
+                    {
+                        if (!ownedTilesRegistry.ContainsKey(newOwner))
+                            ownedTilesRegistry[newOwner] = new List<Vector2Int>();
+
+                        // Safety check to prevent duplicates
+                        if (!ownedTilesRegistry[newOwner].Contains(pos))
+                            ownedTilesRegistry[newOwner].Add(pos);
+                    }
+
+                    // Update the map data
+                    mapData.influenceMap[x, y] = newOwner;
+                }
             }
         }
 

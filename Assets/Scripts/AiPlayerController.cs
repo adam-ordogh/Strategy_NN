@@ -15,6 +15,8 @@ public class AiPlayerController
     private GameManager gameManager; 
     private PlayerProfile myProfile;
 
+    private AIGoal currentGoal;
+
     public AiPlayerController(int id, GameManager init)
     {
         playerId = id;
@@ -38,16 +40,37 @@ public class AiPlayerController
         gameManager.NextTurn();
     }
 
+    //private AIGoal DetermineMacroGoal()
+    //{
+    //    // TODO: Replace with Neural Network Inference
+    //    // Placeholder Logic:
+    //    //if (myProfile.gold < 50 || myProfile.wood < 50)
+    //    //    return AIGoal.FocusEconomy;
+    //    //else
+    //    //    return AIGoal.FocusMilitary;
+
+    //    return AIGoal.FocusEconomy;
+    //}
+
     private AIGoal DetermineMacroGoal()
     {
-        // TODO: Replace with Neural Network Inference
-        // Placeholder Logic:
-        //if (myProfile.gold < 50 || myProfile.wood < 50)
-        //    return AIGoal.FocusEconomy;
-        //else
-        //    return AIGoal.FocusMilitary;
+        IncomeReport income = gameManager.economyManager.GetProjectedIncome(myProfile);
 
-        return AIGoal.FocusEconomy;
+        // 1. EMERGENCY: If we are losing food or have massive unemployment, fix economy first.
+        if (income.foodNet < 2 || IsSufferingUnemployment())
+        {
+            return AIGoal.FocusEconomy;
+        }
+
+        // 2. EXPANSION: If we have enough resources to "buy" more land and a stable base.
+        // Adjust these thresholds based on your game's cost for Town Halls/Outposts.
+        if (myProfile.gold > 50 && myProfile.wood > 50)
+        {
+            return AIGoal.FocusExpansion;
+        }
+
+        // 3. DEFAULT: Grow the base.
+        return currentGoal = AIGoal.FocusEconomy;
     }
 
     private void ExecuteMicroActions(AIGoal goal)
@@ -141,9 +164,23 @@ public class AiPlayerController
 
     private void ExecuteExpansionMicro()
     {
-        // 1. Can we build a new Town Hall?
-        // 2. If yes, find the best location and build it.
-        Debug.Log($"AI Player {playerId} is executing Expansion Micro.");
+        // Find the building template that expands territory best
+        BuildingData expansionTemplate = GetBuildingTemplate(Building.BuildingType.Outpost);
+
+        if (expansionTemplate != null && myProfile.CanAfford(expansionTemplate.goldCost, expansionTemplate.woodCost, 0))
+        {
+            // When searching for a spot, we will pass the Expansion goal to the scorer
+            Vector2Int? bestSpot = FindBestPlacementTile(expansionTemplate, AIGoal.FocusExpansion);
+
+            if (bestSpot.HasValue)
+            {
+                Building b = gameManager.buildingManager.PlaceBuilding(expansionTemplate, bestSpot.Value, playerId);
+                if (b != null)
+                {
+                    Debug.Log($"[AI {playerId}] Expanding territory with {expansionTemplate.buildingType} at {bestSpot.Value}");
+                }
+            }
+        }
     }
 
     private void ExecuteMilitaryMicro()
@@ -203,39 +240,8 @@ public class AiPlayerController
         }
     }
 
-    //private Vector2Int? FindBestPlacementTile(BuildingData template)
-    //{
-    //    if (myProfile.myBuildings.Count == 0) return null;
-
-    //    Vector2Int center = myProfile.myBuildings[0].position;
-    //    Vector2Int bestTile = new Vector2Int(-1, -1);
-    //    float highestScore = float.MinValue;
-    //    bool foundAny = false;
-
-    //    int searchRadius = 10; // Itt az infulence bezőket kell néznie inkább
-
-    //    for (int x = -searchRadius; x <= searchRadius; x++)
-    //    {
-    //        for (int y = -searchRadius; y <= searchRadius; y++)
-    //        {
-    //            Vector2Int checkPos = new Vector2Int(center.x + x, center.y + y);
-
-    //            if (gameManager.buildingManager.CanPlaceBuilding(template, checkPos, playerId))
-    //            {
-    //                float currentScore = EvaluateTileScore(checkPos, template);
-    //                if (currentScore > highestScore)
-    //                {
-    //                    highestScore = currentScore;
-    //                    bestTile = checkPos;
-    //                    foundAny = true;
-    //                }
-    //            }
-    //        }
-    //    }
-
-    //    return foundAny ? bestTile : (Vector2Int?)null;
-    //}
-    private Vector2Int? FindBestPlacementTile(BuildingData template)
+ 
+    private Vector2Int? FindBestPlacementTile(BuildingData template, AIGoal goal)
     {
         var influenceManager = gameManager.buildingManager.influenceManager;
 
@@ -245,11 +251,20 @@ public class AiPlayerController
         float highestScore = float.MinValue;
         Vector2Int? bestTile = null;
 
+        if (template.buildingType == Building.BuildingType.Woodcutter)
+        {
+            myTerritory = myTerritory.Where(t => CountNearbyTiles(t, MapData.TileType.Forest, 1) > 0).ToList();
+        }
+        else if (template.buildingType == Building.BuildingType.Mine)
+        {
+            myTerritory = myTerritory.Where(t => CountNearbyTiles(t, MapData.TileType.Mountain, 1) > 0).ToList();
+        }
+
         foreach (Vector2Int checkPos in myTerritory)
         {
             if (gameManager.buildingManager.CanPlaceBuilding(template, checkPos, playerId))
             {
-                float score = EvaluateTileScore(checkPos, template);
+                float score = EvaluateTileScore(checkPos, template, goal);
 
                 if (score > highestScore)
                 {
@@ -275,7 +290,7 @@ public class AiPlayerController
 
         if (!myProfile.CanAfford(template.goldCost, template.woodCost, 0)) return false;
 
-        Vector2Int? bestSpot = FindBestPlacementTile(template);
+        Vector2Int? bestSpot = FindBestPlacementTile(template, currentGoal);
         if (bestSpot.HasValue)
         {
             Building newBuilding = gameManager.buildingManager.PlaceBuilding(template, bestSpot.Value, playerId);
@@ -313,13 +328,51 @@ public class AiPlayerController
         return count;
     }
 
-    private float EvaluateTileScore(Vector2Int pos, BuildingData template)
+    private float EvaluateTileScore(Vector2Int pos, BuildingData template, AIGoal goal)
     {
         float score = 0f;
 
         Vector2Int basePos = myProfile.myBuildings[0].position; 
         float dist = Vector2Int.Distance(pos, basePos);
-        score -= dist * 2f;
+        //score -= dist * 2f;
+       if(goal == AIGoal.FocusEconomy)
+        {
+            // ECONOMY: Keep buildings close to the base for a compact, defensible town.
+            score -= dist * 2f;
+        }
+        else if (goal == AIGoal.FocusExpansion)
+        {
+            // 1. BORDER PUSH: Gentle reward for moving outward
+            score += dist * 1f;
+
+            // 2. ANTI-CLUSTERING: Prevent Outpost spam
+            foreach (var b in myProfile.myBuildings)
+            {
+                // Check against other buildings that provide influence
+                if (b.buildingType == Building.BuildingType.Outpost || b.buildingType == Building.BuildingType.TownCenter)
+                {
+                    float d = Vector2Int.Distance(pos, b.position);
+                    // If the new outpost is closer than 1.5x the influence radius, nuke the score
+                    if (d < template.influenceRadius * 1.5f)
+                    {
+                        score -= 500f;
+                    }
+                }
+            }
+
+            // 3. RESOURCE GRABBING: Will this new influence radius capture resources?
+            int captureRadius = template.influenceRadius;
+            score += CountNearbyTiles(pos, MapData.TileType.Mountain, captureRadius) * 5f; // Mountains are heavily prized
+            score += CountNearbyTiles(pos, MapData.TileType.Forest, captureRadius) * 2f;   // Forests are nice to have
+
+            // 4. AGGRESSION: Push towards the enemy
+            Vector2Int enemyPos = GetClosestEnemyBase(pos);
+            if (enemyPos.x != -1) // If we found an enemy
+            {
+                float distToEnemy = Vector2Int.Distance(pos, enemyPos);
+                score -= distToEnemy * 2f; // Closer to enemy = lower distance = higher score
+            }
+        }
 
         switch (template.buildingType)
         {
@@ -344,5 +397,29 @@ public class AiPlayerController
         }
 
         return score;
+    }
+
+    // --- EXPANSION FUNCTIONS ---
+    private Vector2Int GetClosestEnemyBase(Vector2Int fromPos)
+    {
+        Vector2Int closest = new Vector2Int(-1, -1);
+        float minDist = float.MaxValue;
+
+        // Search through all players to find enemies
+        foreach (var p in gameManager.players)
+        {
+            if (p.playerId != this.playerId && p.myBuildings.Count > 0)
+            {
+                // Assume their first building is their Town Center
+                Vector2Int enemyBase = p.myBuildings[0].position;
+                float d = Vector2Int.Distance(fromPos, enemyBase);
+                if (d < minDist)
+                {
+                    minDist = d;
+                    closest = enemyBase;
+                }
+            }
+        }
+        return closest;
     }
 }
