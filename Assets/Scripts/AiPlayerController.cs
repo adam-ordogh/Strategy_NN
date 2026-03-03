@@ -40,37 +40,39 @@ public class AiPlayerController
         gameManager.NextTurn();
     }
 
-    //private AIGoal DetermineMacroGoal()
-    //{
-    //    // TODO: Replace with Neural Network Inference
-    //    // Placeholder Logic:
-    //    //if (myProfile.gold < 50 || myProfile.wood < 50)
-    //    //    return AIGoal.FocusEconomy;
-    //    //else
-    //    //    return AIGoal.FocusMilitary;
-
-    //    return AIGoal.FocusEconomy;
-    //}
-
     private AIGoal DetermineMacroGoal()
     {
-        IncomeReport income = gameManager.economyManager.GetProjectedIncome(myProfile);
+        var income = gameManager.economyManager.GetProjectedIncome(myProfile);
 
-        // 1. EMERGENCY: If we are losing food or have massive unemployment, fix economy first.
-        if (income.foodNet < 2 || IsSufferingUnemployment())
-        {
+        // 1. PRIORITY: EMERGENCY ECONOMY
+        // If we are starving or broke, we MUST focus on economy.
+        if (income.foodNet < 2 || myProfile.gold < 20)
             return AIGoal.FocusEconomy;
-        }
 
-        // 2. EXPANSION: If we have enough resources to "buy" more land and a stable base.
-        // Adjust these thresholds based on your game's cost for Town Halls/Outposts.
-        if (myProfile.gold > 50 && myProfile.wood > 50)
+        // 2. PRIORITY: TERRITORY SATURATION (The "Why" for Expansion)
+        // Check if we can find any good spots for Woodcutters or Mines in our current land.
+        bool canPlaceIndustrial = CanPlaceIndustrialBuilding();
+
+        // If our land is "full" of industrial spots, or we have a huge surplus, EXPAND.
+        if (!canPlaceIndustrial || (myProfile.gold > 250 && myProfile.wood > 250))
         {
             return AIGoal.FocusExpansion;
         }
 
-        // 3. DEFAULT: Grow the base.
-        return currentGoal = AIGoal.FocusEconomy;
+        // 3. PRIORITY: MILITARY (Coming soon)
+        // If we have resources and territory, but no army...
+        // return AIGoal.FocusMilitary;
+
+        return AIGoal.FocusEconomy;
+    }
+
+    private bool CanPlaceIndustrialBuilding()
+    {
+        // Quick check: Is there any tile in our territory that has a Forest or Mountain nearby?
+        // If FindBestPlacementTile for a Mine/Woodcutter returns null, it means we are "saturated"
+        var woodcutter = GetBuildingTemplate(Building.BuildingType.Woodcutter);
+        var mine = GetBuildingTemplate(Building.BuildingType.Mine);
+        return FindBestPlacementTile(woodcutter, AIGoal.FocusEconomy).HasValue && FindBestPlacementTile(mine, AIGoal.FocusEconomy).HasValue;
     }
 
     private void ExecuteMicroActions(AIGoal goal)
@@ -151,7 +153,7 @@ public class AiPlayerController
             {
                 int totalJobSlots = myProfile.myBuildings.Sum(b => b.data.jobSlotsProvided);
                 int totalWorkers = myProfile.myBuildings.Sum(b => b.assignedWorkers);
-                if (totalJobSlots - totalWorkers <= 1)
+                if (/*totalJobSlots - totalWorkers <= 1*/ ShouldBuildHouse())
                 {
                     if (TryBuild(Building.BuildingType.House)) madeProgress = true;
                 }
@@ -159,6 +161,20 @@ public class AiPlayerController
 
             // If we successfully placed a building, we might have new jobs to fill immediately
             if (madeProgress) AssignIdleWorkers();
+
+            if (ShouldBuildWarehouse())
+            {
+                BuildingData warehouseTemplate = GetBuildingTemplate(Building.BuildingType.Warehouse);
+                if (warehouseTemplate != null && myProfile.CanAfford(warehouseTemplate.goldCost, warehouseTemplate.woodCost, 0))
+                {
+                    Vector2Int? bestSpot = FindBestPlacementTile(warehouseTemplate, AIGoal.FocusEconomy);
+                    if (bestSpot.HasValue)
+                    {
+                        gameManager.buildingManager.PlaceBuilding(warehouseTemplate, bestSpot.Value, playerId);
+                        Debug.Log($"[AI {playerId}] Storage critical! Built Warehouse at {bestSpot.Value}");
+                    }
+                }
+            }
         }
     }
 
@@ -189,6 +205,18 @@ public class AiPlayerController
         // 2. Can we train a unit?
         // 3. Move units toward enemies.
         Debug.Log($"AI Player {playerId} is executing Military Micro.");
+    }
+
+    // --- ECONOMY FUNCTIONS ---
+    private bool ShouldBuildHouse()
+    {
+        // Assuming you have a way to check current population vs max capacity
+        int currentPop = myProfile.currentPopulation;
+        int popCap = myProfile.housingCapacity;
+
+        // Only build a house if we are within 2 points of the cap
+        // This prevents the "Population Explosion"
+        return (popCap - currentPop) <= 2;
     }
 
     private bool IsSufferingUnemployment()
@@ -240,7 +268,6 @@ public class AiPlayerController
         }
     }
 
- 
     private Vector2Int? FindBestPlacementTile(BuildingData template, AIGoal goal)
     {
         var influenceManager = gameManager.buildingManager.influenceManager;
@@ -362,8 +389,8 @@ public class AiPlayerController
 
             // 3. RESOURCE GRABBING: Will this new influence radius capture resources?
             int captureRadius = template.influenceRadius;
-            score += CountNearbyTiles(pos, MapData.TileType.Mountain, captureRadius) * 5f; // Mountains are heavily prized
-            score += CountNearbyTiles(pos, MapData.TileType.Forest, captureRadius) * 2f;   // Forests are nice to have
+            score += CountNearbyTiles(pos, MapData.TileType.Mountain, captureRadius) * 5f; 
+            score += CountNearbyTiles(pos, MapData.TileType.Forest, captureRadius) * 2f;   
 
             // 4. AGGRESSION: Push towards the enemy
             Vector2Int enemyPos = GetClosestEnemyBase(pos);
@@ -397,6 +424,18 @@ public class AiPlayerController
         }
 
         return score;
+    }
+
+    private bool ShouldBuildWarehouse()
+    {
+        float maxStorage = myProfile.maxFood; // Calculate this based on (TownCenters * 75) + (Warehouses * 100)
+        float bufferThreshold = 0.8f; // Build when 80% full
+
+        bool goldFull = myProfile.gold > maxStorage * bufferThreshold;
+        bool woodFull = myProfile.wood > maxStorage * bufferThreshold;
+        bool foodFull = myProfile.food > maxStorage * bufferThreshold;
+
+        return goldFull || woodFull || foodFull;
     }
 
     // --- EXPANSION FUNCTIONS ---
