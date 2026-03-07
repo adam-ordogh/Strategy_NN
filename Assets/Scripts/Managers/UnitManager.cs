@@ -240,7 +240,44 @@ public class UnitManager : MonoBehaviour
         public Vector2Int StandPos; // A legjobb pozíció ahonnan elérjük a célt
     }
 
-    public List<AttackCommand> GetReachableEnemies(Unit unit)
+    //public List<AttackCommand> GetReachableEnemies(Unit unit)
+    //{
+    //    List<AttackCommand> validTargets = new List<AttackCommand>();
+
+    //    var reachableTiles = GetReachableTilesWithCost(unit).Keys;
+    //    List<Vector2Int> allStandableTiles = new List<Vector2Int>(reachableTiles);
+    //    allStandableTiles.Add(unit.position);
+
+    //    foreach (var kvp in mapData.units)
+    //    {
+    //        Vector2Int enemyPos = kvp.Key;
+    //        Unit enemyUnit = kvp.Value;
+
+    //        if (enemyUnit.ownerId == unit.ownerId) continue;
+
+    //        // Van-e olyan mező ahol állva elérjük az ellenséget?
+    //        foreach (var standTile in allStandableTiles)
+    //        {
+    //            int dist = Mathf.Max(
+    //                Mathf.Abs(standTile.x - enemyPos.x),
+    //                Mathf.Abs(standTile.y - enemyPos.y)
+    //            );
+
+    //            if (dist <= unit.data.attackRange)
+    //            {
+    //                validTargets.Add(new AttackCommand
+    //                {
+    //                    TargetPos = enemyPos,
+    //                    StandPos = standTile
+    //                });
+    //                break; // Ha van ilyen mező, nem kell tovább keresni
+    //            }
+    //        }
+    //    }
+
+    //    return validTargets;
+    //}
+    public List<AttackCommand> GetReachableTargets(Unit unit)
     {
         List<AttackCommand> validTargets = new List<AttackCommand>();
 
@@ -248,6 +285,7 @@ public class UnitManager : MonoBehaviour
         List<Vector2Int> allStandableTiles = new List<Vector2Int>(reachableTiles);
         allStandableTiles.Add(unit.position);
 
+        // --- 1. SCAN FOR UNITS (High Priority) ---
         foreach (var kvp in mapData.units)
         {
             Vector2Int enemyPos = kvp.Key;
@@ -255,23 +293,38 @@ public class UnitManager : MonoBehaviour
 
             if (enemyUnit.ownerId == unit.ownerId) continue;
 
-            // Van-e olyan mező ahol állva elérjük az ellenséget?
             foreach (var standTile in allStandableTiles)
             {
-                int dist = Mathf.Max(
-                    Mathf.Abs(standTile.x - enemyPos.x),
-                    Mathf.Abs(standTile.y - enemyPos.y)
-                );
-
+                int dist = Mathf.Max(Mathf.Abs(standTile.x - enemyPos.x), Mathf.Abs(standTile.y - enemyPos.y));
                 if (dist <= unit.data.attackRange)
                 {
-                    validTargets.Add(new AttackCommand
-                    {
-                        TargetPos = enemyPos,
-                        StandPos = standTile
-                    });
-                    break; // Ha van ilyen mező, nem kell tovább keresni
+                    validTargets.Add(new AttackCommand { TargetPos = enemyPos, StandPos = standTile });
+                    break;
                 }
+            }
+        }
+
+        // --- 2. SCAN FOR BUILDINGS (Lower Priority) ---
+        foreach (var kvp in mapData.buildings)
+        {
+            Building building = kvp.Value;
+            if (building.ownerId == unit.ownerId || !building.data.isSelectable) continue;
+
+            foreach (var standTile in allStandableTiles)
+            {
+                bool buildingReached = false;
+                // Buildings can be multi-tile, so we check every tile it occupies
+                foreach (Vector2Int occupiedTile in building.GetOccupiedTiles())
+                {
+                    int dist = Mathf.Max(Mathf.Abs(standTile.x - occupiedTile.x), Mathf.Abs(standTile.y - occupiedTile.y));
+                    if (dist <= unit.data.attackRange)
+                    {
+                        validTargets.Add(new AttackCommand { TargetPos = occupiedTile, StandPos = standTile });
+                        buildingReached = true;
+                        break;
+                    }
+                }
+                if (buildingReached) break;
             }
         }
 

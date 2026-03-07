@@ -195,7 +195,8 @@ public class InputController : MonoBehaviour
 
             if (unit.canAttack)
             {
-                var attackCommands = unitManager.GetReachableEnemies(unit);
+                //var attackCommands = unitManager.GetReachableEnemies(unit);
+                var attackCommands = unitManager.GetReachableTargets(unit);
                 var enemyPositions = attackCommands.Select(c => c.TargetPos);
                 unitVisualizer.ShowHighlights(enemyPositions, new Color(1f, 0, 0, 0.6f));
             }
