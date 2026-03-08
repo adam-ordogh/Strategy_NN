@@ -35,8 +35,10 @@ public class EconomyManager : MonoBehaviour
         {
             int forestCount = CountAdjacentTiles(building.position, TileType.Forest);
             // Minden 2 erdőszomszéd után +1 bónusz termelés dolgozónként
-            int bonusPerWorker = forestCount / 2;
-            finalOutput += (bonusPerWorker * building.assignedWorkers);
+            //int bonusPerWorker = forestCount / 2;
+            //finalOutput += (bonusPerWorker * building.assignedWorkers);
+            int bonus = forestCount / 2;
+            finalOutput += bonus;
         }
 
         // Út csatlakozás bónusz (ha csatlakozik a városházához)
