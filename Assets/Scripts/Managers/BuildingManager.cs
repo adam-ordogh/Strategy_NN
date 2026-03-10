@@ -116,6 +116,10 @@ public class BuildingManager : MonoBehaviour
             {
                 owner.myBuildings.Remove(building);
             }
+            if (building.data.influenceRadius > 0)
+            {
+                influenceManager.RemoveBuildingFromReachGrid(building); // This now triggers the update
+            }
             OnBuildingRemoved?.Invoke(building);
         }
     }
@@ -292,7 +296,7 @@ public class BuildingManager : MonoBehaviour
         {
             influenceManager.AddBuildingToReachGrid(building);
             influenceManager.RecalculateInfluence(building);
-        }
+        }        
     }
 
 }
