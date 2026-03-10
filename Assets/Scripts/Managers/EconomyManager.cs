@@ -192,7 +192,7 @@ public class EconomyManager : MonoBehaviour
         };
     }
 
-    private void RecalculateRoadNetwork(PlayerProfile player)
+    public void RecalculateRoadNetwork(PlayerProfile player)
     {
         foreach (var b in player.myBuildings) b.isConnectedToCapital = false;
 

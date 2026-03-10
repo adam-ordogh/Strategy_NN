@@ -40,78 +40,19 @@ public class AiPlayerController
         gameManager.NextTurn();
     }
 
-    //private AIGoal DetermineMacroGoal()
-    //{
-    //    var income = gameManager.economyManager.GetProjectedIncome(myProfile);
-
-    //    // PHASE 1: MINIMUM SURVIVAL (Economy First)
-    //    // We need a baseline of food and gold before even thinking about anything else.
-    //    if (income.foodNet < 2 || myProfile.gold < 30)
-    //        return AIGoal.FocusEconomy;
-
-    //    // PHASE 2: BASELINE INFRASTRUCTURE
-    //    // Don't build an army until we have at least a few basic buildings.
-    //    // (e.g., 2 Farms, 1 Woodcutter, 1 Mine)
-    //    if (myProfile.myBuildings.Count < 5)
-    //        return AIGoal.FocusEconomy;
-
-    //    //// PHASE 3: THREAT & OPPORTUNITY (Military Logic)
-    //    //float myStrength = CalculateMilitaryStrength(myProfile);
-    //    //float enemyStrength = CalculateMilitaryStrength(gameManager.GetPlayerProfile(1));
-
-    //    // Only focus on military if we have "War Chest" resources (e.g. 100+ Gold)
-    //    // OR if we are being actively threatened.
-    //    //bool underThreat = IsEnemyNearBase();
-    //    //bool canAffordWar = myProfile.gold > 150 && myProfile.wood > 100;
-
-    //    //if (underThreat || (canAffordWar && myStrength < 50))
-    //    //{
-    //    //    return AIGoal.FocusMilitary;
-    //    //}
-    //    bool economyIsBooming = myProfile.gold > 200 && myProfile.wood > 150;
-    //    float myStrength = CalculateMilitaryStrength(myProfile);
-
-    //    // Threshold: Build at least 10 units before considering yourself "Ready"
-    //    if (economyIsBooming && myStrength < 100) // 10 units * 10 strength
-    //    {
-    //        return AIGoal.FocusMilitary;
-    //    }
-
-    //    // 4. REACTIVE DEFENSE (Same as before)
-    //    float enemyStrength = CalculateMilitaryStrength(gameManager.GetPlayerProfile(1));
-    //    if (myStrength < enemyStrength * 1.1f || IsEnemyNearBase())
-    //    {
-    //        return AIGoal.FocusMilitary;
-    //    }
-
-    //    // PHASE 4: TERRITORIAL GROWTH
-    //    bool canPlaceIndustrial = CanPlaceIndustrialBuilding();
-
-    //    // If our land is "full" of industrial spots, or we have a huge surplus, EXPAND.
-    //    if (!canPlaceIndustrial || (myProfile.gold > 250 && myProfile.wood > 250))
-    //    {
-    //        return AIGoal.FocusExpansion;
-    //    }
-
-    //    return AIGoal.FocusEconomy;
-    //}
-
     private AIGoal DetermineMacroGoal()
     {
         var income = gameManager.economyManager.GetProjectedIncome(myProfile);
 
-        // 1. EMERGENCY OVERRIDES (Hard-coded essentials)
-        if (income.foodNet < 2) return AIGoal.FocusEconomy; // Don't starve
-        if (IsEnemyNearBase(range: 15f)) return AIGoal.FocusMilitary; // Immediate defense
+        if (income.foodNet < 2) return AIGoal.FocusEconomy; 
+        if (IsEnemyNearBase(range: 15f)) return AIGoal.FocusMilitary; 
 
-        // 2. CALCULATE DESIRE SCORES
         float economyScore = CalculateEconomyDesire(income);
         float militaryScore = CalculateMilitaryDesire();
         float expansionScore = CalculateExpansionDesire();
 
         Debug.Log($"[AI {playerId}] Desire Scores - Economy: {economyScore}, Military: {militaryScore}, Expansion: {expansionScore}");
 
-        // 3. PICK THE WINNER
         if (expansionScore >= economyScore && expansionScore >= militaryScore)
             return AIGoal.FocusExpansion;
 
@@ -122,13 +63,18 @@ public class AiPlayerController
     }
 
     // --- DESIRE CALCULATIONS ---
+
     private float CalculateEconomyDesire(IncomeReport income)
     {
         float score = 0;
 
-        if (myProfile.gold < 100) score += 50;
-        if (myProfile.wood < 100) score += 50;
-        if (myProfile.availablePopulation < 3) score += 50;
+        if (myProfile.gold < 50) score += 60;      
+        else if (myProfile.gold < 150) score += 20;  
+
+        if (myProfile.wood < 50) score += 60;
+        else if (myProfile.wood < 150) score += 20;
+
+        if (myProfile.availablePopulation < 3) score += 40;
 
         int realBuildingCount = myProfile.myBuildings.Count(b =>
             b.buildingType != Building.BuildingType.Road &&
@@ -144,15 +90,25 @@ public class AiPlayerController
 
     private float CalculateMilitaryDesire()
     {
-        float score = 20; 
+        float score = 20;
 
         float myStrength = CalculateMilitaryStrength(myProfile);
         float observedEnemyStrength = GetObservedEnemyStrength();
 
         if (myStrength < observedEnemyStrength * 1.2f)
-            score += 60;
+        {
+            score += 50; 
+            score += (observedEnemyStrength * 0.5f);
+        }
 
-        if (myProfile.gold > 100) score += 30;
+        float desiredStrength = myProfile.myBuildings.Count * 5f;
+        if (myStrength < desiredStrength)
+        {
+            score += 30; 
+        }
+
+        if (myProfile.gold > 150) score += 20;
+        if (myProfile.gold > 300) score += 30;
 
         return score;
     }
@@ -171,48 +127,6 @@ public class AiPlayerController
     }
 
     /// -------------------------------------------------------------------------------------------------------------------------
-
-    private float GetObservedEnemyStrength()
-    {
-        float totalObserved = 0;
-        float observationRadius = 15f; // Tiles
-
-        foreach (var otherPlayer in gameManager.players)
-        {
-            if (otherPlayer.playerId == this.playerId) continue;
-
-            foreach (var enemyUnit in otherPlayer.myUnits)
-            {
-                bool isVisible = false;
-                // Can any of my units see this enemy?
-                foreach (var myUnit in myProfile.myUnits)
-                {
-                    if (Vector2Int.Distance(myUnit.position, enemyUnit.position) < observationRadius)
-                    {
-                        isVisible = true;
-                        break;
-                    }
-                }
-                // Can any of my buildings see it? (Optional)
-                if (!isVisible)
-                {
-                    foreach (var myBuilding in myProfile.myBuildings)
-                    {
-                        if (Vector2Int.Distance(myBuilding.position, enemyUnit.position) < observationRadius)
-                        {
-                            isVisible = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (isVisible) totalObserved += 10f; // Simplified strength per unit
-            }
-        }
-
-        // If we haven't seen anyone, assume a small baseline threat so we aren't defenseless
-        return Mathf.Max(totalObserved, 30f);
-    }
 
     private void ExecuteMicroActions(AIGoal goal)
     {
@@ -249,7 +163,6 @@ public class AiPlayerController
         bool madeProgress = true;
         int safetyBreak = 0;
 
-        // Épülő épületek nyomonkövetése
         int farmsPlanned = 0;
         int woodPlanned = 0;
         int minesPlanned = 0;
@@ -271,19 +184,22 @@ public class AiPlayerController
             int effectiveWood = income.woodNet + ((woodPlanned + woodsInConst) * 6);
             int effectiveGold = income.goldNet + ((minesPlanned + minesInConst) * 5);
 
-            // Kezdetleges raktárépítés, hogy ne veszítsünk erőforrást túl korán, de ne is áldozzunk rá túl sokat
-            if (ShouldBuildWarehouse(warehousesPlanned + warehousesInConst) && CountWarehouses() < 1 )
+            bool needsFarm = !HasUnfilledBuildings(Building.BuildingType.Farm, farmsPlanned);
+            bool needsWood = !HasUnfilledBuildings(Building.BuildingType.Woodcutter, woodPlanned);
+            bool needsMine = !HasUnfilledBuildings(Building.BuildingType.Mine, minesPlanned);
+
+            if (ShouldBuildWarehouse(warehousesPlanned + warehousesInConst) && CountBuildings(Building.BuildingType.Warehouse) < 1)
             {
                 if (TryBuild(Building.BuildingType.Warehouse)) { warehousesPlanned++; madeProgress = true; }
             }
 
-            // Dinamikus bejövetel cél: minden épület növeli a szükséges bejövetelt, hogy ösztönözze a folyamatos növekedést
             int targetIncome = 15 + (myProfile.myBuildings.Count * 2);
 
-            // Alap szükségletek
-            if (effectiveFood < 10 && TryBuild(Building.BuildingType.Farm)) { farmsPlanned++; madeProgress = true; }
-            else if (effectiveWood < 10 && TryBuild(Building.BuildingType.Woodcutter)) { woodPlanned++; madeProgress = true; }
-            else if (effectiveGold < 10 && TryBuild(Building.BuildingType.Mine)) { minesPlanned++; madeProgress = true; }
+            // Alap szükségletek (Gate these with the 'needs' flags)
+            if (effectiveFood < 10 && needsFarm && TryBuild(Building.BuildingType.Farm)) { farmsPlanned++; madeProgress = true; }
+            else if (effectiveWood < 10 && needsWood && TryBuild(Building.BuildingType.Woodcutter)) { woodPlanned++; madeProgress = true; }
+            else if (effectiveGold < 10 && needsMine && TryBuild(Building.BuildingType.Mine)) { minesPlanned++; madeProgress = true; }
+
             // Populáció növelése
             else if (effectiveFood > 5 && myProfile.availablePopulation < 2)
             {
@@ -292,25 +208,25 @@ public class AiPlayerController
                     madeProgress = true;
                 }
             }
-            // Ekonómia dinamikus kiegyensúlyozása a célbevételhez képest
+
+            // Ekonómia dinamikus kiegyensúlyozása (Fixed priority chain)
             else if (myProfile.availablePopulation > 0 || effectiveFood < targetIncome)
             {
                 if (effectiveFood < targetIncome)
                 {
-                    if (TryBuild(Building.BuildingType.Farm)) { farmsPlanned++; madeProgress = true; }
+                    if (needsFarm && TryBuild(Building.BuildingType.Farm)) { farmsPlanned++; madeProgress = true; }
                 }
-                if (effectiveGold < effectiveWood)
+                else if (effectiveGold < effectiveWood)
                 {
-                    if (TryBuild(Building.BuildingType.Mine)) { minesPlanned++; madeProgress = true; }
+                    if (needsMine && TryBuild(Building.BuildingType.Mine)) { minesPlanned++; madeProgress = true; }
                 }
                 else
                 {
-                    if (TryBuild(Building.BuildingType.Woodcutter)) { woodPlanned++; madeProgress = true; }
+                    if (needsWood && TryBuild(Building.BuildingType.Woodcutter)) { woodPlanned++; madeProgress = true; }
                 }
             }
 
-            // Raktár építése, ha szükséges (pl. ha sok nyersanyag gyűlik össze és nincs elég tárhely)
-            if (ShouldBuildWarehouse(warehousesPlanned + warehousesInConst) && CountWarehouses() >= 1)
+            if (ShouldBuildWarehouse(warehousesPlanned + warehousesInConst) && CountBuildings(Building.BuildingType.Warehouse) >= 1)
             {
                 if (TryBuild(Building.BuildingType.Warehouse)) { warehousesPlanned++; madeProgress = true; }
             }
@@ -318,7 +234,6 @@ public class AiPlayerController
             if (madeProgress) AssignIdleWorkers();
         }
     }
-
 
     private void ExecuteExpansionMicro()
     {
@@ -373,10 +288,73 @@ public class AiPlayerController
         }
     }
 
-    // ------------------------------------ MILITARY FUNCTIONS ------------------------------------
+    // ------------------------------------ MILITARY FUNCTIONS ------------------------------------------------------------------------
+
+    private float GetObservedEnemyStrength()
+    {
+        float totalObserved = 0;
+        float observationRadius = 15f;
+
+        foreach (var otherPlayer in gameManager.players)
+        {
+            if (otherPlayer.playerId == this.playerId) continue;
+
+            foreach (var enemyUnit in otherPlayer.myUnits)
+            {
+                if (IsPositionVisible(enemyUnit.position, observationRadius))
+                {
+                    totalObserved += 10f; 
+                }
+            }
+
+            foreach (var enemyBuilding in otherPlayer.myBuildings)
+            {
+                if (enemyBuilding.buildingType == Building.BuildingType.Barracks && enemyBuilding.isConstructed)
+                {
+                    bool buildingVisible = false;
+                    foreach (var tile in enemyBuilding.GetOccupiedTiles())
+                    {
+                        if (IsPositionVisible(tile, observationRadius))
+                        {
+                            buildingVisible = true;
+                            break;
+                        }
+                    }
+
+                    if (buildingVisible)
+                    {
+                        totalObserved += 20f;
+                    }
+                }
+            }
+        }
+
+        return Mathf.Max(totalObserved, 30f);
+    }
+
+    private bool IsPositionVisible(Vector2Int targetPos, float observationRadius)
+    {
+        foreach (var myUnit in myProfile.myUnits)
+        {
+            if (Vector2Int.Distance(myUnit.position, targetPos) < observationRadius)
+            {
+                return true;
+            }
+        }
+
+        foreach (var myBuilding in myProfile.myBuildings)
+        {
+            if (Vector2Int.Distance(myBuilding.position, targetPos) < observationRadius)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private float CalculateMilitaryStrength(PlayerProfile profile)
     {
-        // Simple sum of unit combat power (adjust based on your UnitData)
         return profile.myUnits.Count * 10f;
     }
 
@@ -388,6 +366,11 @@ public class AiPlayerController
     private int CountBuildings(Building.BuildingType type)
     {
         return myProfile.myBuildings.Count(b => b.buildingType == type);
+    }
+
+    private int CountUnits(Unit.UnitType type)
+    {
+        return myProfile.myUnits.Count(u => u.data.unitType == type);
     }
 
     private bool IsEnemyNearBase(float range)
@@ -407,30 +390,49 @@ public class AiPlayerController
         return false;
     }
 
-    private int CountUnits(Unit.UnitType type)
-    {
-        return myProfile.myUnits.Count(u => u.data.unitType == type);
-    }
-
     private Unit.UnitType DetermineBestUnitType(Dictionary<Unit.UnitType, int> enemyComp)
     {
-        int effSoldiers = CountUnits(Unit.UnitType.Soldier) + GetQueuedCount(Unit.UnitType.Soldier);
-        int effArchers = CountUnits(Unit.UnitType.Archer) + GetQueuedCount(Unit.UnitType.Archer);
-        int effCavalry = CountUnits(Unit.UnitType.Cavalry) + GetQueuedCount(Unit.UnitType.Cavalry);
-        int effSiege = CountUnits(Unit.UnitType.Siege) + GetQueuedCount(Unit.UnitType.Siege);
+        var unitCounts = new Dictionary<Unit.UnitType, int>();
+        foreach (var unit in myProfile.myUnits)
+        {
+            unitCounts[unit.data.unitType] = unitCounts.GetValueOrDefault(unit.data.unitType) + 1;
+        }
 
+        var queueCounts = new Dictionary<Unit.UnitType, int>();
+        foreach (var b in myProfile.myBuildings)
+        {
+            if (b.buildingType == Building.BuildingType.Barracks)
+            {
+                var queue = gameManager.productionManager.GetQueueForBuilding(b);
+                if (queue != null)
+                {
+                    foreach (var order in queue)
+                    {
+                        queueCounts[order.template.unitType] = queueCounts.GetValueOrDefault(order.template.unitType) + 1;
+                    }
+                }
+            }
+        }
+
+        int effSoldiers = unitCounts.GetValueOrDefault(Unit.UnitType.Soldier) + queueCounts.GetValueOrDefault(Unit.UnitType.Soldier);
+        int effArchers = unitCounts.GetValueOrDefault(Unit.UnitType.Archer) + queueCounts.GetValueOrDefault(Unit.UnitType.Archer);
+        int effCavalry = unitCounts.GetValueOrDefault(Unit.UnitType.Cavalry) + queueCounts.GetValueOrDefault(Unit.UnitType.Cavalry);
+        int effSiege = unitCounts.GetValueOrDefault(Unit.UnitType.Siege) + queueCounts.GetValueOrDefault(Unit.UnitType.Siege);
+
+        // Alap desirek (Minden típusnak van egy alap pontértéke, ami csökken a saját számukkal)
         float soldierScore = 12f - (effSoldiers * 1.0f);
         float archerScore = 10f - (effArchers * 1.0f);
         float cavalryScore = 8f - (effCavalry * 1.0f);
         float siegeScore = 2f - (effSiege * 2.0f);
 
-        if (enemyComp[Unit.UnitType.Archer] > 0)
+        // Reaktív counter logic (Növeli a score-t, ha az ellenfélnek van olyan egysége, amire ez a típus jó)
+        if (enemyComp.GetValueOrDefault(Unit.UnitType.Archer) > 0)
         {
             soldierScore += enemyComp[Unit.UnitType.Archer] * 2;
             cavalryScore += enemyComp[Unit.UnitType.Archer] * 6;
         }
 
-        if (enemyComp[Unit.UnitType.Cavalry] > 0)
+        if (enemyComp.GetValueOrDefault(Unit.UnitType.Cavalry) > 0)
         {
             soldierScore += enemyComp[Unit.UnitType.Cavalry] * 8;
         }
@@ -441,56 +443,33 @@ public class AiPlayerController
             siegeScore += 15f;
         }
 
+        // Ha sok az aranyunk, legyünk hajlandóak kockáztatni és gyártani drágább egységeket
         if (myProfile.gold > 400)
         {
             cavalryScore += 5f;
             siegeScore += 2f;
         }
 
-        Debug.Log($"[AI {playerId}] Unit Desire Scores - Soldier: {soldierScore}, Archer: {archerScore}, Cavalry: {cavalryScore}, Siege: {siegeScore}");
-
-        // Pick the highest score
         var scores = new Dictionary<Unit.UnitType, float> {
-            { Unit.UnitType.Soldier, soldierScore },
-            { Unit.UnitType.Archer, archerScore },
-            { Unit.UnitType.Cavalry, cavalryScore },
-            { Unit.UnitType.Siege, siegeScore }
-        };
+        { Unit.UnitType.Soldier, soldierScore },
+        { Unit.UnitType.Archer, archerScore },
+        { Unit.UnitType.Cavalry, cavalryScore },
+        { Unit.UnitType.Siege, siegeScore }
+    };
 
         return scores.OrderByDescending(x => x.Value).First().Key;
-    }
-
-    public int GetQueuedCount(Unit.UnitType type)
-    {
-        int count = 0;
-        foreach (Building b in myProfile.myBuildings)
-        {
-            if (b.buildingType == Building.BuildingType.Barracks)
-            {
-                var barracksQueue = gameManager.productionManager.GetQueueForBuilding(b);
-                if (barracksQueue != null)
-                {
-                    foreach (var queue in barracksQueue)
-                    {
-                        if (queue.template.unitType == type)
-                            count++;
-                    }
-                }
-            }
-        }
-        return count;
     }
 
     private Dictionary<Unit.UnitType, int> GetObservedEnemyComposition()
     {
         var comp = new Dictionary<Unit.UnitType, int> {
-        { Unit.UnitType.Soldier, 0 }, { Unit.UnitType.Archer, 0 },
-        { Unit.UnitType.Cavalry, 0 }, { Unit.UnitType.Siege, 0 }
-    };
+            { Unit.UnitType.Soldier, 0 }, { Unit.UnitType.Archer, 0 },
+            { Unit.UnitType.Cavalry, 0 }, { Unit.UnitType.Siege, 0 }
+        };
 
         // Use your "Seen Units" logic (from Fog of War)
         // For now, let's just look at the opponent's profile
-        var enemy = gameManager.GetPlayerProfile(1); // Assuming player 1 is the enemy
+        var enemy = gameManager.GetPlayerProfile(1);
         foreach (var u in enemy.myUnits)
         {
             comp[u.data.unitType]++;
@@ -500,25 +479,51 @@ public class AiPlayerController
 
     private void HandleUnitMicro()
     {
-        Vector2Int enemyBase = GetClosestEnemyBase(gameManager.players[0].myBuildings[0].position);
+        Vector2Int enemyBase = GetClosestEnemyBase(myProfile.myBuildings[0].position);
         Vector2Int rallyPoint = GetRallyPoint();
+
+        int combatUnits = CountUnits(Unit.UnitType.Soldier) + CountUnits(Unit.UnitType.Archer) +
+                          CountUnits(Unit.UnitType.Cavalry) + CountUnits(Unit.UnitType.Siege);
+
+        // Ha elég nagy az hadsereg, támadjunk. Ha túl sokat veszítünk, vonuljunk vissza gyűjteni.
+        if (currentArmyState == MilitaryState.Gathering && combatUnits >= 15)
+        {
+            currentArmyState = MilitaryState.Attacking;
+            Debug.Log($"[AI {playerId}] Army size reached {combatUnits}. Initiating attack!");
+        }
+        else if (currentArmyState == MilitaryState.Attacking && combatUnits < 5)
+        {
+            currentArmyState = MilitaryState.Gathering;
+            Debug.Log($"[AI {playerId}] Army decimated. Retreating to gather.");
+        }
 
         foreach (var unit in myProfile.myUnits.ToList())
         {
-            // 1. ATTACK IF POSSIBLE
+            // Támadjunk, ha van elérhető célpont a mozgási tartományon belül
             var targets = gameManager.unitManager.GetReachableTargets(unit);
 
             if (targets.Count > 0)
             {
-                // Simple Prioritization:
-                // Catapults pick the first building they see.
-                // Everyone else picks the first unit they see.
                 AttackCommand bestTarget = targets[0];
 
-                if (unit.data.unitType == Unit.UnitType.Siege) // Placeholder for your future type
+                if (unit.data.unitType == Unit.UnitType.Siege)
                 {
                     var buildingTarget = targets.FirstOrDefault(t => gameManager.mapManager.mapData.buildings.ContainsKey(t.TargetPos));
                     if (buildingTarget.TargetPos != Vector2Int.zero) bestTarget = buildingTarget;
+                }
+                else
+                {
+                    Unit targetEnemy = gameManager.mapManager.mapData.units.GetValueOrDefault(bestTarget.TargetPos);
+
+                    foreach (var t in targets)
+                    {
+                        Unit enemy = gameManager.mapManager.mapData.units.GetValueOrDefault(t.TargetPos);
+                        if (enemy != null && targetEnemy != null && enemy.currentHealth < targetEnemy.currentHealth)
+                        {
+                            bestTarget = t;
+                            targetEnemy = enemy;
+                        }
+                    }
                 }
 
                 gameManager.unitManager.TryMoveUnit(unit.position, bestTarget.StandPos);
@@ -526,10 +531,9 @@ public class AiPlayerController
                 continue;
             }
 
-            // 2. FIND DESTINATION (Respecting Blocking)
-            Vector2Int idealGoal = (myProfile.myUnits.Count > 10) ? enemyBase : rallyPoint;
-
-            // Find the closest point to that goal that isn't blocked by a "Soldier Frontline"
+            // Célmező meghatározása: Ha támadunk, az ellenséges bázis felé, különben a rally point felé
+            Vector2Int targetGoal = (currentArmyState == MilitaryState.Attacking) ? enemyBase : rallyPoint;
+            Vector2Int idealGoal = GetFormationOffset(unit, targetGoal);
             Vector2Int? reachableGoal = FindBestReachableTile(unit, idealGoal);
 
             if (reachableGoal.HasValue)
@@ -537,19 +541,16 @@ public class AiPlayerController
                 var path = gameManager.unitManager.GetPathToTarget(unit, reachableGoal.Value);
                 if (path != null && path.Count > 1)
                 {
-                    // Move as far as movement points allow
                     gameManager.unitManager.TryMoveUnit(unit.position, path.Last());
                 }
             }
             else if (IsNearBarracks(unit.position))
             {
-                // EMERGENCY UNCLOG: If stuck ON a barracks, just move to ANY random empty neighbor
                 MoveToAnyEmptyNeighbor(unit);
             }
         }
     }
 
-    // Finds the closest empty tile to the 'target' that the unit can currently reach
     private Vector2Int? FindBestReachableTile(Unit unit, Vector2Int target)
     {
         Queue<Vector2Int> queue = new Queue<Vector2Int>();
@@ -561,7 +562,6 @@ public class AiPlayerController
         Vector2Int bestTile = unit.position;
         float minDist = Vector2Int.Distance(unit.position, target);
 
-        // We only check a limited area to keep performance high
         int iterations = 0;
         while (queue.Count > 0 && iterations < 200)
         {
@@ -575,16 +575,14 @@ public class AiPlayerController
                 bestTile = current;
             }
 
-            // Check the 4 adjacent tiles
-            foreach (Vector2Int neighbor in new Vector2Int[] { current + Vector2Int.up, current + Vector2Int.down, current + Vector2Int.left, current + Vector2Int.right })
+            foreach (Vector2Int dir in Pathfinder.Directions)
             {
-                if (visited.Contains(neighbor)) continue;
+                if (visited.Contains(dir)) continue;
 
-                // This is the key: we use a custom check that respects your "Tactical Blocking"
-                if (IsTileActuallyEmptyAndPassable(neighbor))
+                if (IsTileActuallyEmptyAndPassable(dir))
                 {
-                    visited.Add(neighbor);
-                    queue.Enqueue(neighbor);
+                    visited.Add(dir);
+                    queue.Enqueue(dir);
                 }
             }
         }
@@ -603,10 +601,8 @@ public class AiPlayerController
 
     private Vector2Int GetRallyPoint()
     {
-        // Default to the Town Center
         Vector2Int rally = myProfile.myBuildings[0].position;
 
-        // Find our furthest building (to keep the army at the frontier)
         float maxDist = 0;
         foreach (var b in myProfile.myBuildings)
         {
@@ -618,8 +614,28 @@ public class AiPlayerController
             }
         }
 
-        // Offset the rally point slightly so they don't stand ON the building
         return rally + new Vector2Int(2, 2);
+    }
+
+    private Vector2Int GetFormationOffset(Unit unit, Vector2Int baseRally)
+    {
+
+        // 3x3-as offset mintázat a rally point körül, amihez minden egység egyedi indexet kap a hashcode alapján
+        int offsetIndex = unit.GetHashCode() % 9;
+        int dx = (offsetIndex % 3) - 1;
+        int dy = (offsetIndex / 3) - 1;
+
+        if (unit.data.unitType == Unit.UnitType.Archer || unit.data.unitType == Unit.UnitType.Siege)
+        {
+            Vector2Int basePos = myProfile.myBuildings[0].position;
+            Vector2Int directionToBase = new Vector2Int(
+                Mathf.Clamp(basePos.x - baseRally.x, -1, 1),
+                Mathf.Clamp(basePos.y - baseRally.y, -1, 1)
+            );
+            return baseRally + new Vector2Int(dx, dy) + directionToBase;
+        }
+
+        return baseRally + new Vector2Int(dx, dy);
     }
 
     private void MoveToAnyEmptyNeighbor(Unit unit)
@@ -649,12 +665,7 @@ public class AiPlayerController
     }
 
     // ------------------------------------ ECONOMY FUNCTIONS ------------------------------------
-    
-    private int CountWarehouses()
-    {
-        return myProfile.myBuildings.Count(b => b.buildingType == Building.BuildingType.Warehouse);
-    }
-
+ 
     private bool CanPlaceIndustrialBuilding()
     {
         var woodcutter = GetBuildingTemplate(Building.BuildingType.Woodcutter);
@@ -714,6 +725,7 @@ public class AiPlayerController
     private Vector2Int? FindBestPlacementTile(BuildingData template, AIGoal goal)
     {
         var influenceManager = gameManager.buildingManager.influenceManager;
+        Vector2Int enemyBasePos = GetClosestEnemyBase(myProfile.myBuildings[0].position);
 
         List<Vector2Int> myTerritory = influenceManager.GetTilesOwnedBy(playerId);
         //Debug.Log($"[AI {playerId}] Evaluating {myTerritory.Count} owned tiles for placing {template.buildingType}");
@@ -734,7 +746,7 @@ public class AiPlayerController
         {
             if (gameManager.buildingManager.CanPlaceBuilding(template, checkPos, playerId))
             {
-                float score = EvaluateTileScore(checkPos, template, goal);
+                float score = EvaluateTileScore(checkPos, template, goal, enemyBasePos);
 
                 if (score > highestScore)
                 {
@@ -780,7 +792,6 @@ public class AiPlayerController
             {
                 Vector2Int checkPos = new Vector2Int(center.x + x, center.y + y);
 
-                // Boundary check
                 if (checkPos.x < 0 || checkPos.x >= gameManager.mapManager.mapData.mapWidth ||
                     checkPos.y < 0 || checkPos.y >= gameManager.mapManager.mapData.mapHeight) continue;
 
@@ -816,6 +827,20 @@ public class AiPlayerController
         return goldPercent > 0.7f || woodPercent > 0.7f || foodPercent > 0.7f;
     }
 
+    private bool HasUnfilledBuildings(Building.BuildingType type, int plannedThisTurn)
+    {
+        int underConstruction = myProfile.myBuildings.Count(b => !b.isConstructed && b.buildingType == type);
+        if (underConstruction + plannedThisTurn > 0) return true;
+
+        var constructed = myProfile.myBuildings.Where(b => b.isConstructed && b.buildingType == type);
+        foreach (var b in constructed)
+        {
+            if (b.CanAcceptWorker()) return true;
+        }
+
+        return false;
+    }
+
     // ------------------------------------ EXPANSION FUNCTIONS ------------------------------------
     private Vector2Int GetClosestEnemyBase(Vector2Int fromPos)
     {
@@ -846,14 +871,13 @@ public class AiPlayerController
         return gameManager.buildingManager.buildingTemplates.Find(t => t.buildingType == type);
     }
 
-    private float EvaluateTileScore(Vector2Int pos, BuildingData template, AIGoal goal)
+    private float EvaluateTileScore(Vector2Int pos, BuildingData template, AIGoal goal, Vector2Int enemyBase)
     {
         float score = 0f;
 
         Vector2Int basePos = myProfile.myBuildings[0].position;
         float dist = Vector2Int.Distance(pos, basePos);
 
-        // Penalize "Suffocation": Check if the building will be totally blocked
         int freeNeighbors = 0;
         foreach (var dir in Pathfinder.Directions)
         {
@@ -863,7 +887,7 @@ public class AiPlayerController
         }
 
         if (freeNeighbors < 1 && template.buildingType != Building.BuildingType.House)
-            score -= 200f; // Extremely heavy penalty for blocking all road access points
+            score -= 200f; 
 
         if (goal == AIGoal.FocusEconomy)
         {
@@ -921,7 +945,6 @@ public class AiPlayerController
         }
         else if (goal == AIGoal.FocusMilitary)
         {
-            Vector2Int enemyBase = GetClosestEnemyBase(pos);
             if (enemyBase.x != -1)
             {
                 float distToEnemy = Vector2Int.Distance(pos, enemyBase);
@@ -938,127 +961,15 @@ public class AiPlayerController
         return pos.x >= 0 && pos.x < gameManager.mapManager.mapData.mapWidth && pos.y >= 0 && pos.y < gameManager.mapManager.mapData.mapHeight;
     }
 
-    //private List<Vector2Int> FindRoadPath(Building target)
-    //{
-    //    Queue<Vector2Int> queue = new Queue<Vector2Int>();
-    //    Dictionary<Vector2Int, Vector2Int> parents = new Dictionary<Vector2Int, Vector2Int>();
-    //    HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
-
-    //    // Start the search from all tiles the building occupies
-    //    foreach (var tile in target.GetOccupiedTiles())
-    //    {
-    //        queue.Enqueue(tile);
-    //        visited.Add(tile);
-    //    }
-
-    //    while (queue.Count > 0)
-    //    {
-    //        Vector2Int current = queue.Dequeue();
-
-    //        // GOAL: We hit something already connected to the Capital
-    //        Building bAtTile = gameManager.buildingManager.GetBuildingAtTile(current);
-    //        if (bAtTile != null && bAtTile.isConnectedToCapital && bAtTile != target)
-    //        {
-    //            return ReconstructPath(parents, current, target);
-    //        }
-
-    //        // Search neighbors
-    //        foreach (var dir in new Vector2Int[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
-    //        {
-    //            Vector2Int next = current + dir;
-
-    //            if (!IsInsideMap(next) || visited.Contains(next)) continue;
-
-    //            Building b = gameManager.buildingManager.GetBuildingAtTile(next);
-
-    //            // We can build roads on empty tiles or step through our own buildings
-    //            if (b == null || b.ownerId == playerId)
-    //            {
-    //                visited.Add(next);
-    //                parents[next] = current;
-    //                queue.Enqueue(next);
-    //            }
-    //        }
-    //    }
-    //    return null; // No connection possible
-    //}
-    //private List<Vector2Int> FindRoadPath(Building target)
-    //{
-    //    Queue<Vector2Int> queue = new Queue<Vector2Int>();
-    //    Dictionary<Vector2Int, Vector2Int> parents = new Dictionary<Vector2Int, Vector2Int>();
-    //    HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
-    //    Dictionary<Vector2Int, int> distances = new Dictionary<Vector2Int, int>();
-
-    //    // Start searching from all tiles around the building (the "exits")
-    //    foreach (var startTile in target.GetOccupiedTiles())
-    //    {
-    //        foreach (var dir in Pathfinder.Directions)
-    //        {
-    //            Vector2Int neighbor = startTile + dir;
-    //            if (!IsInsideMap(neighbor) || visited.Contains(neighbor)) continue;
-
-    //            distances[neighbor] = 1;
-
-    //            // Check what's at the neighbor tile
-    //            Building b = gameManager.buildingManager.GetBuildingAtTile(neighbor);
-
-    //            // If the neighbor is ALREADY a connected road/building, we are done!
-    //            // (Path length is 0, we are already connected)
-    //            if (b != null && b.isConnectedToCapital && b.ownerId == playerId)
-    //                return new List<Vector2Int>();
-
-    //            // Otherwise, if it's an empty tile or an existing (but disconnected) road, 
-    //            // we can use it to start our path.
-    //            if (b == null || (b.buildingType == Building.BuildingType.Road && b.ownerId == playerId))
-    //            {
-    //                visited.Add(neighbor);
-    //                parents[neighbor] = startTile; // Link back to building
-    //                queue.Enqueue(neighbor);
-    //            }
-    //        }
-    //    }
-
-    //    while (queue.Count > 0)
-    //    {
-    //        Vector2Int current = queue.Dequeue();
-
-    //        foreach (var dir in Pathfinder.Directions)
-    //        {
-    //            Vector2Int next = current + dir;
-
-    //            distances[next] = distances[current] + 1;
-    //            if (distances[next] > 10) continue;
-
-    //            if (!IsInsideMap(next) || visited.Contains(next)) continue;
-
-    //            Building b = gameManager.buildingManager.GetBuildingAtTile(next);
-
-    //            // GOAL: We hit an existing part of the network
-    //            if (b != null && b.isConnectedToCapital && b.ownerId == playerId)
-    //            {
-    //                return ReconstructPath(parents, current, target);
-    //            }
-
-    //            // TRAVERSAL: Only step on empty tiles or existing roads
-    //            if (b == null || (b.buildingType == Building.BuildingType.Road && b.ownerId == playerId))
-    //            {
-    //                visited.Add(next);
-    //                parents[next] = current;
-    //                queue.Enqueue(next);
-    //            }
-    //        }
-    //    }
-    //    return null;
-    //}
-
+    
     private List<Vector2Int> FindRoadPath(Building target)
     {
         Queue<Vector2Int> queue = new Queue<Vector2Int>();
         Dictionary<Vector2Int, Vector2Int> parents = new Dictionary<Vector2Int, Vector2Int>();
         HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
-        Dictionary<Vector2Int, int> distances = new Dictionary<Vector2Int, int>(); // Track distance
+        Dictionary<Vector2Int, int> distances = new Dictionary<Vector2Int, int>();
 
-        // Start searching from all tiles around the building (the "exits")
+        // Út indítása a cél épület szomszédos tile-jairól, hogy gyorsan megtaláljuk a legközelebbi csatlakozási pontot
         foreach (var startTile in target.GetOccupiedTiles())
         {
             foreach (var dir in Pathfinder.Directions)
@@ -1068,14 +979,12 @@ public class AiPlayerController
 
                 Building b = gameManager.buildingManager.GetBuildingAtTile(neighbor);
 
-                // STRICT CHECK: The neighbor must be connected AND it must be a Road or Town Center.
                 if (b != null && b.isConnectedToCapital && b.ownerId == playerId &&
                    (b.buildingType == Building.BuildingType.Road || b.buildingType == Building.BuildingType.TownCenter))
                 {
-                    return new List<Vector2Int>(); // We are already touching the network!
+                    return new List<Vector2Int>(); 
                 }
 
-                // Otherwise, we can step on empty tiles or disconnected roads
                 if (b == null || (b.buildingType == Building.BuildingType.Road && b.ownerId == playerId))
                 {
                     visited.Add(neighbor);
@@ -1086,6 +995,7 @@ public class AiPlayerController
             }
         }
 
+        // Út felépítése a szomszédos tile-októl, amíg el nem érünk egy csatlakoztatott úthoz vagy Town Centerhez
         while (queue.Count > 0)
         {
             Vector2Int current = queue.Dequeue();
@@ -1097,12 +1007,9 @@ public class AiPlayerController
 
                 Building b = gameManager.buildingManager.GetBuildingAtTile(next);
 
-                // STRICT GOAL: We hit an existing, connected Road or Town Center
                 if (b != null && b.isConnectedToCapital && b.ownerId == playerId &&
                    (b.buildingType == Building.BuildingType.Road || b.buildingType == Building.BuildingType.TownCenter))
                 {
-                    // We pass 'current' because 'next' already has a road/TC on it. 
-                    // We only need to build up to 'current'.
                     return ReconstructPath(parents, current, target);
                 }
 
@@ -1111,8 +1018,6 @@ public class AiPlayerController
                 {
                     int newDist = distances[current] + 1;
 
-                    // PERFORMANCE FIX: Don't search forever. If we can't find a road within 10 tiles, give up.
-                    // You only build roads if length <= 6 anyway!
                     if (newDist > 10) continue;
 
                     visited.Add(next);
@@ -1122,49 +1027,27 @@ public class AiPlayerController
                 }
             }
         }
-        return null; // No path found
+        return null; 
     }
-
-    //private List<Vector2Int> ReconstructPath(Dictionary<Vector2Int, Vector2Int> parents, Vector2Int end)
-    //{
-    //    List<Vector2Int> path = new List<Vector2Int>();
-    //    Vector2Int curr = end;
-
-    //    while (parents.ContainsKey(curr))
-    //    {
-    //        // Only add to the 'to-build' list if there isn't already a building/road here
-    //        if (gameManager.buildingManager.GetBuildingAtTile(curr) == null)
-    //        {
-    //            path.Add(curr);
-    //        }
-    //        curr = parents[curr];
-    //    }
-    //    return path;
-    //}
 
     private List<Vector2Int> ReconstructPath(Dictionary<Vector2Int, Vector2Int> parents, Vector2Int end, Building startBuilding)
     {
         List<Vector2Int> path = new List<Vector2Int>();
         Vector2Int curr = end;
 
-        // Safety break to prevent hard crashes if a loop ever happens again
         int safetyLimit = 1000;
 
-        // Loop until we hit a tile that belongs to the building we started from
         while (parents.ContainsKey(curr) && safetyLimit > 0)
         {
             safetyLimit--;
 
-            // Only add to the 'to-build' list if there isn't already a building/road here
             if (gameManager.buildingManager.GetBuildingAtTile(curr) == null)
             {
                 path.Add(curr);
             }
 
-            // Move to the next tile in the chain
             curr = parents[curr];
 
-            // EXIT CONDITION: Are we standing on the building we started from?
             if (startBuilding.GetOccupiedTiles().Contains(curr))
             {
                 break;
@@ -1182,7 +1065,6 @@ public class AiPlayerController
 
     private void ExecuteRoadMicro()
     {
-        // 1. Get all disconnected buildings
         var disconnected = myProfile.myBuildings
             .Where(b => !b.isConnectedToCapital && b.isConstructed)
             .OrderByDescending(b => GetBuildingPriority(b))
@@ -1193,9 +1075,10 @@ public class AiPlayerController
 
         foreach (var b in disconnected)
         {
+            if (b.isConnectedToCapital) continue;
+
             List<Vector2Int> path = FindRoadPath(b);
 
-            // Only build if the path is short and we can afford it
             if (path != null && path.Count > 0 && path.Count <= 6)
             {
                 if (myProfile.CanAfford(roadTemplate.woodCost * path.Count, roadTemplate.goldCost * path.Count, 0))
@@ -1205,11 +1088,13 @@ public class AiPlayerController
                         gameManager.buildingManager.PlaceBuilding(roadTemplate, tile, playerId);
                     }
 
+                    gameManager.economyManager.RecalculateRoadNetwork(myProfile);
+
                     roadsBuilt++;
                 }
             }
 
-            if (roadsBuilt >= 2) break; // Don't bankrupt ourselves on roads in one turn
+            if (roadsBuilt >= 2) break; 
         }
     }
 
