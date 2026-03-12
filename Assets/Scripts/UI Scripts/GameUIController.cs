@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Xml;
+using UnityEngine;
 
 public class GameUIController : MonoBehaviour
 {
@@ -14,16 +16,70 @@ public class GameUIController : MonoBehaviour
     public TMPro.TextMeshProUGUI goldLabel;
     public TMPro.TextMeshProUGUI availablePopLabel;
 
-    // Production panel
-    public GameObject productionPanel;
-    public TMPro.TextMeshProUGUI queueText;
-
-    public GameObject workerPanel; // Assign in Inspector
-    public TMPro.TextMeshProUGUI workerCountText;
-
     // Building panel
     public GameObject buildingPanelOpened;
     public GameObject buildingPanelClosed;
+
+    // -------------
+    [Header("Selection Info Panel")]
+    public GameObject infoPanel;
+    public TMPro.TextMeshProUGUI nameLabel;
+    public TMPro.TextMeshProUGUI healthLabel;
+
+    [Header("Unit Stats Panel")]
+    public GameObject statsPanel;
+    public TMPro.TextMeshProUGUI damageText;
+    public TMPro.TextMeshProUGUI rangeText;
+    public TMPro.TextMeshProUGUI movementText;
+    public TMPro.TextMeshProUGUI damageTypeText;
+    public TMPro.TextMeshProUGUI armorTypeText;
+
+    [Header("Worker Panel")]
+    public GameObject workerPanel;
+    public TMPro.TextMeshProUGUI workerCountText;
+
+    [Header("Training System")]
+    [Tooltip("Drag your UnitData assets here. Index 0 = Warrior, 1 = Archer, etc.")]
+    public List<UnitData> trainingTemplates;
+
+    [Header("Production Queue UI")]
+    public GameObject productionPanel;
+    public Transform queueContainer;    
+    public GameObject queueButtonPrefab;
+
+    [Header("Action Panel")]
+    public GameObject actionPanel;
+    public void SubscribeToPlayerUpdates(PlayerProfile profile)
+    {
+        profile.OnResourcesChanged += UpdateUI;
+    }
+    public void Subscribe(BuildingManager bm, ProductionManager pm)
+    {
+        bm.OnBuildingPlaced += HandleBuildingEvent;
+        bm.OnBuildingRemoved += HandleBuildingEvent;
+
+        pm.OnUnitQueued += HandleQueueEvent;
+        pm.OnUnitDequeued += HandleDequeueEvent;
+        pm.OnUnitSpawned += RefreshSelectionUI;
+    }
+
+    public void Unsubscribe(BuildingManager bm)
+    {
+        bm.OnBuildingPlaced -= HandleBuildingEvent;
+        bm.OnBuildingRemoved -= HandleBuildingEvent;
+        // Kezelni kell a ProductionManager eseményeit is, ha szükséges
+    }
+
+    private string FormatIncome(int income)
+    {
+        string color = income >= 0 ? "green" : "red";
+        string sign = income >= 0 ? "+" : "";
+        return $"<color={color}>({sign}{income})</color>";
+    }
+
+    private void HandleBuildingEvent(Building b) => UpdateUI();
+    private void HandleQueueEvent(Building b, UnitData u) => UpdateUI();
+    private void HandleDequeueEvent(Building b) => UpdateUI();
 
     public void EndTurn()
     {
@@ -33,14 +89,10 @@ public class GameUIController : MonoBehaviour
         turnLabel.text = $"Turn {turnNumber}";
 
         int currentPlayer = initializer.gameManager.currentPlayerId;
-        currentPlayerLabel.text = $"Player {currentPlayer}";       
+        currentPlayerLabel.text = $"Player {currentPlayer}";
 
+        RefreshSelectionUI();
         UpdateUI();
-    }
-
-    public void SubscribeToPlayerUpdates(PlayerProfile profile)
-    {
-        profile.OnResourcesChanged += UpdateUI;
     }
 
     public void UpdateUI()
@@ -69,42 +121,29 @@ public class GameUIController : MonoBehaviour
         goldLabel.text = $"<sprite name=\"gold_resource_icon\"> {activePlayer.gold}/{activePlayer.maxGold} {FormatIncome(report.goldNet)} ({totalGoldWorkers} <sprite name=\"population_resource_icon\">)";
     }
 
-    private string FormatIncome(int income)
+  
+    public void TrainUnitByIndex(int index)
     {
-        string color = income >= 0 ? "green" : "red";
-        string sign = income >= 0 ? "+" : "";
-        return $"<color={color}>({sign}{income})</color>";
-    }
+        if (trainingTemplates == null || index < 0 || index >= trainingTemplates.Count)
+        {
+            Debug.LogError($"UI Error: Index {index} is out of bounds for trainingTemplates list.");
+            return;
+        }
 
-    private void HandleBuildingEvent(Building b) => UpdateUI();
-    private void HandleQueueEvent(Building b, UnitData u) => UpdateUI();
-    private void HandleDequeueEvent(Building b) => UpdateUI();
-
-    public void Subscribe(BuildingManager bm, ProductionManager pm)
-    {
-        bm.OnBuildingPlaced += HandleBuildingEvent;
-        bm.OnBuildingRemoved += HandleBuildingEvent;
-
-        pm.OnUnitQueued += HandleQueueEvent;
-        pm.OnUnitDequeued += HandleDequeueEvent;
-        pm.OnUnitSpawned += RefreshSelectedBuildingUI;
-    }
-
-    public void Unsubscribe(BuildingManager bm)
-    {
-        bm.OnBuildingPlaced -= HandleBuildingEvent;
-        bm.OnBuildingRemoved -= HandleBuildingEvent;
-        // Kezelni kell a ProductionManager eseményeit is, ha szükséges
-    }
-
-    public void TrainUnit(UnitData unitData)
-    {
         Building selected = initializer.inputController.selectedBuilding;
 
         if (selected != null && selected.ownerId == initializer.gameManager.currentPlayerId)
         {
-            initializer.productionManager.QueueUnit(selected, unitData);
-            RefreshSelectedBuildingUI();
+            UnitData templateToQueue = trainingTemplates[index];
+
+            initializer.productionManager.QueueUnit(selected, templateToQueue);
+
+            RefreshSelectionUI();
+            UpdateUI();
+        }
+        else
+        {
+            Debug.LogWarning("Cannot train unit: No valid player building selected.");
         }
     }
 
@@ -125,66 +164,24 @@ public class GameUIController : MonoBehaviour
         initializer.inputController.activeBuildingType = buildingData;
     }
 
-    public void RefreshSelectedBuildingUI()
+    public void RefreshSelectionUI()
     {
-        Building selected = initializer.inputController.selectedBuilding;
+        var selectedBuilding = initializer.inputController.selectedBuilding;
+        var selectedUnit = initializer.inputController.selectedUnit;
 
-        if (selected == null)
+        infoPanel.SetActive(false);
+        statsPanel.SetActive(false);
+        workerPanel.SetActive(false);
+        productionPanel.SetActive(false);
+        actionPanel.SetActive(false);
+
+        if (selectedBuilding != null)
         {
-            workerPanel.SetActive(false);
-            productionPanel.SetActive(false);
-            return;
+            ShowBuildingInfo(selectedBuilding);
         }
-
-        if (selected.data.jobSlotsProvided > 0 && selected.isConstructed)
+        else if (selectedUnit != null)
         {
-            workerPanel.SetActive(true);
-            workerCountText.text = $"{selected.assignedWorkers} / {selected.data.jobSlotsProvided}";
-        }
-        else
-        {
-            workerPanel.SetActive(false);
-        }
-
-        if (selected.buildingType == Building.BuildingType.Barracks && initializer.gameManager.currentPlayerId == selected.ownerId)
-        {
-            productionPanel.SetActive(true);
-
-            // Queue lekérése a ProductionManagerből
-            var queue = initializer.productionManager.GetQueueForBuilding(selected);
-
-            if (queue != null && queue.Count > 0)
-            {
-                string queueStatus = "Next in: " + queue[0].turnsRemaining + " turns\n";
-                for (int i = 0; i < queue.Count; i++)
-                {
-                    queueStatus += $" {queue[i].template.unitType} ";
-                    // Cancel gomb logika ittl esz később
-                }
-                queueText.text = queueStatus;
-            }
-            else
-            {
-                queueText.text = "Queue Empty";
-            }
-        }
-        else
-        {
-            productionPanel.SetActive(false);
-        }
-    }
-
-    public void CancelLastInQueue()
-    {
-        Building selected = initializer.inputController.selectedBuilding;
-        if (selected == null) return;
-
-        var queue = initializer.productionManager.GetQueueForBuilding(selected);
-        if (queue != null && queue.Count > 1)
-        {
-            initializer.productionManager.CancelSpecificUnit(selected, queue.Count - 1);
-            UpdateUI();
-            RefreshSelectedBuildingUI();
+            ShowUnitInfo(selectedUnit);
         }
     }
 
@@ -198,7 +195,8 @@ public class GameUIController : MonoBehaviour
         {
             if (selected.TryAssignWorker(player))
             {
-                RefreshSelectedBuildingUI();
+                RefreshSelectionUI();
+
                 UpdateUI();
             }
         }
@@ -213,9 +211,99 @@ public class GameUIController : MonoBehaviour
         {
             if (selected.TryRemoveWorker(player))
             {
-                RefreshSelectedBuildingUI();
+                RefreshSelectionUI();
+
                 UpdateUI();
             }
+        }
+    }
+
+    public void OnActionButtonClicked()
+    {
+        var selectedBuilding = initializer.inputController.selectedBuilding;
+        var selectedUnit = initializer.inputController.selectedUnit;
+
+        if (selectedBuilding != null && selectedBuilding.ownerId == initializer.gameManager.currentPlayerId)
+        {
+            initializer.buildingManager.RemoveBuilding(selectedBuilding);
+            initializer.inputController.DeselectBuilding(); 
+        }
+        else if (selectedUnit != null && selectedUnit.ownerId == initializer.gameManager.currentPlayerId)
+        {
+            initializer.unitManager.DestroyUnit(selectedUnit); 
+            initializer.inputController.DeselectUnit(); 
+        }
+    }
+
+    private void ShowBuildingInfo(Building b)
+    {
+        infoPanel.SetActive(true);
+        nameLabel.text = b.data.buildingName;
+        healthLabel.text = $"HP: {b.currentHp}/{b.data.maxHealth}";
+
+        if (b.data.jobSlotsProvided > 0)
+        {
+            workerPanel.SetActive(true);
+            workerCountText.text = $"{b.assignedWorkers}/{b.data.jobSlotsProvided}";
+        }
+
+        if (b.buildingType == Building.BuildingType.Barracks)
+        {
+            productionPanel.SetActive(true);
+            UpdateProductionQueueUI(b);
+        }
+
+        bool isMine = b.ownerId == initializer.gameManager.currentPlayerId;
+        actionPanel.SetActive(isMine);
+
+        // Grey out buttons if it's an enemy building
+        //SetInteractionState(isMine);
+    }
+
+    private void ShowUnitInfo(Unit unit)
+    {
+        infoPanel.SetActive(true);
+        nameLabel.text = unit.data.unitName;
+        healthLabel.text = $"HP: {unit.currentHealth}/{unit.data.maxHealth}";
+
+        statsPanel.SetActive(true);
+
+        damageText.text = $"Sebzés: {unit.data.attackPower}";
+        rangeText.text = $"Távolság: {unit.data.attackRange}";
+        movementText.text = $"Mozgás: {unit.data.movementRange} pont";
+        damageTypeText.text = $"Sebzés típus: {unit.data.attackType}";
+        armorTypeText.text = $"Páncél típus: {unit.data.armorType}";
+
+        bool isMine = unit.ownerId == initializer.gameManager.currentPlayerId;
+        actionPanel.SetActive(isMine);
+    }
+
+    private void UpdateProductionQueueUI(Building b)
+    {
+        foreach (Transform child in queueContainer)
+        {
+            Destroy(child.gameObject);
+        }
+
+        var queue = initializer.productionManager.GetQueueForBuilding(b);
+        if (queue == null || queue.Count == 0) return;
+
+        for (int i = 0; i < queue.Count; i++)
+        {
+            int localIndex = i;
+            var order = queue[i];
+
+            GameObject buttonObj = Instantiate(queueButtonPrefab, queueContainer);
+            var textComp = buttonObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            textComp.text = $"{order.template.unitType}\n({order.turnsRemaining})";
+
+            var buttonComp = buttonObj.GetComponent<UnityEngine.UI.Button>();
+            buttonComp.onClick.AddListener(() =>
+            {
+                initializer.productionManager.CancelSpecificUnit(b, localIndex);
+                RefreshSelectionUI();
+                UpdateUI();
+            });
         }
     }
 }

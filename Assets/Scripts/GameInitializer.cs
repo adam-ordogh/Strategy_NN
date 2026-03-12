@@ -10,6 +10,7 @@ public class GameInitializer : MonoBehaviour
 
     public InputController inputController;
     public GameUIController gameUiController;
+    public MinimapController minimapController;
 
     public Tilemap map;
     public Tilemap featureMap;
@@ -80,7 +81,12 @@ public class GameInitializer : MonoBehaviour
 
         if (!isTrainingMode)
         {
+            minimapController.Initialize(mapManager.mapData, gameManager);
             unitVisualizer.SetAnimationRunner(visualsManager);
+
+            unitVisualizer.SetGameManager(gameManager);
+            buildingVisualizer.SetGameManager(gameManager);
+            influenceVisualizer.SetGameManager(gameManager);
 
             AddVisualEventListeners();
 
@@ -126,11 +132,18 @@ public class GameInitializer : MonoBehaviour
         buildingManager.OnBuildingPlaced += buildingVisualizer.ShowBuilding;
         buildingManager.OnBuildingRemoved += buildingVisualizer.RemoveBuilding;
         buildingManager.OnConstructionCompleted += buildingVisualizer.UpdateVisualsToFinished;
+        buildingManager.OnEnvironmentChanged += mapVisualizer.HandleEnvironmentChange;
 
         // Felhasználói felület események
-        inputController.OnSelectionChanged += gameUiController.RefreshSelectedBuildingUI;
+        //inputController.OnSelectionChanged += gameUiController.RefreshSelectedBuildingUI;
+        inputController.OnSelectionChanged += gameUiController.RefreshSelectionUI;
 
         gameUiController.Subscribe(buildingManager, productionManager);
+
+        buildingManager.OnBuildingPlaced += (b) => minimapController.UpdateMinimap();
+        buildingManager.OnBuildingRemoved += (b) => minimapController.UpdateMinimap();
+        unitManager.OnUnitMoved += (u, pos) => minimapController.UpdateMinimap();
+        influenceManager.OnInfluenceChanged += (data) => minimapController.UpdateMinimap();
 
         // Ez csak teszt jelleggel van itt, nem fog minden játékosra feliratkozni
         gameUiController.SubscribeToPlayerUpdates(gameManager.players[0]);

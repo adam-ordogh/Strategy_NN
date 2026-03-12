@@ -8,6 +8,8 @@ using UnityEngine.UIElements;
 
 public class UnitVisualizer
 {
+    GameManager gameManager;
+
     //private Tilemap unitTilemap;
     private Dictionary<Unit, GameObject> spawnedUnits = new Dictionary<Unit, GameObject>();
     private GameObject unitPrefab;
@@ -200,12 +202,11 @@ public class UnitVisualizer
     }
     private Color GetPlayerColor(int playerId)
     {
-        return playerId switch
-        {
-            1 => Color.cyan,
-            2 => new Color(1f, 0.3f, 0.3f), // Soft red
-            _ => Color.white
-        };
+        return gameManager.GetPlayerProfile(playerId).playerColor;
     }
 
+    public void SetGameManager(GameManager gm)
+    {
+        this.gameManager = gm;
+    }
 }

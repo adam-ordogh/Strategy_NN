@@ -4,6 +4,8 @@ using UnityEngine.Tilemaps;
 
 public class BuildingVisualizer
 {
+    private GameManager gameManager;
+
     private Tilemap buildingTilemap;
     private Dictionary<Building, GameObject> spawnedBuildings = new Dictionary<Building, GameObject>();
     private GameObject buildingPrefab;
@@ -194,12 +196,7 @@ public class BuildingVisualizer
 
     private Color GetPlayerColor(int playerId)
     {
-        return playerId switch
-        {
-            1 => Color.cyan,
-            2 => new Color(1f, 0.3f, 0.3f), // Soft red
-            _ => Color.white
-        };
+        return gameManager.GetPlayerProfile(playerId).playerColor;
     }
 
     public GameObject GetVisualInstance(Building building)
@@ -209,5 +206,10 @@ public class BuildingVisualizer
             return instance;
         }
         return null;
+    }
+
+    public void SetGameManager(GameManager gameManager)
+    {
+        this.gameManager = gameManager;
     }
 }

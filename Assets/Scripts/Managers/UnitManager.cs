@@ -55,6 +55,18 @@ public class UnitManager : MonoBehaviour
         OnUnitCreated?.Invoke(unit, unit.position);
     }
 
+    public void DestroyUnit(Unit unit)
+    {
+        unit.OnUnitDeath -= HandleUnitDeath;
+        mapData.units.Remove(unit.position);
+        PlayerProfile owner = gameManager.GetPlayerProfile(unit.ownerId);
+        if (owner != null)
+        {
+            owner.myUnits.Remove(unit);
+        }
+        OnUnitDestroyed?.Invoke(unit);
+    }
+
     public void HandleUnitDeath(Unit unit)
     {
         if (mapData.units.ContainsKey(unit.position))

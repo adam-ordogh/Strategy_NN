@@ -8,6 +8,8 @@ public class PlayerProfile
     public int playerId;
     public bool isAi;
 
+    public Color playerColor;
+
     public List<Unit> myUnits = new List<Unit>();
     public List<Building> myBuildings = new List<Building>();
 
@@ -45,8 +47,16 @@ public class PlayerProfile
     }
     public int availablePopulation => currentPopulation - CurrentUsedPopulation;
 
-
     public event System.Action OnResourcesChanged;
+
+    public PlayerProfile(int playerId, bool isAi, Color playerColor, int starterGold, int starterWood, int starterFood) {
+        this.playerId = playerId;
+        this.isAi = isAi;
+        this.playerColor = playerColor;
+        this.gold = starterGold;
+        this.wood = starterWood;
+        this.food = starterFood;
+    }
 
     public bool CanAfford(int goldCost, int woodCost, int foodCost)
     {

@@ -10,6 +10,7 @@ public class MapVisualizer
     private Transform featureContainer;
 
     private HashSet<Vector2Int> occupiedTiles = new HashSet<Vector2Int>();
+    private Dictionary<Vector2Int, List<GameObject>> spawnedFeatures = new Dictionary<Vector2Int, List<GameObject>>();
 
     public MapVisualizer(Tilemap ground, Tilemap feature, TileRegistry registry, Transform container)
     {
@@ -51,59 +52,20 @@ public class MapVisualizer
         }
     }
 
-    //private void HandleMountainSpawning(MapData data, int x, int y, int width, int height)
-    //{
-    //    int runLength = 1;
-    //    while (x + runLength < width &&
-    //           data.GetTileData(x + runLength, y).type == MapData.TileType.Mountain &&
-    //           runLength < 3)
-    //    {
-    //        runLength++;
-    //    }
-
-    //    GameObject prefab = tileRegistry.GetMountainPrefab(runLength);
-
-    //    if (prefab != null)
-    //    {
-    //        float minYOffset = 0f; 
-    //        float maxYOffset = 0.2f; 
-
-    //        float randomY = y + Random.Range(minYOffset, maxYOffset);
-
-    //        Vector3 spawnPos = new Vector3(x, randomY, 0);
-    //        GameObject mountain = Object.Instantiate(prefab, spawnPos, Quaternion.identity, featureContainer);
-
-    //        SpriteRenderer sr = mountain.GetComponent<SpriteRenderer>();
-    //        if (sr != null)
-    //        {
-    //            RenderSorter.Sort(sr, randomY); 
-    //        }
-
-    //        for (int i = 0; i < runLength; i++)
-    //        {
-    //            occupiedTiles.Add(new Vector2Int(x + i, y));
-    //        }
-    //    }
-    //}
     private void HandleMountainSpawning(MapData data, int x, int y, int width, int height)
     {
         int runLength = 1;
         while (x + runLength < width &&
                data.GetTileData(x + runLength, y).type == MapData.TileType.Mountain &&
                runLength < 3 &&
-               !occupiedTiles.Contains(new Vector2Int(x + runLength, y))) // Check if next tile is free
+               !occupiedTiles.Contains(new Vector2Int(x + runLength, y))) 
         {
             runLength++;
         }
 
-        // RANDOMIZATION: Pick a random width between 1 and the available runLength
-        //int chosenWidth = Random.Range(1, runLength + 1);
-
-        // NEIGHBOR CHECK: Is there a mountain ABOVE or to the LEFT?
         bool hasMountainAbove = (y + 1 < height) && (data.GetTileData(x, y + 1).type == MapData.TileType.Mountain);
         bool hasMountainLeft = (x - 1 >= 0) && (data.GetTileData(x - 1, y).type == MapData.TileType.Mountain);
         
-        // If it's an edge (nothing above or left), we MUST use the tall variant for unit visibility
         bool mustUseTallVariant = !hasMountainAbove || !hasMountainLeft;
 
         GameObject prefab = tileRegistry.GetSpecificMountainPrefab(runLength, mustUseTallVariant);
@@ -121,7 +83,6 @@ public class MapVisualizer
                 RenderSorter.Sort(sr, randomY);
             }
 
-            // Mark tiles as occupied based on the CHOSEN width
             for (int i = 0; i < runLength; i++)
             {
                 occupiedTiles.Add(new Vector2Int(x + i, y));
@@ -129,9 +90,14 @@ public class MapVisualizer
         }
     }
 
-
     private void HandleForestSpawning(int x, int y, int clusterSize)
     {
+        Vector2Int pos = new Vector2Int(x, y);
+
+        // Ha már van itt valami, biztos ami biztos töröljük (vagy inicializáljuk a listát)
+        if (!spawnedFeatures.ContainsKey(pos))
+            spawnedFeatures[pos] = new List<GameObject>();
+
         for (int i = 0; i < clusterSize; i++)
         {
             GameObject prefab = tileRegistry.GetRandomFeaturePrefab(MapData.TileType.Forest);
@@ -144,26 +110,33 @@ public class MapVisualizer
                 float minX = x + treePadding;
                 float maxX = x + 1 - treePadding;
 
-
                 // - Y pozicónál a fa magasságának nagy részét a tile alján helyezzük el, hogy ne takarják el a tile fölött lévő egységeket
                 float minY = y + treePadding;
                 float maxY = y + 0.5f; // Fák magasságának nagy részét a tile alján helyezzük el, hogy ne takarják el a tile fölött lévő egységeket
 
-                // Random pozíció generálása a tile-on belül
-                Vector3 randomPos = new Vector3(
-                    Random.Range(minX, maxX),
-                    Random.Range(minY, maxY),
-                    0
-                );
+                Vector3 randomPos = new Vector3(Random.Range(minX, maxX), Random.Range(minY, maxY), 0);
 
                 GameObject tree = Object.Instantiate(prefab, randomPos, Quaternion.identity, featureContainer);
 
+                // ELMENTJÜK a fát a listába
+                spawnedFeatures[pos].Add(tree);
+
                 SpriteRenderer sr = tree.GetComponent<SpriteRenderer>();
-                if (sr != null)
-                {
-                    RenderSorter.Sort(sr, tree.transform.position.y);
-                }
+                if (sr != null) { RenderSorter.Sort(sr, tree.transform.position.y); }
             }
         }
+    }
+
+    public void HandleEnvironmentChange(Vector2Int pos, MapData.TileType newType)
+    {
+        if (spawnedFeatures.TryGetValue(pos, out List<GameObject> features))
+        {
+            foreach (var feature in features)
+            {
+                if (feature != null) Object.Destroy(feature);
+            }
+            spawnedFeatures.Remove(pos);
+        }
+        groundMap.SetTile(new Vector3Int(pos.x, pos.y, 0), tileRegistry.GetTile(newType));
     }
 }

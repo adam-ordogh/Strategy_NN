@@ -46,11 +46,12 @@ public class GameManager
 
     public void InitializePlayers()
     {
-        var p1 = new PlayerProfile { playerId = 1, isAi = false, food = 50, gold = 200, wood = 200};
+        //var p1 = new PlayerProfile { playerId = 1, isAi = false, food = 50, gold = 200, wood = 200};
+        var p1 = new PlayerProfile ( playerId:1, isAi:false, playerColor: Color.cyan, starterGold:200, starterWood:200, starterFood:50);
         players.Add(p1);
 
         //var p2 = new PlayerProfile { playerId = 2, isAi = false, food = 50, gold = 200, wood = 200};
-        var p2 = new PlayerProfile { playerId = 2, isAi = true, food = 50, gold = 200, wood = 200 };
+        var p2 = new PlayerProfile(playerId: 2, isAi: true, playerColor: new Color(1f, 0.3f, 0.3f), starterGold: 200, starterWood: 200, starterFood: 50);
         players.Add(p2);
 
         aiControllers.Add(p2.playerId, new AiPlayerController(p2.playerId, this));

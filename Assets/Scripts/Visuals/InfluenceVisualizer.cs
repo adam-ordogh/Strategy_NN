@@ -3,6 +3,8 @@ using UnityEngine.Tilemaps;
 
 public class InfluenceVisualizer
 {
+    private GameManager gameManager;
+
     private Tilemap borderTilemap;
     private TileBase borderTile;
 
@@ -32,5 +34,14 @@ public class InfluenceVisualizer
         }
     }
 
-    private Color GetPlayerColor(int id) => id == 1 ? new Color(0, 1, 1, 0.2f) : new Color(1, 0, 0, 0.3f);
+    private Color GetPlayerColor(int playerId)
+    {
+        Color baseColor = gameManager.GetPlayerProfile(playerId).playerColor;
+        return new Color(baseColor.r, baseColor.g, baseColor.b, 0.3f);
+    }
+
+    public void SetGameManager(GameManager gameManager)
+    {
+        this.gameManager = gameManager;
+    }
 }

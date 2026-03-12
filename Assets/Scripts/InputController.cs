@@ -21,7 +21,7 @@ public class InputController : MonoBehaviour
     public UnitVisualizer unitVisualizer;
     public BuildingVisualizer buildingVisualizer;
 
-    private Vector2Int? selectedUnitPos;
+    public Unit selectedUnit;
     public BuildingData activeBuildingType;
     public Building selectedBuilding;
     private Building currentlyHoveredBuilding;
@@ -73,7 +73,7 @@ public class InputController : MonoBehaviour
                 HandleClick();
             }
 
-            if (Mouse.current.rightButton.wasPressedThisFrame && selectedUnitPos != null)
+            if (Mouse.current.rightButton.wasPressedThisFrame && selectedUnit != null)
             {
                 DeselectUnit();
             }
@@ -86,7 +86,7 @@ public class InputController : MonoBehaviour
 
         Building buildingAtPos = buildingManager.GetBuildingAtTile(gridPos);
 
-        if (buildingAtPos != null && buildingAtPos.data.isSelectable == true && buildingAtPos.ownerId == gameManager.currentPlayerId)
+        if (buildingAtPos != null && buildingAtPos.data.isSelectable == true)
         {
             if (buildingAtPos.isConstructed)
             {
@@ -101,14 +101,11 @@ public class InputController : MonoBehaviour
 
         if (mapData.units.TryGetValue(gridPos, out Unit unit))
         {
-            if (unit.ownerId == gameManager.currentPlayerId)
-            {
-                SelectUnit(gridPos);
-                return;
-            }
+            SelectUnit(gridPos);
+            return;            
         }
 
-        if (selectedUnitPos.HasValue)
+        if (selectedUnit != null && selectedUnit.ownerId == gameManager.currentPlayerId)
         {
             HandleUnitAction(gridPos);
             return;
@@ -123,9 +120,9 @@ public class InputController : MonoBehaviour
         // Egység interakciók kezelése
         if (mapManager.mapData.units.TryGetValue(clickedPos, out Unit clickedUnit))
         {
-            if (selectedUnitPos.HasValue && clickedUnit.ownerId != gameManager.currentPlayerId)
+            if (selectedUnit != null && clickedUnit.ownerId != gameManager.currentPlayerId)
             {
-                PerformMoveAndAttack(selectedUnitPos.Value, clickedPos);
+                PerformMoveAndAttack(selectedUnit, clickedPos);
             }
             else if (clickedUnit.ownerId == gameManager.currentPlayerId)
             {
@@ -136,28 +133,26 @@ public class InputController : MonoBehaviour
 
         // Épület interakciók kezelése
         Building clickedBuilding = buildingManager.GetBuildingAtTile(clickedPos);
-        if (clickedBuilding != null && clickedBuilding.data.isSelectable && selectedUnitPos.HasValue)
+        if (clickedBuilding != null && clickedBuilding.data.isSelectable && selectedUnit != null)
         {
             if (clickedBuilding.ownerId != gameManager.currentPlayerId)
             {
-                PerformMoveAndAttack(selectedUnitPos.Value, clickedPos);
+                PerformMoveAndAttack(selectedUnit, clickedPos);
                 DeselectUnit();
                 return;
             }
         }
 
         // Mozgás kezelése
-        if (selectedUnitPos.HasValue)
+        if (selectedUnit != null)
         {
-            unitManager.TryMoveUnit(selectedUnitPos.Value, clickedPos);
+            unitManager.TryMoveUnit(selectedUnit.position, clickedPos);
             DeselectUnit();
         }
     }
 
-    private void PerformMoveAndAttack(Vector2Int attackerPos, Vector2Int targetPos)
+    private void PerformMoveAndAttack(Unit attacker, Vector2Int targetPos)
     {
-        Unit attacker = mapManager.mapData.units[attackerPos];
-
         // GetBestAttackPosition most már kezeli az épületeket is
         Vector2Int? attackTile = unitManager.GetBestAttackPosition(attacker, targetPos);
 
@@ -187,52 +182,48 @@ public class InputController : MonoBehaviour
 
         if (mapManager.mapData.units.TryGetValue(clickedPos, out Unit unit))
         {
-            if (unit.ownerId != gameManager.currentPlayerId) return;
-            selectedUnitPos = clickedPos;
+            selectedUnit = unit;
+            DeselectBuilding(); 
 
-            var reachable = unitManager.GetReachableTilesWithCost(unit).Keys;
-            unitVisualizer.ShowHighlights(reachable, new Color(0, 0.5f, 1f, 0.4f));
-
-            if (unit.canAttack)
+            if (unit.ownerId == gameManager.currentPlayerId)
             {
-                //var attackCommands = unitManager.GetReachableEnemies(unit);
-                var attackCommands = unitManager.GetReachableTargets(unit);
-                var enemyPositions = attackCommands.Select(c => c.TargetPos);
-                unitVisualizer.ShowHighlights(enemyPositions, new Color(1f, 0, 0, 0.6f));
+                var reachable = unitManager.GetReachableTilesWithCost(unit).Keys;
+                unitVisualizer.ShowHighlights(reachable, new Color(0, 0.5f, 1f, 0.4f));
+
+                if (unit.canAttack)
+                {
+                    var attackCommands = unitManager.GetReachableTargets(unit);
+                    var enemyPositions = attackCommands.Select(c => c.TargetPos);
+                    unitVisualizer.ShowHighlights(enemyPositions, new Color(1f, 0, 0, 0.6f));
+                }
             }
+
+            OnSelectionChanged?.Invoke(); 
         }
     }
 
     public void DeselectUnit()
     {
-        selectedUnitPos = null;
+        selectedUnit = null;
         unitVisualizer.ClearHighlights();
+        OnSelectionChanged?.Invoke(); 
     }
 
     private void SelectBuilding(Building building)
-    {   
-        DeselectUnit();
+    {
+        selectedUnit = null; 
         selectedBuilding = building;
 
         unitVisualizer.ClearHighlights();
         unitVisualizer.ShowHighlights(building.GetOccupiedTiles(), new Color(1, 1, 0, 0.4f));
 
-        // UI Hook: Itt hozzon elő egy UI elemet az épülethez kapcsolódó műveletekkel
-        if (building.buildingType == Building.BuildingType.Barracks &&
-            building.ownerId == gameManager.currentPlayerId)
-        {
-            Debug.Log("Selected Barracks: Ready to produce units.");
-        }
-
-        OnSelectionChanged?.Invoke();
+        OnSelectionChanged?.Invoke(); 
     }
 
-    private void DeselectBuilding()
+    public void DeselectBuilding()
     {
         selectedBuilding = null;
         unitVisualizer.ClearHighlights();
-        Debug.Log("Deselected Building");
-
         OnSelectionChanged?.Invoke();
     }
 
@@ -373,7 +364,6 @@ public class InputController : MonoBehaviour
             currentlyHoveredBuilding = hovered;
         }
     }
-
     private void ToggleWorkerBar(Building building, bool show)
     {
         GameObject visual = buildingVisualizer.GetVisualInstance(building);

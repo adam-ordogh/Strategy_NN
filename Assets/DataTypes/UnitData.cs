@@ -26,4 +26,5 @@ public class UnitData : ScriptableObject
 
     [Header("Visuals")]
     public Sprite unitSprite;
+    public string unitName;
 }

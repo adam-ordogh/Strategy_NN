@@ -19,6 +19,8 @@ public class BuildingManager : MonoBehaviour
     public event System.Action<Building> OnBuildingRemoved;
     public event System.Action<Building> OnConstructionCompleted;
 
+    public event System.Action<Vector2Int, MapData.TileType> OnEnvironmentChanged;
+
     public void Initialize(MapData mapData, InfluenceManager influenceManager, GameManager gameManager)
     {
         this.mapData = mapData;
@@ -58,7 +60,7 @@ public class BuildingManager : MonoBehaviour
             buildingsUnderConstruction.Add(newBuilding);
         }
 
-        OnBuildingPlaced?.Invoke(newBuilding); // Scaffold event
+        OnBuildingPlaced?.Invoke(newBuilding); 
         return newBuilding;
     }
 
@@ -118,7 +120,11 @@ public class BuildingManager : MonoBehaviour
             }
             if (building.data.influenceRadius > 0)
             {
-                influenceManager.RemoveBuildingFromReachGrid(building); // This now triggers the update
+                influenceManager.RemoveBuildingFromReachGrid(building);
+            }
+            if (!building.isConstructed) 
+            { 
+                buildingsUnderConstruction.Remove(building);
             }
             OnBuildingRemoved?.Invoke(building);
         }
@@ -235,7 +241,7 @@ public class BuildingManager : MonoBehaviour
 
     private bool HasAdjacentTileType(Vector2Int center, TileType type)
     {
-        // Check 8 neighbors (including diagonals if you want, or just 4 cardinals)
+        // 8 szomszédos mező ellenőrzése
         for (int x = -1; x <= 1; x++)
         {
             for (int y = -1; y <= 1; y++)
@@ -270,11 +276,34 @@ public class BuildingManager : MonoBehaviour
         return true;
     }
 
+    //private void UpdateOccupancy(Building building, bool isAdding)
+    //{
+    //    foreach (var tile in building.GetOccupiedTiles())
+    //    {
+    //        occupancyGrid[tile.x, tile.y] = isAdding ? building : null;
+    //        // REMOVING FOREST
+    //        if (mapData.GetTileData(tile.x, tile.y).type == TileType.Forest)
+    //        {
+    //            mapData.SetTileData(tile.x, tile.y, new MapData.TileData { type = TileType.Grass, isPassable = true });
+    //        }
+    //    }
+    //}
+
     private void UpdateOccupancy(Building building, bool isAdding)
     {
         foreach (var tile in building.GetOccupiedTiles())
         {
             occupancyGrid[tile.x, tile.y] = isAdding ? building : null;
+
+            // REMOVING FOREST
+            if (isAdding && mapData.GetTileData(tile.x, tile.y).type == TileType.Forest)
+            {
+                // 1. Update the logical data
+                mapData.SetTileData(tile.x, tile.y, new MapData.TileData { type = TileType.Grass, isPassable = true });
+
+                // 2. Broadcast the change to anyone listening
+                OnEnvironmentChanged?.Invoke(tile, TileType.Grass);
+            }
         }
     }
 

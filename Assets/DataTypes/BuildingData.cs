@@ -45,7 +45,9 @@ public class BuildingData : ScriptableObject
     public Sprite buildingColorTrim;
     public Sprite constructionSprite;
 
+
     [Header("User Interaction")]
     public bool isSelectable;
+    public string buildingName;
     public string description;
 }
