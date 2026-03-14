@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,41 +11,35 @@ public enum AIGoal
 
 public enum MilitaryState { Defending, Gathering, Attacking }
 
-public class AiPlayerController
+public class AIMacroDeterministic : IAIController
 {
-    public int playerId;
+    public int PlayerId { get; private set; }
     private GameManager gameManager;
     private PlayerProfile myProfile;
-
-    private AIGoal currentGoal;
+    private AIMicroController micro;
     public MilitaryState currentArmyState = MilitaryState.Gathering;
 
-    // Micro controller handles all detailed execution
-    private AIMicroController micro;
-
-    public AiPlayerController(int id, GameManager init)
+    public void Initialize(GameManager gameManager)
     {
-        playerId = id;
-        gameManager = init;
-        myProfile = gameManager.GetPlayerProfile(playerId);
+        this.gameManager = gameManager;
+        this.myProfile = gameManager.GetPlayerProfile(PlayerId);
+        this.micro = new AIMicroController(PlayerId, gameManager);
+    }
 
-        // Initialize micro controller
-        micro = new AIMicroController(playerId, gameManager);
+    public AIMacroDeterministic(int playerId)
+    {
+        PlayerId = playerId;
     }
 
     public void ExecuteTurn()
     {
         myProfile.PrintResourceStatus();
-
-        // Refresh micro controller's profile reference
         micro.RefreshProfile();
 
-        // 1. MACRO: Decide what to focus on
         AIGoal currentGoal = DetermineMacroGoal();
-
-        // 2. MICRO: Execute based on that goal
         ExecuteMicroActions(currentGoal);
 
+        // GameManager will call NextTurn() after this
         gameManager.NextTurn();
     }
 
@@ -53,16 +47,14 @@ public class AiPlayerController
     {
         var income = gameManager.economyManager.GetProjectedIncome(myProfile);
 
-        // Emergency overrides
         if (income.foodNet < 2) return AIGoal.FocusEconomy;
         if (micro.IsEnemyNearBase(15f)) return AIGoal.FocusMilitary;
 
-        // Calculate desire scores
         float economyScore = CalculateEconomyDesire(income);
         float militaryScore = CalculateMilitaryDesire();
         float expansionScore = CalculateExpansionDesire();
 
-        Debug.Log($"[AI {playerId}] Desire Scores - Economy: {economyScore}, Military: {militaryScore}, Expansion: {expansionScore}");
+        //Debug.Log($"[AI {PlayerId}] Desire Scores - Economy: {economyScore}, Military: {militaryScore}, Expansion: {expansionScore}");
 
         if (expansionScore >= economyScore && expansionScore >= militaryScore)
             return AIGoal.FocusExpansion;
@@ -75,24 +67,22 @@ public class AiPlayerController
 
     private void ExecuteMicroActions(AIGoal goal)
     {
-        // Execute goal-specific micro
         switch (goal)
         {
             case AIGoal.FocusEconomy:
                 micro.ExecuteEconomyMicro();
-                Debug.Log("---------FOCUSING ON ECONOMY THIS TURN!---------");
+                Debug.Log("---------DETERMINISTIC AI FOCUSING ON ECONOMY THIS TURN!---------");
                 break;
             case AIGoal.FocusMilitary:
                 micro.ExecuteMilitaryMicro();
-                Debug.Log("---------FOCUSING ON MILITARY THIS TURN!---------");
+                Debug.Log("---------DETERMINISTIC AI FOCUSING ON MILITARY THIS TURN!---------");
                 break;
             case AIGoal.FocusExpansion:
                 micro.ExecuteExpansionMicro();
-                Debug.Log("---------FOCUSING ON EXPANSION THIS TURN!---------");
+                Debug.Log("---------DETERMINISTIC AI FOCUSING ON EXPANSION THIS TURN!---------");
                 break;
         }
 
-        // Always execute these
         micro.ExecuteRoadMicro();
         micro.HandleUnitMicro(currentArmyState, ref currentArmyState);
     }

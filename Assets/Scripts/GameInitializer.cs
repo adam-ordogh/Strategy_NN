@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -43,7 +44,7 @@ public class GameInitializer : MonoBehaviour
     // async volt eddig
     void Start()
     {
-        isTrainingMode = false;
+        //isTrainingMode = false;
         CreateCameraControls();
         InstantiateComponents();
 
@@ -100,6 +101,18 @@ public class GameInitializer : MonoBehaviour
         }
     }
 
+    //public void InitializeComponents()
+    //{
+    //    mapManager.Initialize();
+    //    unitManager.Initialize(mapManager.mapData, gameManager);
+    //    buildingManager.Initialize(mapManager.mapData, influenceManager, gameManager);
+    //    influenceManager.Initialize(mapManager.mapData);
+    //    productionManager.Initialize(mapManager.mapData, unitManager, buildingManager, gameManager);
+    //    economyManager.Initialize(mapManager.mapData, buildingManager);    
+
+    //    gameManager.InitializePlayers();
+    //}
+
     public void InitializeComponents()
     {
         mapManager.Initialize();
@@ -107,9 +120,25 @@ public class GameInitializer : MonoBehaviour
         buildingManager.Initialize(mapManager.mapData, influenceManager, gameManager);
         influenceManager.Initialize(mapManager.mapData);
         productionManager.Initialize(mapManager.mapData, unitManager, buildingManager, gameManager);
-        economyManager.Initialize(mapManager.mapData, buildingManager);    
-        
-        gameManager.InitializePlayers();
+        economyManager.Initialize(mapManager.mapData, buildingManager);
+
+        // Use different player initialization based on mode
+        if (isTrainingMode)
+        {
+            var aiTypes = new List<AIFactory.AIType>
+            {
+                AIFactory.AIType.MLBasic,      // Player 1 - ML agent
+                AIFactory.AIType.Deterministic  // Player 2 - Opponent
+            };
+            gameManager.InitializePlayersWithCustomAI(aiTypes);
+            inputController.enabled = false;
+            //gameManager.NextTurn(); // Start the first turn immediately for training mode
+        }
+        else
+        {
+            gameManager.InitializePlayers(); // Your original method
+            inputController.enabled = true;
+        }
     }
 
     public void AddVisualEventListeners()

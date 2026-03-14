@@ -196,6 +196,16 @@ public class AIMicroController
 
     public void HandleUnitMicro(MilitaryState currentArmyState, ref MilitaryState armyState)
     {
+        if (myProfile.myBuildings.Count == 0)
+        {
+            // Fallback: If we have units, use the first unit's position, otherwise abort
+            if (myProfile.myUnits.Count == 0) return;
+
+            // You can either return or use a unit position as the reference point
+            // Vector2Int referencePos = myProfile.myUnits[0].position;
+            return;
+        }
+
         Vector2Int enemyBase = GetClosestEnemyBase(myProfile.myBuildings[0].position);
         Vector2Int rallyPoint = GetRallyPoint();
 
@@ -297,6 +307,9 @@ public class AIMicroController
     private Vector2Int? FindBestPlacementTile(BuildingData template, AIGoal goal)
     {
         var influenceManager = gameManager.buildingManager.influenceManager;
+
+        if (myProfile.myBuildings.Count == 0) return null;
+
         Vector2Int enemyBasePos = GetClosestEnemyBase(myProfile.myBuildings[0].position);
 
         List<Vector2Int> myTerritory = influenceManager.GetTilesOwnedBy(playerId);
