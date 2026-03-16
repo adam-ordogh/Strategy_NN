@@ -33,7 +33,7 @@ public class AIMacroDeterministic : IAIController
 
     public void ExecuteTurn()
     {
-        myProfile.PrintResourceStatus();
+        //myProfile.PrintResourceStatus();
         micro.RefreshProfile();
 
         AIGoal currentGoal = DetermineMacroGoal();
@@ -71,15 +71,15 @@ public class AIMacroDeterministic : IAIController
         {
             case AIGoal.FocusEconomy:
                 micro.ExecuteEconomyMicro();
-                Debug.Log("---------DETERMINISTIC AI FOCUSING ON ECONOMY THIS TURN!---------");
+                //Debug.Log("---------DETERMINISTIC AI FOCUSING ON ECONOMY THIS TURN!---------");
                 break;
             case AIGoal.FocusMilitary:
                 micro.ExecuteMilitaryMicro();
-                Debug.Log("---------DETERMINISTIC AI FOCUSING ON MILITARY THIS TURN!---------");
+                //Debug.Log("---------DETERMINISTIC AI FOCUSING ON MILITARY THIS TURN!---------");
                 break;
             case AIGoal.FocusExpansion:
                 micro.ExecuteExpansionMicro();
-                Debug.Log("---------DETERMINISTIC AI FOCUSING ON EXPANSION THIS TURN!---------");
+                //Debug.Log("---------DETERMINISTIC AI FOCUSING ON EXPANSION THIS TURN!---------");
                 break;
         }
 

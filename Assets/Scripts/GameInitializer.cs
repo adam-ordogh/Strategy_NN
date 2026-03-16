@@ -6,6 +6,7 @@ using UnityEngine.Tilemaps;
 public class GameInitializer : MonoBehaviour
 {
     public bool isTrainingMode;
+    public bool isAiVsAiMode;
 
     private MapGenerator mapGenerator;
 
@@ -101,18 +102,6 @@ public class GameInitializer : MonoBehaviour
         }
     }
 
-    //public void InitializeComponents()
-    //{
-    //    mapManager.Initialize();
-    //    unitManager.Initialize(mapManager.mapData, gameManager);
-    //    buildingManager.Initialize(mapManager.mapData, influenceManager, gameManager);
-    //    influenceManager.Initialize(mapManager.mapData);
-    //    productionManager.Initialize(mapManager.mapData, unitManager, buildingManager, gameManager);
-    //    economyManager.Initialize(mapManager.mapData, buildingManager);    
-
-    //    gameManager.InitializePlayers();
-    //}
-
     public void InitializeComponents()
     {
         mapManager.Initialize();
@@ -123,16 +112,38 @@ public class GameInitializer : MonoBehaviour
         economyManager.Initialize(mapManager.mapData, buildingManager);
 
         // Use different player initialization based on mode
+        // Against deterministic
+        //if (isTrainingMode)
+        //{
+        //    var aiTypes = new List<AIFactory.AIType>
+        //    {
+        //        AIFactory.AIType.MLBasic,      // Player 1 - ML agent
+        //        AIFactory.AIType.Deterministic  // Player 2 - Opponent
+        //    };
+        //    gameManager.InitializePlayersWithCustomAI(aiTypes);
+        //    inputController.enabled = false;
+        //    //gameManager.NextTurn(); // Start the first turn immediately for training mode
+        //}
+        // Self play
         if (isTrainingMode)
         {
             var aiTypes = new List<AIFactory.AIType>
             {
-                AIFactory.AIType.MLBasic,      // Player 1 - ML agent
-                AIFactory.AIType.Deterministic  // Player 2 - Opponent
+                AIFactory.AIType.MLBasic,  // Player 1 - ML agent
+                AIFactory.AIType.MLBasic   // Player 2 - also ML agent, same behavior
             };
             gameManager.InitializePlayersWithCustomAI(aiTypes);
             inputController.enabled = false;
-            //gameManager.NextTurn(); // Start the first turn immediately for training mode
+        }
+        else if(isAiVsAiMode)
+        {
+            var aiTypes = new List<AIFactory.AIType>
+            {
+                AIFactory.AIType.MLBasic,  // Player 1 - Deterministic AI
+                AIFactory.AIType.Deterministic          // Player 2 - Random AI
+            };
+            gameManager.InitializePlayersWithCustomAI(aiTypes);
+            inputController.enabled = false;
         }
         else
         {

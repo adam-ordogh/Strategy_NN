@@ -33,29 +33,30 @@ public class TrainingRestart : MonoBehaviour
 
     bool ShouldEndEpisode()
     {
-        // End if any player has no buildings
-        //foreach (var player in gameManager.players)
-        //{
-        //    if (player.myBuildings.Count == 0)
-        //        return true;
-        //}
-
         if (gameManager.turnNumber > 5)
         {
-            foreach (var player in gameManager.players) 
+            foreach (var player in gameManager.players)
             {
                 if (player.myBuildings.Count == 0)
+                {
+                    //Debug.Log($"Episode ended by ELIMINATION of {player.playerId} at turn {gameManager.turnNumber}");
                     return true;
+                }
             }
         }
 
-        // End if too many turns
-        return gameManager.turnNumber > maxTurnsPerEpisode;
+        if (gameManager.turnNumber > maxTurnsPerEpisode)
+        {
+            //Debug.Log($"Episode ended by TIMEOUT at turn {gameManager.turnNumber}");
+            return true;
+        }
+
+        return false;
     }
 
     void RestartEpisode()
     {
-        Debug.Log($"Episode ended at turn {gameManager.turnNumber}. Restarting...");
+        //Debug.Log($"Episode ended at turn {gameManager.turnNumber}. Restarting...");
 
         // Simply reload the scene
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);

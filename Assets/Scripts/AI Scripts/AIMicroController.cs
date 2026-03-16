@@ -110,6 +110,9 @@ public class AIMicroController
 
     public void ExecuteMilitaryMicro()
     {
+        RebalanceWorkers();
+        AssignIdleWorkers();
+
         int desiredBarracks = Mathf.Max(2, myProfile.currentPopulation / 20);
 
         if (CountBuildings(Building.BuildingType.Barracks) < desiredBarracks)
@@ -144,6 +147,9 @@ public class AIMicroController
 
     public void ExecuteExpansionMicro()
     {
+        RebalanceWorkers();
+        AssignIdleWorkers();
+
         BuildingData expansionTemplate = GetBuildingTemplate(Building.BuildingType.Outpost);
 
         if (expansionTemplate != null && myProfile.CanAfford(expansionTemplate.goldCost, expansionTemplate.woodCost, 0))
@@ -213,15 +219,15 @@ public class AIMicroController
                           CountUnits(Unit.UnitType.Cavalry) + CountUnits(Unit.UnitType.Siege);
 
         // Update army state based on size
-        if (armyState == MilitaryState.Gathering && combatUnits >= 15)
+        if (armyState == MilitaryState.Gathering && combatUnits >= 7)
         {
             armyState = MilitaryState.Attacking;
-            Debug.Log($"[AI {playerId}] Army size reached {combatUnits}. Initiating attack!");
+            //Debug.Log($"[AI {playerId}] Army size reached {combatUnits}. Initiating attack!");
         }
         else if (armyState == MilitaryState.Attacking && combatUnits < 5)
         {
             armyState = MilitaryState.Gathering;
-            Debug.Log($"[AI {playerId}] Army decimated. Retreating to gather.");
+            //Debug.Log($"[AI {playerId}] Army decimated. Retreating to gather.");
         }
 
         foreach (var unit in myProfile.myUnits.ToList())
@@ -835,6 +841,22 @@ public class AIMicroController
         return Mathf.Max(totalObserved, 30f);
     }
 
+    //private Dictionary<Unit.UnitType, int> GetObservedEnemyComposition()
+    //{
+    //    var comp = new Dictionary<Unit.UnitType, int> {
+    //        { Unit.UnitType.Soldier, 0 }, { Unit.UnitType.Archer, 0 },
+    //        { Unit.UnitType.Cavalry, 0 }, { Unit.UnitType.Siege, 0 }
+    //    };
+
+    //    // For now, just look at opponent's profile (will be replaced with fog of war)
+    //    var enemy = gameManager.GetPlayerProfile(1);
+    //    foreach (var u in enemy.myUnits)
+    //    {
+    //        comp[u.data.unitType]++;
+    //    }
+    //    return comp;
+    //}
+
     private Dictionary<Unit.UnitType, int> GetObservedEnemyComposition()
     {
         var comp = new Dictionary<Unit.UnitType, int> {
@@ -842,11 +864,16 @@ public class AIMicroController
             { Unit.UnitType.Cavalry, 0 }, { Unit.UnitType.Siege, 0 }
         };
 
-        // For now, just look at opponent's profile (will be replaced with fog of war)
-        var enemy = gameManager.GetPlayerProfile(1);
-        foreach (var u in enemy.myUnits)
+        foreach (var player in gameManager.players)
         {
-            comp[u.data.unitType]++;
+            if (player.playerId != this.playerId)
+            {
+                foreach (var u in player.myUnits)
+                {
+                    if (comp.ContainsKey(u.data.unitType))
+                        comp[u.data.unitType]++;
+                }
+            }
         }
         return comp;
     }
@@ -940,7 +967,7 @@ public class AIMicroController
         return rally + new Vector2Int(2, 2);
     }
 
-    private Vector2Int GetClosestEnemyBase(Vector2Int fromPos)
+    public Vector2Int GetClosestEnemyBase(Vector2Int fromPos)
     {
         Vector2Int closest = new Vector2Int(-1, -1);
         float minDist = float.MaxValue;

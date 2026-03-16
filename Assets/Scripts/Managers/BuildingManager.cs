@@ -104,7 +104,7 @@ public class BuildingManager : MonoBehaviour
         ApplyBuildingEffects(building, true);
         OnConstructionCompleted?.Invoke(building); 
     }
-
+        
     public void RemoveBuilding(Building building)
     {
         if (mapData.buildings.ContainsKey(building.position))
@@ -275,19 +275,6 @@ public class BuildingManager : MonoBehaviour
             return false;
         return true;
     }
-
-    //private void UpdateOccupancy(Building building, bool isAdding)
-    //{
-    //    foreach (var tile in building.GetOccupiedTiles())
-    //    {
-    //        occupancyGrid[tile.x, tile.y] = isAdding ? building : null;
-    //        // REMOVING FOREST
-    //        if (mapData.GetTileData(tile.x, tile.y).type == TileType.Forest)
-    //        {
-    //            mapData.SetTileData(tile.x, tile.y, new MapData.TileData { type = TileType.Grass, isPassable = true });
-    //        }
-    //    }
-    //}
 
     private void UpdateOccupancy(Building building, bool isAdding)
     {

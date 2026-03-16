@@ -51,7 +51,7 @@ public class Building
 
         OnBuildingHealthChanged?.Invoke(currentHp, maxHealth);
 
-        Debug.Log($"Building at {position} took {amount} damage. HP: {currentHp}/{data.maxHealth}");
+        //Debug.Log($"Building at {position} took {amount} damage. HP: {currentHp}/{data.maxHealth}");
     }
 
     public void DecrementConstruction()

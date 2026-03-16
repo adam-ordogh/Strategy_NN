@@ -142,7 +142,8 @@ public class GameManager
 
     public void Start() 
     {
-        Debug.Log("Game started - beginning with Player 1's turn");
+        //Debug.Log("Game started - beginning with Player 1's turn");
+        currentPlayerIndex = Random.Range(0, players.Count);
         ProcessCurrentPlayerTurn();
     }
 
@@ -195,15 +196,40 @@ public class GameManager
         return colors[index % colors.Length];
     }
 
+    //public void InitializeStartingTownCenters()
+    //{
+    //    Building p1Base = buildingManager.PlaceBuilding(buildingManager.buildingTemplates[0],
+    //                                                   new Vector2Int(5, 11), players[0].playerId);
+    //    buildingManager.CompleteBuildingInstantly(p1Base);
+
+    //    Building p2Base = buildingManager.PlaceBuilding(buildingManager.buildingTemplates[0],
+    //                                                   new Vector2Int(43, 38), players[1].playerId);
+    //    buildingManager.CompleteBuildingInstantly(p2Base);
+    //}
+
     public void InitializeStartingTownCenters()
     {
-        Building p1Base = buildingManager.PlaceBuilding(buildingManager.buildingTemplates[0],
-                                                       new Vector2Int(5, 11), players[0].playerId);
-        buildingManager.CompleteBuildingInstantly(p1Base);
+        var startPositions = new List<Vector2Int>
+        {
+            new Vector2Int(5, 11),
+            new Vector2Int(43, 38)
+        };
 
-        Building p2Base = buildingManager.PlaceBuilding(buildingManager.buildingTemplates[0],
-                                                       new Vector2Int(43, 38), players[1].playerId);
-        buildingManager.CompleteBuildingInstantly(p2Base);
+        // Fisher-Yates shuffle - works for any number of positions/players
+        for (int i = startPositions.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (startPositions[i], startPositions[j]) = (startPositions[j], startPositions[i]);
+        }
+
+        for (int i = 0; i < players.Count; i++)
+        {
+            Building townCenter = buildingManager.PlaceBuilding(
+                buildingManager.buildingTemplates[0],
+                startPositions[i],
+                players[i].playerId);
+            buildingManager.CompleteBuildingInstantly(townCenter);
+        }
     }
 
     public PlayerProfile GetPlayerProfile(int id)
@@ -224,7 +250,7 @@ public class GameManager
     private void ProcessCurrentPlayerTurn()
     {
         PlayerProfile activePlayer = CurrentPlayer;
-        Debug.Log($"Processing turn for Player {activePlayer.playerId}");
+        //Debug.Log($"Processing turn for Player {activePlayer.playerId}");
 
         buildingManager.AdvanceConstruction(currentPlayerId);
         productionManager.ProcessTurn(currentPlayerId);
@@ -240,7 +266,7 @@ public class GameManager
         }
         else
         {
-            Debug.Log("Waiting for Human Player...");
+            //Debug.Log("Waiting for Human Player...");
             // Human player will trigger NextTurn() through UI
         }
     }
@@ -253,6 +279,14 @@ public class GameManager
         if (currentPlayerIndex == 0)
         {
             turnNumber++;
+        }
+
+        foreach (var player in players)
+        {
+            if (player.myBuildings.Count == 0 && turnNumber > 5)
+            {
+                return; // Stop here, let TrainingRestart handle the reload
+            }
         }
 
         ProcessCurrentPlayerTurn();

@@ -50,6 +50,7 @@ public class AIMacroMLController : IAIController
             behaviorParams.BrainParameters.NumStackedVectorObservations = 1;
             behaviorParams.BrainParameters.ActionSpec = ActionSpec.MakeDiscrete(3);
             behaviorParams.BehaviorType = BehaviorType.Default;
+            behaviorParams.TeamId = PlayerId;
 
             // Now add the Agent
             mlAgent = agentGO.AddComponent<AIMacroML>();

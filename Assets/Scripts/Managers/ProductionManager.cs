@@ -77,7 +77,7 @@ public class ProductionManager : MonoBehaviour
             turnsRemaining = trainingTime
         });
 
-        Debug.Log($"Queued {unitType} at {factory.buildingType}. Time: {trainingTime} turns.");
+        //Debug.Log($"Queued {unitType} at {factory.buildingType}. Time: {trainingTime} turns.");
 
         OnUnitQueued?.Invoke(factory, unitType);
     }
@@ -105,7 +105,7 @@ public class ProductionManager : MonoBehaviour
         }
 
         productionQueues.Remove(building);
-        Debug.Log($"Production queue for {building.buildingType} at {building.position} cleared.");
+        //Debug.Log($"Production queue for {building.buildingType} at {building.position} cleared.");
 
         OnUnitDequeued?.Invoke(building);
     }
@@ -179,7 +179,7 @@ public class ProductionManager : MonoBehaviour
             unitManager.SpawnUnit(order, spawnPos.Value, owner.playerId);
 
             queue.RemoveAt(0);
-            Debug.Log("Unit training complete!");
+            //Debug.Log("Unit training complete!");
 
             OnUnitSpawned?.Invoke();
         }
