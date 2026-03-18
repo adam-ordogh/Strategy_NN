@@ -14,12 +14,12 @@ public class AIMacroML : Agent
 
     [Header("Settings")]
     [SerializeField] private bool useHeuristicForTesting = true;
+    public bool isTraining = true;
     //[SerializeField] public bool headlessMode = true;
 
     // Micro controller for execution
     private AIMicroController micro;
     private PlayerProfile myProfile;
-    private int turnCounter = 0;
 
     [HideInInspector] public AIMacroMLController owner;
 
@@ -69,40 +69,6 @@ public class AIMacroML : Agent
 
         currentGoal = AIGoal.FocusEconomy;
     }
-
-    //public override void OnEpisodeBegin()
-    //{
-    //    // Reset counters
-    //    totalEnemiesKilled = 0;
-    //    totalEnemyBuildingsDestroyed = 0;
-    //    totalUnitsLost = 0;
-    //    totalBuildingsLost = 0;
-    //    previousEnemiesKilled = 0;
-    //    previousEnemyBuildingsDestroyed = 0;
-    //    previousUnitsLost = 0;
-    //    previousBuildingsLost = 0;
-
-    //    // Unhook old listeners before hooking new ones
-    //    if (unitDestroyedHandler != null)
-    //        gameManager.unitManager.OnUnitDestroyed -= unitDestroyedHandler;
-    //    if (buildingRemovedHandler != null)
-    //        gameManager.buildingManager.OnBuildingRemoved -= buildingRemovedHandler;
-
-    //    unitDestroyedHandler = (unit) =>
-    //    {
-    //        if (unit.ownerId == playerId) totalUnitsLost++;
-    //        else totalEnemiesKilled++;
-    //    };
-
-    //    buildingRemovedHandler = (building) =>
-    //    {
-    //        if (building.ownerId == playerId) totalBuildingsLost++;
-    //        else totalEnemyBuildingsDestroyed++;
-    //    };
-
-    //    gameManager.unitManager.OnUnitDestroyed += unitDestroyedHandler;
-    //    gameManager.buildingManager.OnBuildingRemoved += buildingRemovedHandler;
-    //}
 
     private void HookCombatEvents()
     {
@@ -215,8 +181,11 @@ public class AIMacroML : Agent
 
         ExecuteCurrentGoal();
 
-        float reward = CalculateReward();
-        AddReward(reward);
+        if (isTraining)
+        {
+            float reward = CalculateReward();
+            AddReward(reward);
+        }
 
         if (owner != null)
         {
@@ -354,124 +323,185 @@ public class AIMacroML : Agent
     //    return reward;
     //}
 
+    //private float CalculateReward()
+    //{
+    //    float reward = 0f;
+
+    //    reward -= 0.05f;
+
+    //    var income = gameManager.economyManager.GetProjectedIncome(myProfile);
+
+    //    // 1. REWARD ECONOMIC ENGINE (Income is better than raw stash)
+    //    // Reward having a positive net income, punish starvation.
+    //    reward += (income.goldNet + income.woodNet) * 0.002f;
+
+    //    if (income.foodNet < 0) reward -= 1.0f; // Stronger penalty for starving
+    //    else reward += income.foodNet * 0.002f;
+
+    //    // 2. REWARD MILESTONES (Deltas for persistent assets)
+    //    int buildingsDelta = myProfile.myBuildings.Count - previousBuildingCount;
+    //    int territoryDelta = GetTerritorySize() - previousTerritorySize;
+    //    int unitsDelta = myProfile.myUnits.Count - previousUnitCount;
+
+    //    if (buildingsDelta > 0) reward += buildingsDelta * 2.0f;
+    //    if (territoryDelta > 0) reward += territoryDelta * 1.0f;
+    //    if (unitsDelta > 0) reward += unitsDelta * 0.5f;
+
+    //    // 3. COMBAT REWARDS (Keep these, they are good)
+    //    int enemiesKilledDelta = totalEnemiesKilled - previousEnemiesKilled;
+    //    if (enemiesKilledDelta > 0) reward += enemiesKilledDelta * 3.0f;
+
+    //    int buildingsDestroyedDelta = totalEnemyBuildingsDestroyed - previousEnemyBuildingsDestroyed;
+    //    if (buildingsDestroyedDelta > 0) reward += buildingsDestroyedDelta * 8.0f;
+
+    //    // COMBAT PENALTIES
+    //    int unitsLostDelta = totalUnitsLost - previousUnitsLost;
+    //    if (unitsLostDelta > 0) reward -= unitsLostDelta * 1.0f;
+
+    //    int buildingsLostDelta = totalBuildingsLost - previousBuildingsLost;
+    //    if (buildingsLostDelta > 0) reward -= buildingsLostDelta * 3.0f;
+
+    //    // 4. STRATEGIC GOALS
+    //    float myStrength = micro.CalculateMilitaryStrength();
+    //    float enemyStrength = micro.GetObservedEnemyStrength();
+
+    //    // Small continuous reward for maintaining military superiority
+    //    if (myStrength > enemyStrength + 10f) reward += 0.2f;
+
+    //    // 5. WIN/LOSS CONDITIONS
+    //    StoreCurrentValues();
+
+    //    // 1. Clamp the regular turn-by-turn rewards FIRST
+    //    reward = Mathf.Clamp(reward, -15f, 15f);
+
+    //    foreach (var player in gameManager.players)
+    //    {
+    //        // FIX: Ensure roads don't block the win/loss reward
+    //        //bool isEliminated = player.myBuildings.Count(b => b.buildingType != Building.BuildingType.Road) == 0;
+
+
+    //        //if (player.playerId != playerId && isEliminated && gameManager.turnNumber > 5)
+    //        //{
+    //        //    reward += 100.0f; // Unclamped massive bonus for winning
+    //        //    AddReward(reward);
+    //        //    EndEpisode();
+    //        //    return 0f;
+    //        //}
+    //        //else if (player.playerId == playerId && isEliminated && gameManager.turnNumber > 5)
+    //        //{
+    //        //    reward -= 100.0f; // Unclamped massive penalty for dying
+    //        //    AddReward(reward);
+    //        //    EndEpisode();
+    //        //    return 0f;
+    //        //}
+
+    //        bool hasTownCenter = player.myBuildings.Any(b =>
+    //                b.buildingType == Building.BuildingType.TownCenter);
+
+    //        if (player.playerId != playerId && !hasTownCenter && gameManager.turnNumber > 5)
+    //        {
+    //            reward += 100.0f; // Unclamped massive bonus for winning
+    //            AddReward(reward);
+    //            EndEpisode();
+    //            return 0f;
+    //        }
+    //        else if (player.playerId == playerId && !hasTownCenter && gameManager.turnNumber > 5)
+    //        {
+    //            reward -= 100.0f; // Unclamped massive penalty for dying
+    //            AddReward(reward);
+    //            EndEpisode();
+    //            return 0f;
+    //        }
+    //    }
+
+    //    // If no win/loss condition, just return the clamped reward
+    //    return reward;
+
+    //    //foreach (var player in gameManager.players)
+    //    //{
+    //    //    if (player.playerId != playerId && player.myBuildings.Count == 0 && gameManager.turnNumber > 5)
+    //    //    {
+    //    //        Debug.Log($"[ML Agent {playerId}] Episode ended by ELIMINATION of Player {player.playerId} at turn {gameManager.turnNumber}");
+    //    //        reward = Mathf.Clamp(reward, -15f, 15f);
+    //    //        StoreCurrentValues();
+    //    //        AddReward(reward + 100.0f);
+    //    //        EndEpisode();
+    //    //        return 0f;
+    //    //    }
+    //    //    else if (player.playerId == playerId && player.myBuildings.Count == 0 && gameManager.turnNumber > 5)
+    //    //    {
+    //    //        reward = Mathf.Clamp(reward, -15f, 15f);
+    //    //        StoreCurrentValues();
+    //    //        AddReward(reward - 100.0f);
+    //    //        EndEpisode();
+    //    //        return 0f;
+    //    //    }
+    //    //}
+
+    //    //StoreCurrentValues();
+
+    //    //// Cap reward to prevent wild gradient spikes
+    //    //reward = Mathf.Clamp(reward, -15f, 15f);
+
+    //    //return reward;
+    //}
+
     private float CalculateReward()
     {
-        float reward = 0f;
+        float stepReward = 0f;
 
-        var income = gameManager.economyManager.GetProjectedIncome(myProfile);
+        // 1. Time Penalty (Always negative to force action)
+        stepReward -= 0.05f;
 
-        // 1. REWARD ECONOMIC ENGINE (Income is better than raw stash)
-        // Reward having a positive net income, punish starvation.
-        reward += (income.goldNet + income.woodNet) * 0.02f;
-
-        if (income.foodNet < 0) reward -= 1.0f; // Stronger penalty for starving
-        else reward += income.foodNet * 0.02f;
-
-        // 2. REWARD MILESTONES (Deltas for persistent assets)
+        // 2. ONE-TIME Milestone Rewards (Deltas) - Scaled down!
         int buildingsDelta = myProfile.myBuildings.Count - previousBuildingCount;
         int territoryDelta = GetTerritorySize() - previousTerritorySize;
         int unitsDelta = myProfile.myUnits.Count - previousUnitCount;
 
-        if (buildingsDelta > 0) reward += buildingsDelta * 2.0f;
-        if (territoryDelta > 0) reward += territoryDelta * 1.0f;
-        if (unitsDelta > 0) reward += unitsDelta * 0.5f;
+        if (buildingsDelta > 0) stepReward += buildingsDelta * 0.1f;
+        if (territoryDelta > 0) stepReward += territoryDelta * 0.05f;
+        if (unitsDelta > 0) stepReward += unitsDelta * 0.1f;
 
-        // 3. COMBAT REWARDS (Keep these, they are good)
+        // 3. COMBAT REWARDS (Kept strong to encourage fighting)
         int enemiesKilledDelta = totalEnemiesKilled - previousEnemiesKilled;
-        if (enemiesKilledDelta > 0) reward += enemiesKilledDelta * 2.0f;
+        if (enemiesKilledDelta > 0) stepReward += enemiesKilledDelta * 3.0f;
 
         int buildingsDestroyedDelta = totalEnemyBuildingsDestroyed - previousEnemyBuildingsDestroyed;
-        if (buildingsDestroyedDelta > 0) reward += buildingsDestroyedDelta * 5.0f;
+        if (buildingsDestroyedDelta > 0) stepReward += buildingsDestroyedDelta * 8.0f;
 
-        // COMBAT PENALTIES
         int unitsLostDelta = totalUnitsLost - previousUnitsLost;
-        if (unitsLostDelta > 0) reward -= unitsLostDelta * 1.0f;
+        if (unitsLostDelta > 0) stepReward -= unitsLostDelta * 1.0f;
 
         int buildingsLostDelta = totalBuildingsLost - previousBuildingsLost;
-        if (buildingsLostDelta > 0) reward -= buildingsLostDelta * 3.0f;
+        if (buildingsLostDelta > 0) stepReward -= buildingsLostDelta * 3.0f;
 
-        // 4. STRATEGIC GOALS
-        float myStrength = micro.CalculateMilitaryStrength();
-        float enemyStrength = micro.GetObservedEnemyStrength();
+        // Clamp the turn-by-turn reward to prevent wild spikes BEFORE win/loss
+        stepReward = Mathf.Clamp(stepReward, -10f, 10f);
 
-        // Small continuous reward for maintaining military superiority
-        if (myStrength > enemyStrength + 10f) reward += 0.2f;
-
-        // 5. WIN/LOSS CONDITIONS
-        //foreach (var player in gameManager.players)
-        //{
-        //    if (player.playerId != playerId && player.myBuildings.Count == 0 && gameManager.turnNumber > 5)
-        //    {
-        //        reward += 100.0f;
-        //        Debug.Log($"[ML Agent {playerId}] Episode ended by ELIMINATION of Player {player.playerId} at turn {gameManager.turnNumber}");
-        //        EndEpisode();
-        //        break;
-        //    }
-        //    else if (player.playerId == playerId && player.myBuildings.Count == 0 && gameManager.turnNumber > 5)
-        //    {
-        //        reward -= 100.0f;
-        //        Debug.Log($"[ML Agent {playerId}] Episode ended by ELIMINATION of SELF at turn {gameManager.turnNumber}");
-        //        EndEpisode();
-        //        break;
-        //    }
-        //}
-
+        // Store values BEFORE checking win conditions
         StoreCurrentValues();
 
-        // 1. Clamp the regular turn-by-turn rewards FIRST
-        reward = Mathf.Clamp(reward, -15f, 15f);
-
-        // 2. APPLY WIN / LOSS CONDITIONS AFTER THE CLAMP
+        // 4. WIN/LOSS CONDITIONS
         foreach (var player in gameManager.players)
         {
-            if (player.playerId != playerId && player.myBuildings.Count == 0 && gameManager.turnNumber > 5)
+            bool hasTownCenter = player.myBuildings.Any(b =>
+                    b.buildingType == Building.BuildingType.TownCenter);
+
+            if (player.playerId != playerId && !hasTownCenter && gameManager.turnNumber > 5)
             {
-                reward += 100.0f; // Unclamped massive bonus for winning
-                Debug.Log($"[ML Agent {playerId}] Episode ended by ELIMINATION of Player {player.playerId}");
-                AddReward(reward);  // Add the final reward
+                AddReward(stepReward + 200.0f); // Step + Massive Win Bonus
                 EndEpisode();
-                return 0f;  // Return early since episode ended
+                return 0f;
             }
-            else if (player.playerId == playerId && player.myBuildings.Count == 0 && gameManager.turnNumber > 5)
+            else if (player.playerId == playerId && !hasTownCenter && gameManager.turnNumber > 5)
             {
-                reward -= 100.0f; // Unclamped massive penalty for dying
-                Debug.Log($"[ML Agent {playerId}] Episode ended by ELIMINATION of SELF");
-                AddReward(reward);  // Add the final reward
+                AddReward(stepReward - 200.0f); // Step + Massive Loss Penalty
                 EndEpisode();
-                return 0f;  // Return early since episode ended
+                return 0f;
             }
         }
 
-        // If no win/loss condition, just return the clamped reward
-        return reward;
-
-        //foreach (var player in gameManager.players)
-        //{
-        //    if (player.playerId != playerId && player.myBuildings.Count == 0 && gameManager.turnNumber > 5)
-        //    {
-        //        Debug.Log($"[ML Agent {playerId}] Episode ended by ELIMINATION of Player {player.playerId} at turn {gameManager.turnNumber}");
-        //        reward = Mathf.Clamp(reward, -15f, 15f);
-        //        StoreCurrentValues();
-        //        AddReward(reward + 100.0f);
-        //        EndEpisode();
-        //        return 0f;
-        //    }
-        //    else if (player.playerId == playerId && player.myBuildings.Count == 0 && gameManager.turnNumber > 5)
-        //    {
-        //        reward = Mathf.Clamp(reward, -15f, 15f);
-        //        StoreCurrentValues();
-        //        AddReward(reward - 100.0f);
-        //        EndEpisode();
-        //        return 0f;
-        //    }
-        //}
-
-        //StoreCurrentValues();
-
-        //// Cap reward to prevent wild gradient spikes
-        //reward = Mathf.Clamp(reward, -15f, 15f);
-
-        //return reward;
+        return stepReward;
     }
 
     // ==================== TRACKING METHODS ====================

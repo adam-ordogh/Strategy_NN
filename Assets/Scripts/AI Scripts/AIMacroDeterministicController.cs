@@ -18,6 +18,13 @@ public class AIMacroDeterministic : IAIController
     private PlayerProfile myProfile;
     private AIMicroController micro;
     public MilitaryState currentArmyState = MilitaryState.Gathering;
+   
+    public AIMacroDeterministic(int playerId)
+    {
+        PlayerId = playerId;
+    }
+
+    public string GetAITypeName() => "Deterministic";
 
     public void Initialize(GameManager gameManager)
     {
@@ -26,10 +33,6 @@ public class AIMacroDeterministic : IAIController
         this.micro = new AIMicroController(PlayerId, gameManager);
     }
 
-    public AIMacroDeterministic(int playerId)
-    {
-        PlayerId = playerId;
-    }
 
     public void ExecuteTurn()
     {
@@ -39,7 +42,7 @@ public class AIMacroDeterministic : IAIController
         AIGoal currentGoal = DetermineMacroGoal();
         ExecuteMicroActions(currentGoal);
 
-        // GameManager will call NextTurn() after this
+        //Debug.Log($"[AI DETERMINISTIC Completed turn with goal: {currentGoal}");
         gameManager.NextTurn();
     }
 

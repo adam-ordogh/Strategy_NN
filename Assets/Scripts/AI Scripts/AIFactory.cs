@@ -1,6 +1,7 @@
 // AIFactory.cs
 using System;
 using System.Collections.Generic;
+using Unity.InferenceEngine;
 
 public static class AIFactory
 {
@@ -13,7 +14,7 @@ public static class AIFactory
         MLEconomic
     }
 
-    public static IAIController CreateAI(AIType type, int playerId)
+    public static IAIController CreateAI(AIType type, int playerId, bool isTraining = false, ModelAsset model = null)
     {
         switch (type)
         {
@@ -21,24 +22,8 @@ public static class AIFactory
                 return new AIMacroDeterministic(playerId);
 
             case AIType.MLBasic:
-                var mlBasic = new AIMacroMLController(playerId);
-                // You could configure the ML agent here (e.g., different model files)
-                return mlBasic;
-
-            //case AIType.MLAggressive:
-            //    var mlAgg = new AIMacroMLController(playerId);
-            //    // Load aggressive model
-            //    return mlAgg;
-
-            //case AIType.MLDefensive:
-            //    var mlDef = new AIMacroMLController(playerId);
-            //    // Load defensive model
-            //    return mlDef;
-
-            //case AIType.MLEconomic:
-            //    var mlEco = new AIMacroMLController(playerId);
-            //    // Load economic model
-            //    return mlEco;
+                // Pass isTraining to the controller
+                return new AIMacroMLController(playerId, isTraining, model);
 
             default:
                 throw new ArgumentException($"Unknown AI type: {type}");

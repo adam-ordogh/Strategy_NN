@@ -1,4 +1,4 @@
-// AIMacroMLController.cs
+using Unity.InferenceEngine;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Policies;
 using UnityEngine;
@@ -9,7 +9,20 @@ public class AIMacroMLController : IAIController
     private GameManager gameManager;
     private AIMacroML mlAgent;
     private AIMicroController micro;
+    private bool isTraining;
+
+    private ModelAsset aiModel;
+
     public MilitaryState currentArmyState = MilitaryState.Gathering;
+
+    public AIMacroMLController(int playerId, bool isTraining = false, ModelAsset model = null)
+    {
+        PlayerId = playerId;
+        this.isTraining = isTraining;
+        this.aiModel = model;
+    }
+
+    public string GetAITypeName() => isTraining ? "ML (Training)" : "ML (Inference)";
 
     public void Initialize(GameManager gameManager)
     {
@@ -20,10 +33,6 @@ public class AIMacroMLController : IAIController
         FindOrCreateMLAgent();
     }
 
-    public AIMacroMLController(int playerId)
-    {
-        PlayerId = playerId;
-    }
 
 
     private void FindOrCreateMLAgent()
@@ -46,11 +55,16 @@ public class AIMacroMLController : IAIController
             // Set up BehaviorParameters BEFORE adding the Agent component
             var behaviorParams = agentGO.AddComponent<BehaviorParameters>();
             behaviorParams.BehaviorName = "AIMacroML";
+
+            behaviorParams.Model = aiModel;
+
             behaviorParams.BrainParameters.VectorObservationSize = 24;
             behaviorParams.BrainParameters.NumStackedVectorObservations = 1;
             behaviorParams.BrainParameters.ActionSpec = ActionSpec.MakeDiscrete(3);
             behaviorParams.BehaviorType = BehaviorType.Default;
             behaviorParams.TeamId = PlayerId;
+
+            behaviorParams.BehaviorType = isTraining ? BehaviorType.Default : BehaviorType.InferenceOnly;
 
             // Now add the Agent
             mlAgent = agentGO.AddComponent<AIMacroML>();
@@ -58,6 +72,7 @@ public class AIMacroMLController : IAIController
             mlAgent.gameManager = gameManager;
             mlAgent.currentArmyState = currentArmyState;
             mlAgent.owner = this;
+            mlAgent.isTraining = isTraining; // Pass the flag to the agent
 
             agentGO.SetActive(true); // Initialize() fires here, BehaviorParameters already set
         }

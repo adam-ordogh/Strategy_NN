@@ -35,7 +35,7 @@ public class ProductionManager : MonoBehaviour
     {
         if (!CanProduceUnit(factory))
         {
-            Debug.LogWarning("This building cannot produce units yet!");
+            //Debug.LogWarning("This building cannot produce units yet!");
             return;
         }
 
@@ -43,19 +43,19 @@ public class ProductionManager : MonoBehaviour
 
         if (productionQueues.ContainsKey(factory) && productionQueues[factory].Count >= maxQueueSize)
         {
-            Debug.LogWarning("Queue is full!");
+            //Debug.LogWarning("Queue is full!");
             return;
         }
 
         if (owner.availablePopulation < unitType.populationCost)
         {
-            Debug.LogWarning("Not enough population capacity!");
+            //Debug.LogWarning("Not enough population capacity!");
             return;
         }
 
         if (!owner.CanAfford(unitType.goldCost, unitType.woodCost, unitType.foodCost))
         {
-            Debug.LogWarning("Not enough resources!");
+            //Debug.LogWarning("Not enough resources!");
             return;
         }
 
@@ -102,6 +102,8 @@ public class ProductionManager : MonoBehaviour
             owner.wood += order.woodCost;
             owner.food += order.foodCost;
             owner.queuedPopulation -= order.populationCost;
+
+            queue.RemoveAt(0);
         }
 
         productionQueues.Remove(building);
@@ -118,7 +120,7 @@ public class ProductionManager : MonoBehaviour
         // Nem lehet törölni az első elemet, ez lehet ki lesz véve mert így sosem lehet teljesen leállítani a gyártást
         if (index == 0)
         {
-            Debug.LogWarning("Cannot cancel unit already in production!");
+            //Debug.LogWarning("Cannot cancel unit already in production!");
             return;
         }
 
@@ -185,7 +187,7 @@ public class ProductionManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Production halted! No space to spawn unit.");
+            //Debug.LogWarning("Production halted! No space to spawn unit.");
         }
     }
 

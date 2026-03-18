@@ -1,0 +1,66 @@
+{
+    "AIMacroML": {
+        "checkpoints": [
+            {
+                "steps": 1749873,
+                "file_path": "results\\MacroAI_v3\\AIMacroML\\AIMacroML-1749873.onnx",
+                "reward": 3169.3299560546875,
+                "creation_time": 1773729853.907317,
+                "auxillary_file_paths": [
+                    "results\\MacroAI_v3\\AIMacroML\\AIMacroML-1749873.pt"
+                ]
+            },
+            {
+                "steps": 1799817,
+                "file_path": "results\\MacroAI_v3\\AIMacroML\\AIMacroML-1799817.onnx",
+                "reward": 2672.369215158316,
+                "creation_time": 1773730681.5998273,
+                "auxillary_file_paths": [
+                    "results\\MacroAI_v3\\AIMacroML\\AIMacroML-1799817.pt"
+                ]
+            },
+            {
+                "steps": 1849855,
+                "file_path": "results\\MacroAI_v3\\AIMacroML\\AIMacroML-1849855.onnx",
+                "reward": 2737.406683516829,
+                "creation_time": 1773731519.6355312,
+                "auxillary_file_paths": [
+                    "results\\MacroAI_v3\\AIMacroML\\AIMacroML-1849855.pt"
+                ]
+            },
+            {
+                "steps": 1899778,
+                "file_path": "results\\MacroAI_v3\\AIMacroML\\AIMacroML-1899778.onnx",
+                "reward": 3177.367378566576,
+                "creation_time": 1773732346.8500662,
+                "auxillary_file_paths": [
+                    "results\\MacroAI_v3\\AIMacroML\\AIMacroML-1899778.pt"
+                ]
+            },
+            {
+                "steps": 1924041,
+                "file_path": "results\\MacroAI_v3\\AIMacroML\\AIMacroML-1924041.onnx",
+                "reward": 3179.5153826032365,
+                "creation_time": 1773732746.9002578,
+                "auxillary_file_paths": [
+                    "results\\MacroAI_v3\\AIMacroML\\AIMacroML-1924041.pt"
+                ]
+            }
+        ],
+        "elo": 419.7425504831178,
+        "final_checkpoint": {
+            "steps": 1924041,
+            "file_path": "results\\MacroAI_v3\\AIMacroML.onnx",
+            "reward": 3179.5153826032365,
+            "creation_time": 1773732746.9002578,
+            "auxillary_file_paths": [
+                "results\\MacroAI_v3\\AIMacroML\\AIMacroML-1924041.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "2.2.2+cu121"
+    }
+}

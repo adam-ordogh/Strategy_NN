@@ -51,7 +51,7 @@ public class Unit
     {
         if (!canAttack)
         {
-            Debug.Log("This unit has already attacked this turn.");
+            //Debug.Log("This unit has already attacked this turn.");
             return;
         }
 
@@ -62,7 +62,7 @@ public class Unit
         target.TakeDamage(finalDamage);
         canAttack = false;
 
-        Debug.Log($"Unit at {this.position} attacked unit at {target.position} for {finalDamage} damage.");
+        //Debug.Log($"Unit at {this.position} attacked unit at {target.position} for {finalDamage} damage.");
 
 
         if (target.currentHealth > 0 && target.data.unitType != UnitType.Archer)
@@ -75,7 +75,7 @@ public class Unit
 
                 int returnDamage = Mathf.RoundToInt(this.data.attackPower * returnMultiplier * 0.5f);
 
-                Debug.Log($"Retaliation! {target.data.unitType} hits back for {returnDamage}.");
+                //Debug.Log($"Retaliation! {target.data.unitType} hits back for {returnDamage}.");
                 this.TakeDamage(returnDamage);
             }
         }

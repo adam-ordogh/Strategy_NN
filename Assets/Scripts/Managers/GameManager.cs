@@ -1,110 +1,7 @@
-//using System.Collections.Generic;
-//using System.Threading.Tasks;
-//using UnityEngine;
-
-//public class GameManager
-//{
-//    public MapManager mapManager;
-//    public UnitManager unitManager;
-//    public BuildingManager buildingManager;
-//    public ProductionManager productionManager;
-//    public EconomyManager economyManager;
-//    public UnitVisualizer unitVisualizer;
-//    public BuildingVisualizer buildingVisualizer;
-
-//    public int turnNumber = 1;
-
-//    public List<PlayerProfile> players = new List<PlayerProfile>();
-//    private int currentPlayerIndex = 0;
-//    public int currentPlayerId => players[currentPlayerIndex].playerId;
-//    public PlayerProfile CurrentPlayer => players[currentPlayerIndex];
-
-//    private Dictionary<int, AiPlayerController> aiControllers = new Dictionary<int, AiPlayerController>();
-
-//    public GameManager(MapManager mapManager, UnitManager unitManager, BuildingManager buildingManager, ProductionManager productionManager, EconomyManager economyManager, UnitVisualizer unitVisualizer, BuildingVisualizer buildingVisualizer)
-//    {
-//        this.mapManager = mapManager;
-//        this.unitManager = unitManager;
-//        this.buildingManager = buildingManager;
-//        this.productionManager = productionManager;
-//        this.economyManager = economyManager;
-//        this.unitVisualizer = unitVisualizer;
-//        this.buildingVisualizer = buildingVisualizer;
-
-//        //InitializePlayers();
-//    }
-
-//    public void Start()
-//    {
-
-//    }
-
-//    public void Update()
-//    {
-
-//    }
-
-//    public void InitializePlayers()
-//    {
-//        //var p1 = new PlayerProfile { playerId = 1, isAi = false, food = 50, gold = 200, wood = 200};
-//        var p1 = new PlayerProfile ( playerId:1, isAi:false, playerColor: Color.cyan, starterGold:200, starterWood:200, starterFood:50);
-//        players.Add(p1);
-
-//        //var p2 = new PlayerProfile { playerId = 2, isAi = false, food = 50, gold = 200, wood = 200};
-//        var p2 = new PlayerProfile(playerId: 2, isAi: true, playerColor: new Color(1f, 0.3f, 0.3f), starterGold: 200, starterWood: 200, starterFood: 50);
-//        players.Add(p2);
-
-//        aiControllers.Add(p2.playerId, new AiPlayerController(p2.playerId, this));
-//    }
-
-//    public void InitializeStartingTownCenters() {
-//        // 1. Place the building through the manager
-//        Building p1Base = buildingManager.PlaceBuilding(buildingManager.buildingTemplates[0], new Vector2Int(5, 11), players[0].playerId);
-//        buildingManager.CompleteBuildingInstantly(p1Base);
-
-//        // Repeat for AI
-//        Building p2Base = buildingManager.PlaceBuilding(buildingManager.buildingTemplates[0], new Vector2Int(43, 38), players[1].playerId);
-//        buildingManager.CompleteBuildingInstantly(p2Base);
-
-//    }
-
-//    public PlayerProfile GetPlayerProfile(int id)
-//    {
-//        return players.Find(p => p.playerId == id);
-//    }
-
-//    public void NextTurn()
-//    {
-//        unitManager.ResetUnitsForNewTurn(currentPlayerId);
-//        currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
-//        if (currentPlayerIndex == 0)
-//        {
-//            turnNumber++;
-//        }
-//        PlayerProfile activePlayer = CurrentPlayer;
-//        Debug.Log($"Starting Turn for Player {activePlayer.playerId}");
-
-//        buildingManager.AdvanceConstruction(currentPlayerId);
-//        productionManager.ProcessTurn(currentPlayerId);
-//        economyManager.ProcessTurn(activePlayer);
-
-//        if (activePlayer.isAi)
-//        {
-//            // Tell the AI to think and act
-//            if (aiControllers.TryGetValue(activePlayer.playerId, out var controller))
-//            {
-//                controller.ExecuteTurn();
-//            }
-//        }
-//        else
-//        {
-//            // Human turn: Do nothing, just wait for InputController events
-//            Debug.Log("Waiting for Human Player...");
-//        }
-//    }
-//}
-// GameManager.cs (updated version)
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.InferenceEngine;
 using UnityEngine;
 
 public class GameManager
@@ -117,7 +14,16 @@ public class GameManager
     public UnitVisualizer unitVisualizer;
     public BuildingVisualizer buildingVisualizer;
 
+    public bool isTrainingMode;
     public int turnNumber = 1;
+
+    public PlayerProfile HumanPlayer
+    {
+        get
+        {
+            return players.FirstOrDefault(p => !aiControllers.ContainsKey(p.playerId));
+        }
+    }
 
     public List<PlayerProfile> players = new List<PlayerProfile>();
     private int currentPlayerIndex = 0;
@@ -143,7 +49,7 @@ public class GameManager
     public void Start() 
     {
         //Debug.Log("Game started - beginning with Player 1's turn");
-        currentPlayerIndex = Random.Range(0, players.Count);
+        currentPlayerIndex = UnityEngine.Random.Range(0, players.Count);
         ProcessCurrentPlayerTurn();
     }
 
@@ -152,41 +58,28 @@ public class GameManager
     public void InitializePlayers()
     {
         // Player 1 - Human
-        var p1 = new PlayerProfile(playerId: 1, isAi: false, playerColor: Color.cyan,
+        var p1 = new PlayerProfile(playerId: 5, isAi: false, playerColor: GetPlayerColor(2),
                                    starterGold: 200, starterWood: 200, starterFood: 50);
         players.Add(p1);
-
-        // Player 2 - AI (Deterministic for testing)
-        var p2 = new PlayerProfile(playerId: 2, isAi: true, playerColor: new Color(1f, 0.3f, 0.3f),
-                                   starterGold: 200, starterWood: 200, starterFood: 50);
-        players.Add(p2);
-
-        // Create deterministic AI for player 2
-        var ai2 = AIFactory.CreateAI(AIFactory.AIType.Deterministic, p2.playerId);
-        ai2.Initialize(this);
-        aiControllers.Add(p2.playerId, ai2);
     }
 
     // Alternative method for more control
-    public void InitializePlayersWithCustomAI(List<AIFactory.AIType> aiTypes)
+    public void InitializePlayersWithCustomAI(List<AIFactory.AIType> aiTypes, bool isTraining, ModelAsset model = null)
     {
+        this.isTrainingMode = isTraining;
         for (int i = 0; i < aiTypes.Count; i++)
         {
-            //int playerId = i + 1;
-            int playerId = i;
-            //bool isAi = aiTypes[i] != AIFactory.AIType.Deterministic; // or any logic you want
+            int playerId = i + 1;
 
             var player = new PlayerProfile(playerId: playerId, isAi: true,
                                           playerColor: GetPlayerColor(i),
                                           starterGold: 200, starterWood: 200, starterFood: 50);
             players.Add(player);
 
-            //if (isAi)
-            //{
-                var ai = AIFactory.CreateAI(aiTypes[i], playerId);
-                ai.Initialize(this);
-                aiControllers.Add(playerId, ai);
-            //}
+            var ai = AIFactory.CreateAI(aiTypes[i], playerId, isTraining, model);
+            ai.Initialize(this);
+            aiControllers.Add(playerId, ai);
+            
         }
     }
 
@@ -195,17 +88,6 @@ public class GameManager
         Color[] colors = { Color.cyan, new Color(1f, 0.3f, 0.3f), Color.green, Color.yellow, Color.magenta };
         return colors[index % colors.Length];
     }
-
-    //public void InitializeStartingTownCenters()
-    //{
-    //    Building p1Base = buildingManager.PlaceBuilding(buildingManager.buildingTemplates[0],
-    //                                                   new Vector2Int(5, 11), players[0].playerId);
-    //    buildingManager.CompleteBuildingInstantly(p1Base);
-
-    //    Building p2Base = buildingManager.PlaceBuilding(buildingManager.buildingTemplates[0],
-    //                                                   new Vector2Int(43, 38), players[1].playerId);
-    //    buildingManager.CompleteBuildingInstantly(p2Base);
-    //}
 
     public void InitializeStartingTownCenters()
     {
@@ -218,7 +100,7 @@ public class GameManager
         // Fisher-Yates shuffle - works for any number of positions/players
         for (int i = startPositions.Count - 1; i > 0; i--)
         {
-            int j = Random.Range(0, i + 1);
+            int j = UnityEngine.Random.Range(0, i + 1);
             (startPositions[i], startPositions[j]) = (startPositions[j], startPositions[i]);
         }
 
@@ -228,7 +110,7 @@ public class GameManager
                 buildingManager.buildingTemplates[0],
                 startPositions[i],
                 players[i].playerId);
-            buildingManager.CompleteBuildingInstantly(townCenter);
+            buildingManager.CompleteBuildingInstantly(townCenter);            
         }
     }
 
@@ -283,12 +165,38 @@ public class GameManager
 
         foreach (var player in players)
         {
-            if (player.myBuildings.Count == 0 && turnNumber > 5)
+            bool hasTownCenter = player.myBuildings.Any(b =>
+                   b.buildingType == Building.BuildingType.TownCenter);
+            if(!hasTownCenter && turnNumber > 5)
             {
-                return; // Stop here, let TrainingRestart handle the reload
+                if (isTrainingMode)
+                {
+                    return;
+                }
+                else
+                {
+                    var losingController = GetPlayerController(player.playerId);
+                    string loserType = losingController?.GetAITypeName() ?? "Unknown";
+
+                    // Find the winner
+                    var winner = players.FirstOrDefault(p => p.playerId != player.playerId);
+                    var winningController = winner != null ? GetPlayerController(winner.playerId) : null;
+                    string winnerType = winningController?.GetAITypeName() ?? "Unknown";
+
+                    Debug.Log($"Game Over at turn {turnNumber}! {winnerType} (Player {winner?.playerId}) defeated {loserType} (Player {player.playerId})");
+                    return;
+                }
             }
         }
 
+        ProcessCurrentPlayerTurn();
+        //buildingManager.StartCoroutine(ProcessTurnWithDelay());
+    }
+
+    private IEnumerator ProcessTurnWithDelay()
+    {
+        yield return null; // Wait 1 frame
+        if (buildingManager == null || players.Count == 0) yield break;
         ProcessCurrentPlayerTurn();
     }
 }

@@ -8,7 +8,6 @@ public class GameUIController : MonoBehaviour
 
     // Turn panel
     public TMPro.TextMeshProUGUI turnLabel;
-    public TMPro.TextMeshProUGUI currentPlayerLabel;
 
     // Resource panel
     public TMPro.TextMeshProUGUI foodLabel;
@@ -88,16 +87,13 @@ public class GameUIController : MonoBehaviour
         int turnNumber = initializer.gameManager.turnNumber;
         turnLabel.text = $"Turn {turnNumber}";
 
-        int currentPlayer = initializer.gameManager.currentPlayerId;
-        currentPlayerLabel.text = $"Player {currentPlayer}";
-
         RefreshSelectionUI();
         UpdateUI();
     }
 
     public void UpdateUI()
     {
-        PlayerProfile activePlayer = initializer.gameManager.CurrentPlayer;
+        PlayerProfile activePlayer = initializer.gameManager.HumanPlayer;
         var report = initializer.economyManager.GetProjectedIncome(activePlayer);
 
         int totalGoldWorkers = 0;

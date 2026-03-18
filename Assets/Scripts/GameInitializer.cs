@@ -1,12 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.InferenceEngine;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using Unity.MLAgents.Policies;
+//using Unity.InferenceEngine;
+
 
 public class GameInitializer : MonoBehaviour
 {
     public bool isTrainingMode;
+    public bool turnOffVisualsInTraining = true; // Ez a flag kikapcsolja a vizuális elemeket, ha edzés módban vagyunk, hogy gyorsítsa a tanulást
     public bool isAiVsAiMode;
+    public ModelAsset trainedAiModel;
 
     private MapGenerator mapGenerator;
 
@@ -81,7 +87,7 @@ public class GameInitializer : MonoBehaviour
 
         AddEconomyListeners();
 
-        if (!isTrainingMode)
+        if (!turnOffVisualsInTraining)
         {
             minimapController.Initialize(mapManager.mapData, gameManager);
             unitVisualizer.SetAnimationRunner(visualsManager);
@@ -125,29 +131,53 @@ public class GameInitializer : MonoBehaviour
         //    //gameManager.NextTurn(); // Start the first turn immediately for training mode
         //}
         // Self play
+        //if (isTrainingMode)
+        //{
+        //    var aiTypes = new List<AIFactory.AIType>
+        //    {
+        //        AIFactory.AIType.MLBasic,  // Player 1 - ML agent
+        //        AIFactory.AIType.MLBasic   // Player 2 - also ML agent, same behavior
+        //    };
+        //    gameManager.InitializePlayersWithCustomAI(aiTypes);
+        //    inputController.enabled = false;
+        //}
+        //else if(isAiVsAiMode)
+        //{
+        //    var aiTypes = new List<AIFactory.AIType>
+        //    {
+        //        AIFactory.AIType.MLBasic,  // Player 1 - Deterministic AI
+        //        AIFactory.AIType.Deterministic          // Player 2 - Random AI
+        //    };
+        //    gameManager.InitializePlayersWithCustomAI(aiTypes);
+        //    inputController.enabled = false;
+        //}
         if (isTrainingMode)
         {
-            var aiTypes = new List<AIFactory.AIType>
-            {
-                AIFactory.AIType.MLBasic,  // Player 1 - ML agent
-                AIFactory.AIType.MLBasic   // Player 2 - also ML agent, same behavior
-            };
-            gameManager.InitializePlayersWithCustomAI(aiTypes);
-            inputController.enabled = false;
+            var aiTypes = new List<AIFactory.AIType> { AIFactory.AIType.MLBasic, AIFactory.AIType.MLBasic };
+            //var aiTypes = new List<AIFactory.AIType> { AIFactory.AIType.MLBasic, AIFactory.AIType.Deterministic };
+
+            // Pass the model here (even if training, we can pass it, or pass null)
+            gameManager.InitializePlayersWithCustomAI(aiTypes, isTraining: true, trainedAiModel);
+            if(turnOffVisualsInTraining)
+                inputController.enabled = false;
         }
-        else if(isAiVsAiMode)
+        else if (isAiVsAiMode)
         {
-            var aiTypes = new List<AIFactory.AIType>
-            {
-                AIFactory.AIType.MLBasic,  // Player 1 - Deterministic AI
-                AIFactory.AIType.Deterministic          // Player 2 - Random AI
-            };
-            gameManager.InitializePlayersWithCustomAI(aiTypes);
-            inputController.enabled = false;
+            //var aiTypes = new List<AIFactory.AIType> { AIFactory.AIType.MLBasic, AIFactory.AIType.MLBasic };
+            var aiTypes = new List<AIFactory.AIType> { AIFactory.AIType.MLBasic, AIFactory.AIType.Deterministic };
+            //var aiTypes = new List<AIFactory.AIType> { AIFactory.AIType.Deterministic, AIFactory.AIType.Deterministic };
+            // Pass the model here for Inference mode!
+            gameManager.InitializePlayersWithCustomAI(aiTypes, isTraining: false, trainedAiModel);
+            if(turnOffVisualsInTraining)
+                inputController.enabled = false;
         }
         else
         {
             gameManager.InitializePlayers(); // Your original method
+
+            var aiTypes = new List<AIFactory.AIType> { AIFactory.AIType.MLBasic};
+
+            gameManager.InitializePlayersWithCustomAI(aiTypes, isTraining: false, trainedAiModel); // Initialize Player 2 as ML agent for testing
             inputController.enabled = true;
         }
     }
@@ -226,7 +256,7 @@ public class GameInitializer : MonoBehaviour
     {
         mapGenerator.Generate();
 
-        if (!isTrainingMode)
+        if (!turnOffVisualsInTraining)
         {
             mapVisualizer.DrawMap(mapManager.mapData, mapManager.mapWidth, mapManager.mapHeight);
         }
