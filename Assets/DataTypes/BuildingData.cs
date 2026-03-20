@@ -41,6 +41,7 @@ public class BuildingData : ScriptableObject
     public ArmorType armorType = ArmorType.Structure;
 
     [Header("Visuals")]
+    public Sprite buildingIcon;
     public Sprite buildingSprite;
     public Sprite buildingColorTrim;
     public Sprite constructionSprite;

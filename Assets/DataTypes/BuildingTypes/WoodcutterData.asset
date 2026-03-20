@@ -25,6 +25,7 @@ MonoBehaviour:
   productionPerWorkerCount: 030000000600000009000000
   maxHealth: 40
   armorType: 3
+  buildingIcon: {fileID: 21300000, guid: bc992293529254a4cad3135a036c5b7f, type: 3}
   buildingSprite: {fileID: 21300000, guid: 610d32bca19a560478f792f9efff3956, type: 3}
   buildingColorTrim: {fileID: 21300000, guid: 357578664bec09940ae8d2a5bec3ee3b, type: 3}
   constructionSprite: {fileID: -8306583155516149243, guid: b46974bf0cb5ecb4e9fcad78e196cb9f, type: 3}

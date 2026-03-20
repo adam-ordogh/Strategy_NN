@@ -1,31 +1,34 @@
 fileFormatVersion: 2
-guid: d783232ffaf9d4843864f8587bf5a189
+guid: d0037e30d49eaa6458438972e16349cf
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 5718652077665772799
-    second: UI_icons 1_0
+      213: -5650137688854127968
+    second: resource_icons_0
   - first:
-      213: 7139734586359901013
-    second: UI_icons 1_1
+      213: 3463778228977924227
+    second: resource_icons_1
   - first:
-      213: -8299865889565138594
-    second: UI_icons 1_2
+      213: -2038607626553853471
+    second: resource_icons_2
   - first:
-      213: 3079647216538166869
-    second: UI_icons 1_3
+      213: -8675179632421524668
+    second: resource_icons_3
   - first:
-      213: 8216218300591019976
-    second: UI_icons 1_4
+      213: 6372101702241186445
+    second: resource_icons_4
   - first:
-      213: -5386414246205620078
-    second: UI_icons 1_5
+      213: -4849871534884844075
+    second: resource_icons_5
   - first:
-      213: -9080636892078673615
-    second: UI_icons 1_6
+      213: -7461350774432504301
+    second: resource_icons_6
   - first:
-      213: -8763430414807720218
-    second: UI_icons 1_7
+      213: 3029867359502791386
+    second: resource_icons_7
+  - first:
+      213: 1735417281078604354
+    second: resource_icons_8
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -58,7 +61,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -72,7 +75,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 64
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -96,7 +99,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -134,177 +137,199 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: UI_icons 1_0
+      name: gold_resource_icon
       rect:
         serializedVersion: 2
         x: 13
-        y: 22
+        y: 86
         width: 37
         height: 24
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ff4615314cbbc5f40800000000000000
-      internalID: 5718652077665772799
+      spriteID: 0aa9dcb25bda691b0800000000000000
+      internalID: -5650137688854127968
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: UI_icons 1_1
+      name: food_resource_icon_01
       rect:
         serializedVersion: 2
         x: 69
-        y: 15
+        y: 79
         width: 56
         height: 31
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 55b6d8247ce651360800000000000000
-      internalID: 7139734586359901013
+      spriteID: 388f5f682ffc11030800000000000000
+      internalID: 3463778228977924227
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: UI_icons 1_2
+      name: food_resource_icon_02
       rect:
         serializedVersion: 2
         x: 146
-        y: 14
+        y: 78
         width: 31
         height: 39
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e51a611b2f3f0dc80800000000000000
-      internalID: -8299865889565138594
+      spriteID: 1e9fad62a2965b3e0800000000000000
+      internalID: -2038607626553853471
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: UI_icons 1_3
+      name: wood_resource_icon
       rect:
         serializedVersion: 2
         x: 205
-        y: 13
+        y: 77
         width: 40
         height: 41
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5562747a3da1dba20800000000000000
-      internalID: 3079647216538166869
+      spriteID: 44bafce56129b9780800000000000000
+      internalID: -8675179632421524668
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: UI_icons 1_4
+      name: population_resource_icon
       rect:
         serializedVersion: 2
         x: 269
-        y: 8
+        y: 72
         width: 38
         height: 46
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8c79ac3530fd50270800000000000000
-      internalID: 8216218300591019976
+      spriteID: d827fb2ccb04e6850800000000000000
+      internalID: 6372101702241186445
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: UI_icons 1_5
+      name: turn_icon
       rect:
         serializedVersion: 2
-        x: 331
+        x: 15
+        y: 12
+        width: 34
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5dd09e4e88bc1bcb0800000000000000
+      internalID: -4849871534884844075
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: assignedWorker_icon
+      rect:
+        serializedVersion: 2
+        x: 73
+        y: 9
+        width: 48
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3166d59a005f37890800000000000000
+      internalID: -7461350774432504301
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: unassignedWorker_icon
+      rect:
+        serializedVersion: 2
+        x: 138
+        y: 9
+        width: 48
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad2f6bf7f404c0a20800000000000000
+      internalID: 3029867359502791386
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: housing_resource_icon
+      rect:
+        serializedVersion: 2
+        x: 203
         y: 12
         width: 42
         height: 45
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2908fc118cc9f35b0800000000000000
-      internalID: -5386414246205620078
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UI_icons 1_6
-      rect:
-        serializedVersion: 2
-        x: 393
-        y: 9
-        width: 48
-        height: 49
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 131f751abd81bf180800000000000000
-      internalID: -9080636892078673615
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UI_icons 1_7
-      rect:
-        serializedVersion: 2
-        x: 458
-        y: 9
-        width: 48
-        height: 49
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 6ee1887e77a026680800000000000000
-      internalID: -8763430414807720218
+      spriteID: 242b3cf82d0751810800000000000000
+      internalID: 1735417281078604354
       vertices: []
       indices: 
       edges: []
@@ -313,7 +338,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 75b7aae0cf7bcbd4f8a59d36de6bb93a
     internalID: 0
     vertices: []
     indices: 
@@ -323,14 +348,15 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      UI_icons 1_0: 5718652077665772799
-      UI_icons 1_1: 7139734586359901013
-      UI_icons 1_2: -8299865889565138594
-      UI_icons 1_3: 3079647216538166869
-      UI_icons 1_4: 8216218300591019976
-      UI_icons 1_5: -5386414246205620078
-      UI_icons 1_6: -9080636892078673615
-      UI_icons 1_7: -8763430414807720218
+      assignedWorker_icon: -7461350774432504301
+      food_resource_icon_01: 3463778228977924227
+      food_resource_icon_02: -2038607626553853471
+      gold_resource_icon: -5650137688854127968
+      housing_resource_icon: 1735417281078604354
+      population_resource_icon: 6372101702241186445
+      turn_icon: -4849871534884844075
+      unassignedWorker_icon: 3029867359502791386
+      wood_resource_icon: -8675179632421524668
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

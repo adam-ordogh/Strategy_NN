@@ -22,6 +22,7 @@ public class GameUIController : MonoBehaviour
     // -------------
     [Header("Selection Info Panel")]
     public GameObject infoPanel;
+    public UnityEngine.UI.Image portraitImage;
     public TMPro.TextMeshProUGUI nameLabel;
     public TMPro.TextMeshProUGUI healthLabel;
 
@@ -85,7 +86,7 @@ public class GameUIController : MonoBehaviour
         initializer.gameManager.NextTurn();
 
         int turnNumber = initializer.gameManager.turnNumber;
-        turnLabel.text = $"Turn {turnNumber}";
+        turnLabel.text = $"<sprite name=\"turn_icon\"> {turnNumber}";
 
         RefreshSelectionUI();
         UpdateUI();
@@ -234,6 +235,11 @@ public class GameUIController : MonoBehaviour
     private void ShowBuildingInfo(Building b)
     {
         infoPanel.SetActive(true);
+        if (b.data.buildingIcon != null)
+        {
+            portraitImage.sprite = b.data.buildingIcon;
+        }
+
         nameLabel.text = b.data.buildingName;
         healthLabel.text = $"HP: {b.currentHp}/{b.data.maxHealth}";
 
@@ -259,6 +265,11 @@ public class GameUIController : MonoBehaviour
     private void ShowUnitInfo(Unit unit)
     {
         infoPanel.SetActive(true);
+        if (unit.data.unitIcon != null)
+        {
+            portraitImage.sprite = unit.data.unitIcon;
+        }
+
         nameLabel.text = unit.data.unitName;
         healthLabel.text = $"HP: {unit.currentHealth}/{unit.data.maxHealth}";
 
@@ -274,6 +285,35 @@ public class GameUIController : MonoBehaviour
         actionPanel.SetActive(isMine);
     }
 
+    //private void UpdateProductionQueueUI(Building b)
+    //{
+    //    foreach (Transform child in queueContainer)
+    //    {
+    //        Destroy(child.gameObject);
+    //    }
+
+    //    var queue = initializer.productionManager.GetQueueForBuilding(b);
+    //    if (queue == null || queue.Count == 0) return;
+
+    //    for (int i = 0; i < queue.Count; i++)
+    //    {
+    //        int localIndex = i;
+    //        var order = queue[i];
+
+    //        GameObject buttonObj = Instantiate(queueButtonPrefab, queueContainer);
+    //        var textComp = buttonObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+    //        textComp.text = $"{order.template.unitType}\n({order.turnsRemaining})";
+
+    //        var buttonComp = buttonObj.GetComponent<UnityEngine.UI.Button>();
+    //        buttonComp.onClick.AddListener(() =>
+    //        {
+    //            initializer.productionManager.CancelSpecificUnit(b, localIndex);
+    //            RefreshSelectionUI();
+    //            UpdateUI();
+    //        });
+    //    }
+    //}
+
     private void UpdateProductionQueueUI(Building b)
     {
         foreach (Transform child in queueContainer)
@@ -284,15 +324,40 @@ public class GameUIController : MonoBehaviour
         var queue = initializer.productionManager.GetQueueForBuilding(b);
         if (queue == null || queue.Count == 0) return;
 
+        int totalTurns = 0;
+
         for (int i = 0; i < queue.Count; i++)
         {
             int localIndex = i;
             var order = queue[i];
+            totalTurns += order.turnsRemaining;
 
             GameObject buttonObj = Instantiate(queueButtonPrefab, queueContainer);
-            var textComp = buttonObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-            textComp.text = $"{order.template.unitType}\n({order.turnsRemaining})";
 
+            // 1. SET THE ICON
+            // Look for an Image component on the prefab (or its children)
+            var iconImage = buttonObj.GetComponentInChildren<UnityEngine.UI.Image>();
+            if (iconImage != null && order.template.unitIcon != null)
+            {
+                iconImage.sprite = order.template.unitIcon;
+                iconImage.preserveAspect = true; // Keeps your 64x64 ratio clean
+            }
+
+            // 2. SET THE TURNS REMAINING
+            // We'll just show the number now since the icon tells us the unit type
+            var textComp = buttonObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            if (textComp != null)
+            {
+                textComp.text = totalTurns.ToString();
+                textComp.color = Color.yellow;
+                textComp.fontStyle = TMPro.FontStyles.Bold;
+
+                // Ensure the outline is thick enough to see against dark sprites
+                textComp.outlineWidth = 0.25f;
+                textComp.outlineColor = new Color32(0, 0, 0, 255);
+            }
+
+            // 3. LOGIC
             var buttonComp = buttonObj.GetComponent<UnityEngine.UI.Button>();
             buttonComp.onClick.AddListener(() =>
             {

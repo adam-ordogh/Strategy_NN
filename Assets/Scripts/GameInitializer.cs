@@ -105,6 +105,7 @@ public class GameInitializer : MonoBehaviour
             inputController.gameManager = gameManager;
 
             gameUiController.UpdateUI();
+            gameUiController.turnLabel.text = $"<sprite name=\"turn_icon\"> 1";
         }
     }
 

@@ -25,5 +25,6 @@ MonoBehaviour:
   goldCost: 50
   foodCost: 0
   woodCost: 80
+  unitIcon: {fileID: 21300000, guid: dcfb3326219f25b49b3c1864f5fa21ec, type: 3}
   unitSprite: {fileID: 21300000, guid: d39f2452adf062c42bf891cd5ba55a50, type: 3}
   unitName: Katapult
