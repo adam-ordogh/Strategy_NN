@@ -31,4 +31,6 @@ MonoBehaviour:
   constructionSprite: {fileID: -8306583155516149243, guid: b46974bf0cb5ecb4e9fcad78e196cb9f, type: 3}
   isSelectable: 1
   buildingName: "Fav\xE1g\xF3"
-  description: Makes them niggas chop wood
+  description: "<sprite name=\"wood_resource_icon\">-t termel a telep\xFCl\xE9snek,
+    <color=#FFA500>3</color> munkahelyet biztos\xEDt. Minden 2 szomsz\xE9dos erd\u0151
+    mez\u0151\xE9rt <color=#FF00FF>+1</color> termel\xE9s b\xFAnuszt kap"

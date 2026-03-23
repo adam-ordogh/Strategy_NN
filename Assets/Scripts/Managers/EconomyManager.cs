@@ -22,7 +22,7 @@ public class EconomyManager : MonoBehaviour
         this.mapData = mapData;
         this.buildingManager = buildingManager;
     }
-    private int GetProductionFromWorkers(Building building)
+    public int GetProductionFromWorkers(Building building)
     {
         //return building.data.GetWorkerOutput(building.assignedWorkers); 
         int baseOutput = building.data.GetWorkerOutput(building.assignedWorkers);

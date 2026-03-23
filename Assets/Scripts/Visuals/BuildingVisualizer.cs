@@ -51,11 +51,11 @@ public class BuildingVisualizer
         UpdateRendererState(instance, building);
 
         spawnedBuildings[building] = instance;
+        SetRoadTiles(building, tileRegistry.roadRuleTile);
     }
 
     public void UpdateVisualsToFinished(Building building)
     {
-        SetRoadTiles(building, tileRegistry.roadRuleTile);
 
         if (building.data.buildingType == Building.BuildingType.Road)
         {
@@ -72,6 +72,7 @@ public class BuildingVisualizer
                 ShowBuilding(building);
             }
         }
+        //SetRoadTiles(building, tileRegistry.roadRuleTile);
     }
 
     private void UpdateRendererState(GameObject instance, Building building)
@@ -175,7 +176,8 @@ public class BuildingVisualizer
     {
         // Clear tiles logic is up to you, usually we don't clear road tiles 
         // For now, keeping your original logic:
-        //SetRoadTiles(building, null);
+        if (building.data.buildingType != Building.BuildingType.Road)
+            SetRoadTiles(building, null);
 
         if (spawnedBuildings.ContainsKey(building))
         {
@@ -211,5 +213,14 @@ public class BuildingVisualizer
     public void SetGameManager(GameManager gameManager)
     {
         this.gameManager = gameManager;
+    }
+
+    public void ClearAllBuildingTiles()
+    {
+        if (buildingTilemap != null)
+        {
+            buildingTilemap.ClearAllTiles();
+            Debug.Log("Roads cleared");
+        }
     }
 }

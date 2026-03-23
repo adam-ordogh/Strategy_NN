@@ -28,3 +28,5 @@ MonoBehaviour:
   unitIcon: {fileID: 21300000, guid: b03138d64139b6d499b9620eb7e2d3b4, type: 3}
   unitSprite: {fileID: 21300000, guid: 36f274066a9cd3e4fba5d328b04a1ead, type: 3}
   unitName: Lovas
+  description: "Gyors mozg\xE1s\xFA k\xF6zelharci egys\xE9g, kifejezetten j\xF3 \xEDjj\xE1szok
+    ellen"

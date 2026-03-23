@@ -94,7 +94,7 @@ public class GameManager
         var startPositions = new List<Vector2Int>
         {
             new Vector2Int(5, 11),
-            new Vector2Int(43, 38)
+            new Vector2Int(43, 37)
         };
 
         // Fisher-Yates shuffle - works for any number of positions/players

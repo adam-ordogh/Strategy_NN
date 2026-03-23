@@ -36,13 +36,18 @@ public class BuildingManager : MonoBehaviour
         }
     }
 
+    public BuildingData GetTemplateByName(string templateName)
+    {
+        return buildingTemplates.Find(t => t.name.Replace("(Instance)", "").Trim() == templateName);
+    }
+
     public Building PlaceBuilding(BuildingData template, Vector2Int pos, int ownerId)
     {
         Building newBuilding = new Building(template, ownerId, pos);
         PlayerProfile owner = gameManager.GetPlayerProfile(ownerId);
 
         if (!CanAffordBuilding(template, owner) || !CanPlaceBuilding(template, pos, ownerId)) return null;
-        
+
         UpdateOccupancy(newBuilding, true);
         mapData.buildings[pos] = newBuilding;
 
@@ -61,7 +66,7 @@ public class BuildingManager : MonoBehaviour
             buildingsUnderConstruction.Add(newBuilding);
         }
 
-        OnBuildingPlaced?.Invoke(newBuilding); 
+        OnBuildingPlaced?.Invoke(newBuilding);
         return newBuilding;
     }
 
@@ -101,11 +106,11 @@ public class BuildingManager : MonoBehaviour
 
     private void CompleteBuilding(Building building)
     {
-        building.DecrementConstruction(); 
+        building.DecrementConstruction();
         ApplyBuildingEffects(building, true);
-        OnConstructionCompleted?.Invoke(building); 
+        OnConstructionCompleted?.Invoke(building);
     }
-        
+
     public void RemoveBuilding(Building building)
     {
         if (mapData.buildings.ContainsKey(building.position))
@@ -123,8 +128,8 @@ public class BuildingManager : MonoBehaviour
             {
                 influenceManager.RemoveBuildingFromReachGrid(building);
             }
-            if (!building.isConstructed) 
-            { 
+            if (!building.isConstructed)
+            {
                 buildingsUnderConstruction.Remove(building);
             }
             OnBuildingRemoved?.Invoke(building);
@@ -283,13 +288,10 @@ public class BuildingManager : MonoBehaviour
         {
             occupancyGrid[tile.x, tile.y] = isAdding ? building : null;
 
-            // REMOVING FOREST
             if (isAdding && mapData.GetTileData(tile.x, tile.y).type == TileType.Forest)
             {
-                // 1. Update the logical data
                 mapData.SetTileData(tile.x, tile.y, new MapData.TileData { type = TileType.Grass, isPassable = true });
 
-                // 2. Broadcast the change to anyone listening
                 OnEnvironmentChanged?.Invoke(tile, TileType.Grass);
             }
         }
@@ -300,7 +302,7 @@ public class BuildingManager : MonoBehaviour
         foreach (var tile in building.GetOccupiedTiles())
         {
             if (isApplying)
-            {   
+            {
                 mapData.moveCostMap[tile.x, tile.y] = building.data.movementCostModifier;
             }
             else
@@ -313,7 +315,48 @@ public class BuildingManager : MonoBehaviour
         {
             influenceManager.AddBuildingToReachGrid(building);
             influenceManager.RecalculateInfluence(building);
-        }        
+        }
     }
 
+    // SEGÉDFÜGGVÉNYEK
+
+    public void ClearAllBuildings()
+    {
+        List<Building> buildingsToDestroy = new List<Building>(mapData.buildings.Values);
+
+        foreach (var building in buildingsToDestroy)
+        {
+            RemoveBuilding(building);
+        }
+
+    }
+
+    public void CreateBuilding(Building building)
+    {
+        if (building == null) return;
+
+        mapData.buildings[building.position] = building;
+
+        UpdateOccupancy(building, true);
+
+        PlayerProfile owner = gameManager.GetPlayerProfile(building.ownerId);
+        if (owner != null && !owner.myBuildings.Contains(building))
+        {
+            owner.myBuildings.Add(building);
+        }
+
+        if (building.isConstructed)
+        {
+            ApplyBuildingEffects(building, true);
+        }
+        else
+        {
+            if (!buildingsUnderConstruction.Contains(building))
+            {
+                buildingsUnderConstruction.Add(building);
+            }
+        }
+
+        OnBuildingPlaced?.Invoke(building);
+    }
 }

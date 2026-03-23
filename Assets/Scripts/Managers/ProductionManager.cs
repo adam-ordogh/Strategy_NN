@@ -224,4 +224,27 @@ public class ProductionManager : MonoBehaviour
         if (buildingManager.GetBuildingAtTile(pos) != null && buildingManager.GetBuildingAtTile(pos).buildingType != Building.BuildingType.Road) return false;
         return true;
     }
+
+    public void LoadOrderIntoQueue(Building factory, UnitData unitType, int turnsRemaining)
+    {
+        if (factory == null || unitType == null) return;
+
+        // Ensure the queue list exists for this building
+        if (!productionQueues.ContainsKey(factory))
+        {
+            productionQueues[factory] = new List<ProductionOrder>();
+        }
+
+        // Create the order with the saved progress
+        ProductionOrder order = new ProductionOrder
+        {
+            template = unitType,
+            turnsRemaining = turnsRemaining
+        };
+
+        productionQueues[factory].Add(order);
+
+        // Crucial: Trigger the event so the UI icons appear immediately
+        OnUnitQueued?.Invoke(factory, unitType);
+    }
 }

@@ -1,19 +1,19 @@
-using UnityEngine;
 using TMPro;
 using UnityEngine.InputSystem;
+using UnityEngine;
 
 public class TooltipController : MonoBehaviour
 {
     public static TooltipController Instance;
 
     public TextMeshProUGUI titleText;
-    public TextMeshProUGUI costText;
+    public TextMeshProUGUI costText; 
     public TextMeshProUGUI descriptionText;
 
     private RectTransform rectTransform;
 
-    void Awake()
-    {
+    void Awake() 
+    { 
         Instance = this;
         rectTransform = GetComponent<RectTransform>();
         gameObject.SetActive(false);
@@ -22,22 +22,25 @@ public class TooltipController : MonoBehaviour
     void Update()
     {
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        transform.position = mousePos + new Vector2(15, -15);
-        //transform.position = mousePos + new Vector2(15, 15);
+
+        float pivotX = mousePos.x / Screen.width > 0.5f ? 1.05f : -0.05f;
+        float pivotY = mousePos.y / Screen.height > 0.5f ? 1.05f : -0.05f;
+
+        rectTransform.pivot = new Vector2(pivotX, pivotY);
+        transform.position = mousePos;
     }
 
-    public void Show(BuildingData data)
+    public void Show(string title, string cost = "", string description = "")
     {
         gameObject.SetActive(true);
-        titleText.text = data.buildingType.ToString();
+        titleText.text = title;
 
-        costText.text = $"<color=#FFD700>{data.goldCost}</color>   <sprite name=\"gold_resource_icon\"> | <color=#A52A2A>{data.woodCost}</color>   <sprite name=\"wood_resource_icon\">";
+        costText.gameObject.SetActive(!string.IsNullOrEmpty(cost));
+        costText.text = cost;
 
-        descriptionText.text = $"{data.description}";
+        descriptionText.gameObject.SetActive(!string.IsNullOrEmpty(description));
+        descriptionText.text = description;
     }
 
-    public void Hide()
-    {
-        gameObject.SetActive(false);
-    }
+    public void Hide() => gameObject.SetActive(false);
 }

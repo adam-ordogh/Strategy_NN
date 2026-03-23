@@ -98,4 +98,9 @@ public class Unit
         this.remainingMovementPoints = this.data.movementRange;
         this.canAttack = true;
     }
+
+    public void LoadState(int savedHealth)
+    {
+        this.currentHealth = savedHealth;
+    }
 }

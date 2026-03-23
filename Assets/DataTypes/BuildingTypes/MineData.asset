@@ -31,4 +31,5 @@ MonoBehaviour:
   constructionSprite: {fileID: -8306583155516149243, guid: b46974bf0cb5ecb4e9fcad78e196cb9f, type: 3}
   isSelectable: 1
   buildingName: "B\xE1nya"
-  description: Makes them niggas mine
+  description: "<sprite name=\"gold_resource_icon\">-t termel a telep\xFCl\xE9snek,
+    <color=#FFA500>3</color> munkahelyet biztos\xEDt"

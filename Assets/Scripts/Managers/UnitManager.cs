@@ -22,6 +22,11 @@ public class UnitManager : MonoBehaviour
         this.gameManager = gameManager;
     }
 
+    public UnitData GetTemplateByName(string templateName)
+    {
+        return unitTemplates.Find(t => t.name.Replace("(Instance)", "").Trim() == templateName);
+    }
+
     public Unit SpawnUnit(UnitData template, Vector2Int pos, int ownerId)
     {
         if (template == null)
@@ -365,6 +370,20 @@ public class UnitManager : MonoBehaviour
                     FindFirstObjectByType<BuildingManager>().CheckBuildingHealth(targetBuilding);
                 }
             }
+        }
+    }
+
+    // SEGÉDFÜGGVÉNYEK
+
+    public void ClearAllUnits()
+    {
+        // Make a copy of the units to iterate safely
+        List<Unit> unitsToDestroy = new List<Unit>(mapData.units.Values);
+
+        foreach (var unit in unitsToDestroy)
+        {
+            // This handles removing from Player profile, mapData, AND triggers the visualizer
+            DestroyUnit(unit);
         }
     }
 }

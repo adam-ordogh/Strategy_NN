@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Xml;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameUIController : MonoBehaviour
 {
@@ -25,6 +26,7 @@ public class GameUIController : MonoBehaviour
     public UnityEngine.UI.Image portraitImage;
     public TMPro.TextMeshProUGUI nameLabel;
     public TMPro.TextMeshProUGUI healthLabel;
+    public Slider healthBar;
 
     [Header("Unit Stats Panel")]
     public GameObject statsPanel;
@@ -37,6 +39,7 @@ public class GameUIController : MonoBehaviour
     [Header("Worker Panel")]
     public GameObject workerPanel;
     public TMPro.TextMeshProUGUI workerCountText;
+    public TMPro.TextMeshProUGUI productionCountText;
 
     [Header("Training System")]
     [Tooltip("Drag your UnitData assets here. Index 0 = Warrior, 1 = Archer, etc.")]
@@ -49,6 +52,15 @@ public class GameUIController : MonoBehaviour
 
     [Header("Action Panel")]
     public GameObject actionPanel;
+
+    [Header("Menu Panels")]
+    public GameObject pauseMenuPanel;
+    public GameObject saveLoadMenuPanel;
+    public SaveLoadUI saveLoadUI;
+
+    private bool buildingPanelIsOpen = false;
+    public static bool IsAnyMenuOpen { get; private set; }
+
     public void SubscribeToPlayerUpdates(PlayerProfile profile)
     {
         profile.OnResourcesChanged += UpdateUI;
@@ -83,6 +95,9 @@ public class GameUIController : MonoBehaviour
 
     public void EndTurn()
     {
+        initializer.inputController.DeselectUnit();
+        if(buildingPanelIsOpen) CloseBuildingMenu();
+
         initializer.gameManager.NextTurn();
 
         int turnNumber = initializer.gameManager.turnNumber;
@@ -146,12 +161,16 @@ public class GameUIController : MonoBehaviour
 
     public void OpenBuildingMenu()
     {
+        buildingPanelIsOpen = true;
+
         buildingPanelOpened.SetActive(true);
         buildingPanelClosed.SetActive(false);
     }
 
     public void CloseBuildingMenu()
     {
+        buildingPanelIsOpen = false;
+
         buildingPanelOpened.SetActive(false);
         buildingPanelClosed.SetActive(true);
     }
@@ -166,6 +185,10 @@ public class GameUIController : MonoBehaviour
         var selectedBuilding = initializer.inputController.selectedBuilding;
         var selectedUnit = initializer.inputController.selectedUnit;
 
+        if (selectedBuilding != null || selectedUnit != null) { 
+        
+        }
+        
         infoPanel.SetActive(false);
         statsPanel.SetActive(false);
         workerPanel.SetActive(false);
@@ -242,11 +265,30 @@ public class GameUIController : MonoBehaviour
 
         nameLabel.text = b.data.buildingName;
         healthLabel.text = $"HP: {b.currentHp}/{b.data.maxHealth}";
+        UpdateHealthBar(b.currentHp, b.data.maxHealth);
 
         if (b.data.jobSlotsProvided > 0)
         {
             workerPanel.SetActive(true);
+
             workerCountText.text = $"{b.assignedWorkers}/{b.data.jobSlotsProvided}";
+
+            var economy = initializer.gameManager.economyManager;
+            int totalProduction = economy.GetProductionFromWorkers(b);
+
+            string resourceIcon = GetResourceIconForBuilding(b.buildingType);
+
+            int baseOutput = b.data.GetWorkerOutput(b.assignedWorkers);
+            int bonus = totalProduction - baseOutput;
+
+            if (bonus > 0)
+            {
+                productionCountText.text = $"{totalProduction} {resourceIcon} <color=green>(+{bonus})</color>";
+            }
+            else
+            {
+                productionCountText.text = $"{totalProduction} {resourceIcon}";
+            }
         }
 
         if (b.buildingType == Building.BuildingType.Barracks)
@@ -255,11 +297,44 @@ public class GameUIController : MonoBehaviour
             UpdateProductionQueueUI(b);
         }
 
-        bool isMine = b.ownerId == initializer.gameManager.currentPlayerId;
+        bool isMine = b.ownerId == initializer.gameManager.HumanPlayer.playerId;
         actionPanel.SetActive(isMine);
 
-        // Grey out buttons if it's an enemy building
-        //SetInteractionState(isMine);
+    }
+
+    private string GetResourceIconForBuilding(Building.BuildingType type)
+    {
+        switch (type)
+        {
+            case Building.BuildingType.Woodcutter: return "<sprite name=\"wood_resource_icon\">";
+            case Building.BuildingType.Farm: return "<sprite name=\"food_resource_icon_02\">";
+            case Building.BuildingType.Mine: return "<sprite name=\"gold_resource_icon\">";
+            default: return "";
+        }
+    }
+
+    private void UpdateHealthBar(int current, int max)
+    {
+        if (healthBar == null) return;
+
+        // 1. Update the slider math
+        healthBar.maxValue = max;
+        healthBar.value = current;
+
+        // 2. Calculate the percentage (0.0 to 1.0)
+        float healthPercent = (float)current / max;
+
+        // 3. Find the Fill image and change color
+        // healthBar.fillRect is the reference to the actual "bar" part
+        if (healthBar.fillRect != null)
+        {
+            Image fillImage = healthBar.fillRect.GetComponent<Image>();
+            if (fillImage != null)
+            {
+                // Lerp goes from Red (0%) to Green (100%)
+                fillImage.color = Color.Lerp(Color.red, Color.green, healthPercent);
+            }
+        }
     }
 
     private void ShowUnitInfo(Unit unit)
@@ -272,6 +347,7 @@ public class GameUIController : MonoBehaviour
 
         nameLabel.text = unit.data.unitName;
         healthLabel.text = $"HP: {unit.currentHealth}/{unit.data.maxHealth}";
+        UpdateHealthBar(unit.currentHealth, unit.data.maxHealth);
 
         statsPanel.SetActive(true);
 
@@ -281,38 +357,10 @@ public class GameUIController : MonoBehaviour
         damageTypeText.text = $"Sebzés típus: {unit.data.attackType}";
         armorTypeText.text = $"Páncél típus: {unit.data.armorType}";
 
-        bool isMine = unit.ownerId == initializer.gameManager.currentPlayerId;
+        //bool isMine = unit.ownerId == initializer.gameManager.currentPlayerId;
+        bool isMine = unit.ownerId == initializer.gameManager.HumanPlayer.playerId;
         actionPanel.SetActive(isMine);
     }
-
-    //private void UpdateProductionQueueUI(Building b)
-    //{
-    //    foreach (Transform child in queueContainer)
-    //    {
-    //        Destroy(child.gameObject);
-    //    }
-
-    //    var queue = initializer.productionManager.GetQueueForBuilding(b);
-    //    if (queue == null || queue.Count == 0) return;
-
-    //    for (int i = 0; i < queue.Count; i++)
-    //    {
-    //        int localIndex = i;
-    //        var order = queue[i];
-
-    //        GameObject buttonObj = Instantiate(queueButtonPrefab, queueContainer);
-    //        var textComp = buttonObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-    //        textComp.text = $"{order.template.unitType}\n({order.turnsRemaining})";
-
-    //        var buttonComp = buttonObj.GetComponent<UnityEngine.UI.Button>();
-    //        buttonComp.onClick.AddListener(() =>
-    //        {
-    //            initializer.productionManager.CancelSpecificUnit(b, localIndex);
-    //            RefreshSelectionUI();
-    //            UpdateUI();
-    //        });
-    //    }
-    //}
 
     private void UpdateProductionQueueUI(Building b)
     {
@@ -334,17 +382,13 @@ public class GameUIController : MonoBehaviour
 
             GameObject buttonObj = Instantiate(queueButtonPrefab, queueContainer);
 
-            // 1. SET THE ICON
-            // Look for an Image component on the prefab (or its children)
             var iconImage = buttonObj.GetComponentInChildren<UnityEngine.UI.Image>();
             if (iconImage != null && order.template.unitIcon != null)
             {
                 iconImage.sprite = order.template.unitIcon;
-                iconImage.preserveAspect = true; // Keeps your 64x64 ratio clean
+                iconImage.preserveAspect = true; 
             }
 
-            // 2. SET THE TURNS REMAINING
-            // We'll just show the number now since the icon tells us the unit type
             var textComp = buttonObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
             if (textComp != null)
             {
@@ -352,12 +396,11 @@ public class GameUIController : MonoBehaviour
                 textComp.color = Color.yellow;
                 textComp.fontStyle = TMPro.FontStyles.Bold;
 
-                // Ensure the outline is thick enough to see against dark sprites
+                
                 textComp.outlineWidth = 0.25f;
                 textComp.outlineColor = new Color32(0, 0, 0, 255);
             }
 
-            // 3. LOGIC
             var buttonComp = buttonObj.GetComponent<UnityEngine.UI.Button>();
             buttonComp.onClick.AddListener(() =>
             {
@@ -366,5 +409,88 @@ public class GameUIController : MonoBehaviour
                 UpdateUI();
             });
         }
+    }
+
+    // MENU PANEL FUNCTIONS
+
+    public void TogglePauseMenu()
+    {
+        bool isOpening = pauseMenuPanel.activeSelf;
+
+        // Flip the state
+        pauseMenuPanel.SetActive(!isOpening);
+
+        UpdateMenuState();
+    }
+
+    public void OnResumeClicked()
+    {
+        TogglePauseMenu();
+
+    }
+
+    public void OpenSaveMenu() => ToggleSaveLoadMenu(SaveLoadUI.UIMode.Save);
+    public void OpenLoadMenu() => ToggleSaveLoadMenu(SaveLoadUI.UIMode.Load);
+
+    // Button Event: Open Save Menu
+    public void ToggleSaveLoadMenu(SaveLoadUI.UIMode mode)
+    {
+        bool isOpening = !saveLoadMenuPanel.activeSelf;
+
+        TogglePauseMenu();
+        saveLoadMenuPanel.SetActive(isOpening);
+
+        if (isOpening)
+        {
+            if(mode == SaveLoadUI.UIMode.Save)
+                saveLoadUI.OpenPanel(SaveLoadUI.UIMode.Save);
+            else
+                saveLoadUI.OpenPanel(SaveLoadUI.UIMode.Load);
+            
+        }
+
+        UpdateMenuState();
+    }
+
+    // Button Event: Open Load Menu
+    //public void OnLoadMenuClicked()
+    //{
+    //    TogglePauseMenu();
+    //    loadMenuPanel.SetActive(true);
+    //    // Here you would also call a function to refresh the list of existing save files
+
+    //    UpdateMenuState();
+    //}
+
+    // Button Event: Exit to Main Menu
+    public void OnExitToMainMenuClicked()
+    {
+        // Make sure to add "using UnityEngine.SceneManagement;" at the top of the script
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu"); // Replace with your scene name
+
+        UpdateMenuState();
+    }
+
+    public void OnExitGameClicked()
+    {
+        Debug.Log("Quitting Game...");
+        Application.Quit();
+    }
+
+    public void CloseAllMenus()
+    {
+        pauseMenuPanel.SetActive(false);
+        saveLoadMenuPanel.SetActive(false);
+        //loadMenuPanel.SetActive(false);
+        UpdateMenuState();
+    }
+
+    private void UpdateMenuState()
+    {
+        // If any of your main panels are active, IsAnyMenuOpen is true
+        IsAnyMenuOpen = pauseMenuPanel.activeSelf || saveLoadMenuPanel.activeSelf;
+
+        // Optional: Lock the cursor or show it
+        //Cursor.visible = IsAnyMenuOpen;
     }
 }

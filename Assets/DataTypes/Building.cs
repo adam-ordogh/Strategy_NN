@@ -111,4 +111,12 @@ public class Building
         return tiles;
     }
 
+    public void LoadState(int savedHp, int savedTurnsRemaining, int savedWorkers, bool savedIsConstructed)
+    {
+        this.currentHp = savedHp;
+        this.turnsRemaining = savedTurnsRemaining;
+        this.assignedWorkers = savedWorkers;
+        this.isConstructed = savedIsConstructed;
+    }
+
 }

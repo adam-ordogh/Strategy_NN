@@ -36,7 +36,7 @@ public class GameInitializer : MonoBehaviour
     public TileRegistry tileRegistry;
     public MapVisualizer mapVisualizer;
     private UnitVisualizer unitVisualizer;
-    private BuildingVisualizer buildingVisualizer;
+    public BuildingVisualizer buildingVisualizer;
     private InfluenceVisualizer influenceVisualizer;
 
     public MapManager mapManager;

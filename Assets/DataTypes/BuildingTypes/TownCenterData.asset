@@ -15,7 +15,7 @@ MonoBehaviour:
   buildingType: 0
   size: {x: 3, y: 3}
   movementCostModifier: Infinity
-  constructionTurns: 1
+  constructionTurns: 10
   influenceRadius: 6
   goldCost: 150
   woodCost: 150
@@ -31,4 +31,6 @@ MonoBehaviour:
   constructionSprite: {fileID: -8306583155516149243, guid: b46974bf0cb5ecb4e9fcad78e196cb9f, type: 3}
   isSelectable: 1
   buildingName: "K\xF6zpont"
-  description: Makes them niggas niggas
+  description: "A telep\xFCl\xE9s k\xF6zpontja, <color=green>10</color> <sprite name=\"housing_resource_icon\">-t,
+    <color=#C0C0C0>75</color> rakt\xE1rhelyet \xE9s <color=#00FFFF>6</color> sugar\xFA
+    befoly\xE1st biztos\xEDt"

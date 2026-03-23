@@ -83,4 +83,13 @@ public class MinimapController : MonoBehaviour
     {
         return gameManager.GetPlayerProfile(id).playerColor;
     }
+
+    public byte[] GetMinimapPngBytes()
+    {
+        if (minimapTexture == null) return null;
+
+        UpdateMinimap();
+
+        return minimapTexture.EncodeToPNG();
+    }
 }

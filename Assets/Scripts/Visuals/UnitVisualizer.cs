@@ -196,6 +196,11 @@ public class UnitVisualizer
         }
     }
 
+    public void ShowHighlight(Vector2Int pos, Color color)
+    {
+        ShowHighlights(new[] { pos }, color);
+    }
+
     public void ClearHighlights()
     {
         highlightTilemap.ClearAllTiles();

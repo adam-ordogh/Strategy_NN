@@ -22,6 +22,8 @@ public class CameraController2D : MonoBehaviour
 
     void Update()
     {
+        if (GameUIController.IsAnyMenuOpen) return;
+
         HandlePan();
         HandleZoom();
         ClampCameraPosition();

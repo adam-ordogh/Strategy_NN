@@ -31,4 +31,5 @@ MonoBehaviour:
   constructionSprite: {fileID: -8306583155516149243, guid: b46974bf0cb5ecb4e9fcad78e196cb9f, type: 3}
   isSelectable: 1
   buildingName: "Kasz\xE1rnya"
-  description: Makes fighting niggas
+  description: "Katonai egys\xE9gek gy\xE1rt\xE1s\xE1ra szolg\xE1l, valamint <color=#00FFFF>3</color>
+    sugar\xFA befoly\xE1st biztos\xEDt"

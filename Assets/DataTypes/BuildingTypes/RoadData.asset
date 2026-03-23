@@ -31,4 +31,6 @@ MonoBehaviour:
   constructionSprite: {fileID: -8306583155516149243, guid: b46974bf0cb5ecb4e9fcad78e196cb9f, type: 3}
   isSelectable: 0
   buildingName: "\xDAt"
-  description: Makes them niggas travel
+  description: "Megfelezi az egys\xE9gek mozg\xE1s k\xF6lts\xE9g\xE9t, valamit <color=#FF00FF>+1</color>
+    termel\xE9st biztos\xEDt \xE9p\xFCleteknek amelyek \xF6ssze vannak k\xF6tve egy
+    k\xF6zponttal"
