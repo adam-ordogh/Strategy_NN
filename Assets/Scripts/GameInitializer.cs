@@ -157,7 +157,6 @@ public class GameInitializer : MonoBehaviour
             var aiTypes = new List<AIFactory.AIType> { AIFactory.AIType.MLBasic, AIFactory.AIType.MLBasic };
             //var aiTypes = new List<AIFactory.AIType> { AIFactory.AIType.MLBasic, AIFactory.AIType.Deterministic };
 
-            // Pass the model here (even if training, we can pass it, or pass null)
             gameManager.InitializePlayersWithCustomAI(aiTypes, isTraining: true, trainedAiModel);
             if(turnOffVisualsInTraining)
                 inputController.enabled = false;
@@ -167,18 +166,18 @@ public class GameInitializer : MonoBehaviour
             //var aiTypes = new List<AIFactory.AIType> { AIFactory.AIType.MLBasic, AIFactory.AIType.MLBasic };
             var aiTypes = new List<AIFactory.AIType> { AIFactory.AIType.MLBasic, AIFactory.AIType.Deterministic };
             //var aiTypes = new List<AIFactory.AIType> { AIFactory.AIType.Deterministic, AIFactory.AIType.Deterministic };
-            // Pass the model here for Inference mode!
+            
             gameManager.InitializePlayersWithCustomAI(aiTypes, isTraining: false, trainedAiModel);
             if(turnOffVisualsInTraining)
                 inputController.enabled = false;
         }
         else
         {
-            gameManager.InitializePlayers(); // Your original method
+            gameManager.InitializePlayers(); 
 
             var aiTypes = new List<AIFactory.AIType> { AIFactory.AIType.MLBasic};
 
-            gameManager.InitializePlayersWithCustomAI(aiTypes, isTraining: false, trainedAiModel); // Initialize Player 2 as ML agent for testing
+            gameManager.InitializePlayersWithCustomAI(aiTypes, isTraining: false, trainedAiModel); 
             inputController.enabled = true;
         }
     }
@@ -248,13 +247,24 @@ public class GameInitializer : MonoBehaviour
         //buildingManager.OnBuildingRemoved += (building) => economyManager.InvalidateTileCache(gameManager.GetPlayerProfile(building.ownerId));
     }
 
-    private void BuildingManager_OnConstructionCompleted(Building obj)
-    {
-        throw new System.NotImplementedException();
-    }
 
     public void StartGame()
     {
+        // Betöltés
+        if (!string.IsNullOrEmpty(LevelLoadBridge.SaveFileToLoad))
+        {
+            string fileToLoad = LevelLoadBridge.SaveFileToLoad;
+            LevelLoadBridge.SaveFileToLoad = ""; 
+
+            FindAnyObjectByType<SaveManager>().LoadGame(fileToLoad);
+            return;
+        }
+
+        // Új játék
+        int seedToUse = LevelLoadBridge.MapSeed != 0 ? LevelLoadBridge.MapSeed : UnityEngine.Random.Range(1, 999999);
+        mapGenerator.SetSeed(0);
+
+        
         mapGenerator.Generate();
 
         if (!turnOffVisualsInTraining)

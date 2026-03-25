@@ -377,12 +377,10 @@ public class UnitManager : MonoBehaviour
 
     public void ClearAllUnits()
     {
-        // Make a copy of the units to iterate safely
         List<Unit> unitsToDestroy = new List<Unit>(mapData.units.Values);
 
         foreach (var unit in unitsToDestroy)
         {
-            // This handles removing from Player profile, mapData, AND triggers the visualizer
             DestroyUnit(unit);
         }
     }

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Sensors;
 using Unity.MLAgents.Actuators;
@@ -17,17 +17,17 @@ public class AIMacroML : Agent
     public bool isTraining = true;
     //[SerializeField] public bool headlessMode = true;
 
-    // Micro controller for execution
+    // Micro controller
     private AIMicroController micro;
     private PlayerProfile myProfile;
 
     [HideInInspector] public AIMacroMLController owner;
 
-    // Current decision
+    // Jelenlegi döntés és állapot
     public AIGoal currentGoal { get; private set; } = AIGoal.FocusEconomy;
     public MilitaryState currentArmyState = MilitaryState.Gathering;
 
-    // Tracking for reward calculation (only what micro doesn't track)
+    // Jutalom nyomkövetéséhez szükséges változók
     private int previousGold;
     private int previousWood;
     private int previousFood;
@@ -35,7 +35,7 @@ public class AIMacroML : Agent
     private int previousUnitCount;
     private int previousTerritorySize;
 
-    // Combat stats (micro doesn't track these)
+    // Harci statisztikák
     private int totalEnemiesKilled;
     private int totalEnemyBuildingsDestroyed;
     private int totalUnitsLost;
@@ -56,10 +56,8 @@ public class AIMacroML : Agent
             myProfile = gameManager.GetPlayerProfile(playerId);
             //Debug.Log($"[ML Agent {playerId}] Micro created: {micro != null}, Profile found: {myProfile != null}");
 
-            // HOOK UP COMBAT EVENTS HERE
             HookCombatEvents();
 
-            // Initialize previous values
             StoreCurrentValues();
         }
         else
@@ -150,7 +148,7 @@ public class AIMacroML : Agent
         sensor.AddObservation(GetBuildingRatio(Building.BuildingType.Barracks));
         sensor.AddObservation(GetBuildingRatio(Building.BuildingType.Outpost));
 
-        // === MILITARY OBSERVATIONS === 5 (using micro)
+        // === MILITARY OBSERVATIONS === 5 
         float myStrength = micro.CalculateMilitaryStrength();
         float enemyStrength = micro.GetObservedEnemyStrength();
 
@@ -160,7 +158,7 @@ public class AIMacroML : Agent
         sensor.AddObservation(Normalize(myStrength / Mathf.Max(enemyStrength, 1f), 0, 3));
         sensor.AddObservation((float)currentArmyState);
 
-        // === EXPANSION OBSERVATIONS === 4 (using micro)
+        // === EXPANSION OBSERVATIONS === 4 
         sensor.AddObservation(micro.CanPlaceIndustrialBuilding() ? 1f : 0f);
         sensor.AddObservation(GetTerritorySizeNormalized());
         sensor.AddObservation(GetDistanceToEnemyNormalized());
@@ -232,228 +230,14 @@ public class AIMacroML : Agent
         micro.ExecuteRoadMicro();
         micro.HandleUnitMicro(currentArmyState, ref currentArmyState);
     }
-
-    //private float CalculateReward()
-    //{
-    //    float reward = 0f;
-
-    //    // Track changes since last turn
-    //    int goldDelta = myProfile.gold - previousGold;
-    //    int woodDelta = myProfile.wood - previousWood;
-    //    int foodDelta = myProfile.food - previousFood;
-    //    int buildingsDelta = myProfile.myBuildings.Count - previousBuildingCount;
-    //    int unitsDelta = myProfile.myUnits.Count - previousUnitCount;
-    //    int territoryDelta = GetTerritorySize() - previousTerritorySize;
-
-    //    // ========== POSITIVE REWARDS ==========
-    //    reward += goldDelta * 0.01f;
-    //    reward += woodDelta * 0.01f;
-    //    reward += foodDelta * 0.02f;
-
-    //    if (buildingsDelta > 0) reward += buildingsDelta * 2.0f;
-    //    if (territoryDelta > 0) reward += territoryDelta * 1.5f;
-    //    if (unitsDelta > 0) reward += unitsDelta * 1.0f;
-
-    //    // Combat rewards
-    //    int enemiesKilledDelta = totalEnemiesKilled - previousEnemiesKilled;
-    //    if (enemiesKilledDelta > 0) reward += enemiesKilledDelta * 5.0f;
-
-    //    int buildingsDestroyedDelta = totalEnemyBuildingsDestroyed - previousEnemyBuildingsDestroyed;
-    //    if (buildingsDestroyedDelta > 0) reward += buildingsDestroyedDelta * 15.0f;
-
-    //    // ========== NEGATIVE REWARDS ==========
-    //    if (myProfile.food <= 0) reward -= 5.0f;
-
-    //    int unitsLostDelta = totalUnitsLost - previousUnitsLost;
-    //    if (unitsLostDelta > 0) reward -= unitsLostDelta * 3.0f;
-
-    //    int buildingsLostDelta = totalBuildingsLost - previousBuildingsLost;
-    //    if (buildingsLostDelta > 0) reward -= buildingsLostDelta * 10.0f;
-
-    //    //if (myProfile.availablePopulation > 5)
-    //    //    reward -= myProfile.availablePopulation * 0.1f;
-
-    //    //if (myProfile.gold < 50) reward -= 0.5f;
-    //    //if (myProfile.wood < 50) reward -= 0.5f;
-
-    //    if (myProfile.currentPopulation > myProfile.housingCapacity * 0.9f)
-    //        reward -= 1.0f;
-
-    //    // ========== STRATEGIC BONUSES ==========
-    //    var income = gameManager.economyManager.GetProjectedIncome(myProfile);
-    //    if (income.goldNet + income.woodNet + income.foodNet > 20)
-    //        reward += 0.5f;
-
-    //    // Territory resource bonus (using micro's helper)
-    //    int forestsInTerritory = CountResourcesInTerritory(MapData.TileType.Forest);
-    //    int mountainsInTerritory = CountResourcesInTerritory(MapData.TileType.Mountain);
-    //    reward += forestsInTerritory * 0.1f;
-    //    reward += mountainsInTerritory * 0.2f;
-
-    //    // Military dominance (using micro)
-    //    float myStrength = micro.CalculateMilitaryStrength();
-    //    float enemyStrength = micro.GetObservedEnemyStrength();
-    //    if (myStrength > enemyStrength * 2f)
-    //        reward += 2.0f;
-
-    //    // ========== END GAME REWARDS ==========
-    //    foreach (var player in gameManager.players)
-    //    {
-    //        if (player.playerId != playerId && player.myBuildings.Count == 0)
-    //        {
-    //            reward += 100.0f;
-    //            EndEpisode();
-    //            break;
-    //        }
-    //        else if (player.playerId == playerId && player.myBuildings.Count == 0)
-    //        {
-    //            reward -= 100.0f;
-    //            EndEpisode();
-    //            break;
-    //        }
-    //    }
-
-    //    // Store current values for next turn
-    //    StoreCurrentValues();
-
-    //    // Cap reward
-    //    reward = Mathf.Clamp(reward, -50f, 50f);
-
-    //    Debug.Log($"[ML Agent {playerId}] Reward: {reward:F2}");
-    //    return reward;
-    //}
-
-    //private float CalculateReward()
-    //{
-    //    float reward = 0f;
-
-    //    reward -= 0.05f;
-
-    //    var income = gameManager.economyManager.GetProjectedIncome(myProfile);
-
-    //    // 1. REWARD ECONOMIC ENGINE (Income is better than raw stash)
-    //    // Reward having a positive net income, punish starvation.
-    //    reward += (income.goldNet + income.woodNet) * 0.002f;
-
-    //    if (income.foodNet < 0) reward -= 1.0f; // Stronger penalty for starving
-    //    else reward += income.foodNet * 0.002f;
-
-    //    // 2. REWARD MILESTONES (Deltas for persistent assets)
-    //    int buildingsDelta = myProfile.myBuildings.Count - previousBuildingCount;
-    //    int territoryDelta = GetTerritorySize() - previousTerritorySize;
-    //    int unitsDelta = myProfile.myUnits.Count - previousUnitCount;
-
-    //    if (buildingsDelta > 0) reward += buildingsDelta * 2.0f;
-    //    if (territoryDelta > 0) reward += territoryDelta * 1.0f;
-    //    if (unitsDelta > 0) reward += unitsDelta * 0.5f;
-
-    //    // 3. COMBAT REWARDS (Keep these, they are good)
-    //    int enemiesKilledDelta = totalEnemiesKilled - previousEnemiesKilled;
-    //    if (enemiesKilledDelta > 0) reward += enemiesKilledDelta * 3.0f;
-
-    //    int buildingsDestroyedDelta = totalEnemyBuildingsDestroyed - previousEnemyBuildingsDestroyed;
-    //    if (buildingsDestroyedDelta > 0) reward += buildingsDestroyedDelta * 8.0f;
-
-    //    // COMBAT PENALTIES
-    //    int unitsLostDelta = totalUnitsLost - previousUnitsLost;
-    //    if (unitsLostDelta > 0) reward -= unitsLostDelta * 1.0f;
-
-    //    int buildingsLostDelta = totalBuildingsLost - previousBuildingsLost;
-    //    if (buildingsLostDelta > 0) reward -= buildingsLostDelta * 3.0f;
-
-    //    // 4. STRATEGIC GOALS
-    //    float myStrength = micro.CalculateMilitaryStrength();
-    //    float enemyStrength = micro.GetObservedEnemyStrength();
-
-    //    // Small continuous reward for maintaining military superiority
-    //    if (myStrength > enemyStrength + 10f) reward += 0.2f;
-
-    //    // 5. WIN/LOSS CONDITIONS
-    //    StoreCurrentValues();
-
-    //    // 1. Clamp the regular turn-by-turn rewards FIRST
-    //    reward = Mathf.Clamp(reward, -15f, 15f);
-
-    //    foreach (var player in gameManager.players)
-    //    {
-    //        // FIX: Ensure roads don't block the win/loss reward
-    //        //bool isEliminated = player.myBuildings.Count(b => b.buildingType != Building.BuildingType.Road) == 0;
-
-
-    //        //if (player.playerId != playerId && isEliminated && gameManager.turnNumber > 5)
-    //        //{
-    //        //    reward += 100.0f; // Unclamped massive bonus for winning
-    //        //    AddReward(reward);
-    //        //    EndEpisode();
-    //        //    return 0f;
-    //        //}
-    //        //else if (player.playerId == playerId && isEliminated && gameManager.turnNumber > 5)
-    //        //{
-    //        //    reward -= 100.0f; // Unclamped massive penalty for dying
-    //        //    AddReward(reward);
-    //        //    EndEpisode();
-    //        //    return 0f;
-    //        //}
-
-    //        bool hasTownCenter = player.myBuildings.Any(b =>
-    //                b.buildingType == Building.BuildingType.TownCenter);
-
-    //        if (player.playerId != playerId && !hasTownCenter && gameManager.turnNumber > 5)
-    //        {
-    //            reward += 100.0f; // Unclamped massive bonus for winning
-    //            AddReward(reward);
-    //            EndEpisode();
-    //            return 0f;
-    //        }
-    //        else if (player.playerId == playerId && !hasTownCenter && gameManager.turnNumber > 5)
-    //        {
-    //            reward -= 100.0f; // Unclamped massive penalty for dying
-    //            AddReward(reward);
-    //            EndEpisode();
-    //            return 0f;
-    //        }
-    //    }
-
-    //    // If no win/loss condition, just return the clamped reward
-    //    return reward;
-
-    //    //foreach (var player in gameManager.players)
-    //    //{
-    //    //    if (player.playerId != playerId && player.myBuildings.Count == 0 && gameManager.turnNumber > 5)
-    //    //    {
-    //    //        Debug.Log($"[ML Agent {playerId}] Episode ended by ELIMINATION of Player {player.playerId} at turn {gameManager.turnNumber}");
-    //    //        reward = Mathf.Clamp(reward, -15f, 15f);
-    //    //        StoreCurrentValues();
-    //    //        AddReward(reward + 100.0f);
-    //    //        EndEpisode();
-    //    //        return 0f;
-    //    //    }
-    //    //    else if (player.playerId == playerId && player.myBuildings.Count == 0 && gameManager.turnNumber > 5)
-    //    //    {
-    //    //        reward = Mathf.Clamp(reward, -15f, 15f);
-    //    //        StoreCurrentValues();
-    //    //        AddReward(reward - 100.0f);
-    //    //        EndEpisode();
-    //    //        return 0f;
-    //    //    }
-    //    //}
-
-    //    //StoreCurrentValues();
-
-    //    //// Cap reward to prevent wild gradient spikes
-    //    //reward = Mathf.Clamp(reward, -15f, 15f);
-
-    //    //return reward;
-    //}
-
     private float CalculateReward()
     {
         float stepReward = 0f;
 
-        // 1. Time Penalty (Always negative to force action)
+        // Time Penalty 
         stepReward -= 0.05f;
 
-        // 2. ONE-TIME Milestone Rewards (Deltas) - Scaled down!
+        // ONE-TIME mérföldkő jutalmak (Delták)
         int buildingsDelta = myProfile.myBuildings.Count - previousBuildingCount;
         int territoryDelta = GetTerritorySize() - previousTerritorySize;
         int unitsDelta = myProfile.myUnits.Count - previousUnitCount;
@@ -462,7 +246,7 @@ public class AIMacroML : Agent
         if (territoryDelta > 0) stepReward += territoryDelta * 0.05f;
         if (unitsDelta > 0) stepReward += unitsDelta * 0.1f;
 
-        // 3. COMBAT REWARDS (Kept strong to encourage fighting)
+        // Harci jutalmak
         int enemiesKilledDelta = totalEnemiesKilled - previousEnemiesKilled;
         if (enemiesKilledDelta > 0) stepReward += enemiesKilledDelta * 3.0f;
 
@@ -475,13 +259,11 @@ public class AIMacroML : Agent
         int buildingsLostDelta = totalBuildingsLost - previousBuildingsLost;
         if (buildingsLostDelta > 0) stepReward -= buildingsLostDelta * 3.0f;
 
-        // Clamp the turn-by-turn reward to prevent wild spikes BEFORE win/loss
         stepReward = Mathf.Clamp(stepReward, -10f, 10f);
 
-        // Store values BEFORE checking win conditions
         StoreCurrentValues();
 
-        // 4. WIN/LOSS CONDITIONS
+        // Győzelem / vereség jutalmak
         foreach (var player in gameManager.players)
         {
             bool hasTownCenter = player.myBuildings.Any(b =>
@@ -489,13 +271,13 @@ public class AIMacroML : Agent
 
             if (player.playerId != playerId && !hasTownCenter && gameManager.turnNumber > 5)
             {
-                AddReward(stepReward + 200.0f); // Step + Massive Win Bonus
+                AddReward(stepReward + 200.0f);
                 EndEpisode();
                 return 0f;
             }
             else if (player.playerId == playerId && !hasTownCenter && gameManager.turnNumber > 5)
             {
-                AddReward(stepReward - 200.0f); // Step + Massive Loss Penalty
+                AddReward(stepReward - 200.0f); 
                 EndEpisode();
                 return 0f;
             }
@@ -520,13 +302,12 @@ public class AIMacroML : Agent
         previousBuildingsLost = totalBuildingsLost;
     }
 
-    // Public methods to be called by combat system
     public void OnEnemyKilled() { totalEnemiesKilled++; }
     public void OnEnemyBuildingDestroyed() { totalEnemyBuildingsDestroyed++; }
     public void OnUnitLost() { totalUnitsLost++; }
     public void OnBuildingLost() { totalBuildingsLost++; }
 
-    // ==================== HELPER METHODS (using micro where possible) ====================
+    // ==================== HELPER METHODS ====================
 
     private float Normalize(float value, float min, float max)
     {
@@ -553,7 +334,6 @@ public class AIMacroML : Agent
     {
         if (myProfile.myBuildings.Count == 0) return 1f;
 
-        // Use micro's method to find closest enemy base
         Vector2Int enemyBase = micro.GetClosestEnemyBase(myProfile.myBuildings[0].position);
         if (enemyBase.x == -1) return 1f;
 

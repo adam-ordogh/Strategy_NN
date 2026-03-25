@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MapManager : MonoBehaviour
@@ -44,6 +45,18 @@ public class MapManager : MonoBehaviour
             Vector2Int pos = kvp.Key;
             Building building = kvp.Value;
             Debug.Log($"Building at ({pos.x},{pos.y}): Type={building.buildingType}, Player={building.ownerId}");
+        }
+    }
+
+    public void ReplaceMapData(int width, int height, List<TileSaveData> savedTiles)
+    {
+        mapWidth = width;
+        mapHeight = height;
+        mapData = new MapData(width, height); 
+
+        foreach (var t in savedTiles)
+        {
+            mapData.SetTileData(t.x, t.y, new MapData.TileData { type = t.type, isPassable = t.isPassable });
         }
     }
 }

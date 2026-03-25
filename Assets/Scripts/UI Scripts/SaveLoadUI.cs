@@ -15,7 +15,7 @@ public class SaveLoadUI : MonoBehaviour
     public GameObject nameInputArea;
 
     [Header("List Settings")]
-    public GameObject saveItemPrefab; // Button with Text component
+    public GameObject saveItemPrefab; 
     public Transform scrollContent;
     public ScrollRect scrollRect;
 
@@ -25,14 +25,14 @@ public class SaveLoadUI : MonoBehaviour
     public TMP_InputField nameInput;
 
     [Header("Confirmation UI")]
-    public GameObject confirmationPanel; // Panel with Yes/No buttons
-    public TextMeshProUGUI confirmationText; // Text on the confirmation panel
+    public GameObject confirmationPanel; 
+    public TextMeshProUGUI confirmationText; 
     private string pendingSaveName;
 
     [Header("References")]
     public SaveManager saveManager;
     private string selectedFileName;
-    private GameObject selectedItemObj; // Track the actual selected GameObject
+    private GameObject selectedItemObj; 
 
     [Header("Character Limits")]
     public int maxFileNameLength = 33;
@@ -70,11 +70,9 @@ public class SaveLoadUI : MonoBehaviour
     {
         currentMode = mode;
 
-        // Update the UI look
         titleText.text = (mode == UIMode.Save) ? "Játék Mentése" : "Játék Betöltése";
         actionButtonText.text = (mode == UIMode.Save) ? "Mentés" : "Betöltés";
 
-        // Hide the name input if we are loading (since we just select a file)
         nameInputArea.SetActive(mode == UIMode.Save);
 
         RefreshList();
@@ -95,7 +93,6 @@ public class SaveLoadUI : MonoBehaviour
 
         string[] files = Directory.GetFiles(path, "*.json");
 
-        // Sort files by creation time (newest first)
         System.Array.Sort(files, (a, b) =>
             File.GetLastWriteTime(b).CompareTo(File.GetLastWriteTime(a)));
 
@@ -115,36 +112,31 @@ public class SaveLoadUI : MonoBehaviour
             if (button != null)
             {
                 string fileNameCopy = fileName;
-                GameObject itemObjCopy = item; // Capture for the closure
+                GameObject itemObjCopy = item; 
                 button.onClick.RemoveAllListeners();
                 button.onClick.AddListener(() => SelectSave(fileNameCopy, itemObjCopy));
             }
         }
     }
 
-    // Updated SelectSave now requires the GameObject to handle highlighting accurately
     public void SelectSave(string fileName, GameObject clickedItem)
     {
         selectedFileName = fileName;
         nameInput.text = fileName;
 
-        // --- Visual Highlight Logic ---
-        // Reset the color of the previously selected item
         if (selectedItemObj != null)
         {
             var oldImage = selectedItemObj.GetComponent<Image>();
             if (oldImage != null) oldImage.color = Color.white;
         }
 
-        // Highlight the new item
         selectedItemObj = clickedItem;
         if (selectedItemObj != null)
         {
             var newImage = selectedItemObj.GetComponent<Image>();
-            if (newImage != null) newImage.color = new Color(0.7f, 0.8f, 1f); // Light blue
+            if (newImage != null) newImage.color = new Color(0.7f, 0.8f, 1f); 
         }
 
-        // --- Load Preview Data ---
         string imgPath = Path.Combine(Application.persistentDataPath, "Saves", fileName + ".png");
         previewImage.sprite = LoadSprite(imgPath);
         previewImage.color = previewImage.sprite != null ? Color.white : Color.gray;
@@ -167,8 +159,6 @@ public class SaveLoadUI : MonoBehaviour
         }
     }
 
-    // --- OVERWRITE CONFIRMATION LOGIC ---
-
     public void OnSaveButtonClicked()
     {
         if (string.IsNullOrEmpty(nameInput.text))
@@ -182,7 +172,6 @@ public class SaveLoadUI : MonoBehaviour
 
         if (File.Exists(filePath))
         {
-            // Show Confirmation Panel
             pendingSaveName = fileName;
             confirmationPanel.SetActive(true);
 
@@ -193,28 +182,9 @@ public class SaveLoadUI : MonoBehaviour
         }
         else
         {
-            // Normal save
             ExecuteSave(fileName);
         }
     }
-
-    //public void OnActionButtonClicked()
-    //{
-    //    if (currentMode == UIMode.Save)
-    //    {
-    //        if (string.IsNullOrEmpty(nameInput.text)) return;
-    //        saveManager.SaveGame(nameInput.text);
-    //        RefreshList();
-    //    }
-    //    else
-    //    {
-    //        if (string.IsNullOrEmpty(selectedFileName)) return;
-    //        saveManager.LoadGame(selectedFileName);
-
-    //        // Close the menu after loading
-    //        Object.FindFirstObjectByType<GameUIController>().CloseAllMenus();
-    //    }
-    //}
 
     public void OnActionButtonClicked()
     {
@@ -223,7 +193,6 @@ public class SaveLoadUI : MonoBehaviour
             string fileName = nameInput.text;
             if (string.IsNullOrEmpty(fileName)) return;
 
-            // Check if file exists to determine if we need an overwrite popup
             string path = Path.Combine(Application.persistentDataPath, "Saves", fileName + ".json");
 
             if (File.Exists(path))
@@ -237,7 +206,7 @@ public class SaveLoadUI : MonoBehaviour
                 ExecuteSave(fileName);
             }
         }
-        else // Load Mode
+        else 
         {
             if (string.IsNullOrEmpty(selectedFileName)) return;
 
@@ -247,7 +216,6 @@ public class SaveLoadUI : MonoBehaviour
         }
     }
 
-    // Helper to open the popup with custom text and a specific action
     private System.Action onConfirmAction;
 
     private void OpenConfirmation(string message, System.Action confirmAction)
@@ -259,14 +227,12 @@ public class SaveLoadUI : MonoBehaviour
         confirmationPanel.SetActive(true);
     }
 
-    // Linked to the "Yes" button in the Inspector
     public void OnConfirmYes()
     {
         onConfirmAction?.Invoke();
         confirmationPanel.SetActive(false);
     }
 
-    // Linked to the "No" button in the Inspector
     public void OnConfirmNo()
     {
         confirmationPanel.SetActive(false);
@@ -282,7 +248,6 @@ public class SaveLoadUI : MonoBehaviour
     private void ExecuteLoad(string fileName)
     {
         saveManager.LoadGame(fileName);
-        // Close the menu after loading
         Object.FindFirstObjectByType<GameUIController>().CloseAllMenus();
     }
 
@@ -298,27 +263,7 @@ public class SaveLoadUI : MonoBehaviour
         confirmationPanel.SetActive(false);
     }
 
-    // --- END OVERWRITE LOGIC ---
 
-    //public void OnDeleteButtonClicked()
-    //{
-    //    if (string.IsNullOrEmpty(selectedFileName))
-    //    {
-    //        descriptionText.text = "<color=red>Válasszon ki egy mentést a törléshez!</color>";
-    //        return;
-    //    }
-
-    //    string jsonPath = Path.Combine(Application.persistentDataPath, "Saves", selectedFileName + ".json");
-    //    string imgPath = Path.Combine(Application.persistentDataPath, "Saves", selectedFileName + ".png");
-
-    //    if (File.Exists(jsonPath)) File.Delete(jsonPath);
-    //    if (File.Exists(imgPath)) File.Delete(imgPath);
-
-    //    ClearPreview();
-    //    RefreshList();
-
-    //    descriptionText.text = $"<color=green>Mentés '{selectedFileName}' törölve!</color>";
-    //}
     public void OnDeleteButtonClicked()
     {
         if (string.IsNullOrEmpty(selectedFileName))

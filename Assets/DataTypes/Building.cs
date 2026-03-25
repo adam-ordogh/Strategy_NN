@@ -8,7 +8,7 @@ public class Building
         TownCenter,
         Barracks,
         House,
-        Woodcutter, //Woodcamp jobban hangzik
+        Woodcutter,
         Farm,
         Mine,
         Outpost,

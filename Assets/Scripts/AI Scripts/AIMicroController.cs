@@ -1,5 +1,4 @@
-// AIMicroController.cs
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using static UnitManager;
@@ -10,7 +9,6 @@ public class AIMicroController
     private GameManager gameManager;
     private PlayerProfile myProfile;
 
-    // Constructor
     public AIMicroController(int playerId, GameManager gameManager)
     {
         this.playerId = playerId;
@@ -18,7 +16,6 @@ public class AIMicroController
         this.myProfile = gameManager.GetPlayerProfile(playerId);
     }
 
-    // Call this at the start of each turn to refresh the profile reference
     public void RefreshProfile()
     {
         myProfile = gameManager.GetPlayerProfile(playerId);
@@ -59,7 +56,7 @@ public class AIMicroController
             bool needsWood = !HasUnfilledBuildings(Building.BuildingType.Woodcutter, woodPlanned);
             bool needsMine = !HasUnfilledBuildings(Building.BuildingType.Mine, minesPlanned);
 
-            // First warehouse (critical)
+            // Első raktár megépítése, ha szükséges
             if (ShouldBuildWarehouse(warehousesPlanned + warehousesInConst) && CountBuildings(Building.BuildingType.Warehouse) < 1)
             {
                 if (TryBuild(Building.BuildingType.Warehouse)) { warehousesPlanned++; madeProgress = true; }
@@ -67,12 +64,12 @@ public class AIMicroController
 
             int targetIncome = 15 + (myProfile.myBuildings.Count * 2);
 
-            // Basic needs
+            // Alap resource buildings prioritása
             if (effectiveFood < 10 && needsFarm && TryBuild(Building.BuildingType.Farm)) { farmsPlanned++; madeProgress = true; }
             else if (effectiveWood < 10 && needsWood && TryBuild(Building.BuildingType.Woodcutter)) { woodPlanned++; madeProgress = true; }
             else if (effectiveGold < 10 && needsMine && TryBuild(Building.BuildingType.Mine)) { minesPlanned++; madeProgress = true; }
 
-            // Population growth
+            // Populáció növelése, ha van elég élelem
             else if (effectiveFood > 5 && myProfile.availablePopulation < 2)
             {
                 if (ShouldBuildHouse() && TryBuild(Building.BuildingType.House))
@@ -81,7 +78,7 @@ public class AIMicroController
                 }
             }
 
-            // Dynamic economy balancing
+            // Finamikus építési döntés a hiányzó erőforrások alapján
             else if (myProfile.availablePopulation > 0 || effectiveFood < targetIncome)
             {
                 if (effectiveFood < targetIncome)
@@ -98,7 +95,7 @@ public class AIMicroController
                 }
             }
 
-            // Additional warehouses
+            // Extra raktár építése, ha közel járunk a kapacitáshoz
             if (ShouldBuildWarehouse(warehousesPlanned + warehousesInConst) && CountBuildings(Building.BuildingType.Warehouse) >= 1)
             {
                 if (TryBuild(Building.BuildingType.Warehouse)) { warehousesPlanned++; madeProgress = true; }
@@ -204,10 +201,8 @@ public class AIMicroController
     {
         if (myProfile.myBuildings.Count == 0)
         {
-            // Fallback: If we have units, use the first unit's position, otherwise abort
             if (myProfile.myUnits.Count == 0) return;
 
-            // You can either return or use a unit position as the reference point
             // Vector2Int referencePos = myProfile.myUnits[0].position;
             return;
         }
@@ -218,7 +213,6 @@ public class AIMicroController
         int combatUnits = CountUnits(Unit.UnitType.Soldier) + CountUnits(Unit.UnitType.Archer) +
                           CountUnits(Unit.UnitType.Cavalry) + CountUnits(Unit.UnitType.Siege);
 
-        // Update army state based on size
         if (armyState == MilitaryState.Gathering && combatUnits >= 7)
         {
             armyState = MilitaryState.Attacking;
@@ -232,7 +226,6 @@ public class AIMicroController
 
         foreach (var unit in myProfile.myUnits.ToList())
         {
-            // Attack if targets are reachable
             var targets = gameManager.unitManager.GetReachableTargets(unit);
 
             if (targets.Count > 0)
@@ -323,7 +316,6 @@ public class AIMicroController
         float highestScore = float.MinValue;
         Vector2Int? bestTile = null;
 
-        // Filter by resource requirements
         if (template.buildingType == Building.BuildingType.Woodcutter)
         {
             myTerritory = myTerritory.Where(t => CountNearbyTiles(t, MapData.TileType.Forest, 1) > 0).ToList();
@@ -357,7 +349,6 @@ public class AIMicroController
         Vector2Int basePos = myProfile.myBuildings[0].position;
         float dist = Vector2Int.Distance(pos, basePos);
 
-        // Check for sufficient free neighbors (except houses which can be packed)
         int freeNeighbors = 0;
         foreach (var dir in Pathfinder.Directions)
         {
@@ -369,10 +360,9 @@ public class AIMicroController
         if (freeNeighbors < 1 && template.buildingType != Building.BuildingType.House)
             score -= 200f;
 
-        // Goal-specific scoring
         if (goal == AIGoal.FocusEconomy)
         {
-            score -= dist * 2f; // Prefer closer to base
+            score -= dist * 2f; 
 
             switch (template.buildingType)
             {
@@ -383,7 +373,6 @@ public class AIMicroController
                     score += CountNearbyTiles(pos, MapData.TileType.Mountain, 1) * 50f;
                     break;
                 case Building.BuildingType.Farm:
-                    // Bonus for farm clusters
                     foreach (var b in myProfile.myBuildings)
                     {
                         if (b.buildingType == Building.BuildingType.Farm)
@@ -397,9 +386,8 @@ public class AIMicroController
         }
         else if (goal == AIGoal.FocusExpansion)
         {
-            score += dist * 1f; // Prefer further from base
+            score += dist * 1f; 
 
-            // Anti-clustering
             foreach (var b in myProfile.myBuildings)
             {
                 if (b.buildingType == Building.BuildingType.Outpost || b.buildingType == Building.BuildingType.TownCenter)
@@ -412,17 +400,15 @@ public class AIMicroController
                 }
             }
 
-            // Resource capture
             int captureRadius = template.influenceRadius;
             score += CountNearbyTiles(pos, MapData.TileType.Mountain, captureRadius) * 5f;
             score += CountNearbyTiles(pos, MapData.TileType.Forest, captureRadius) * 2f;
 
-            // Push towards enemy
             Vector2Int enemyPos = GetClosestEnemyBase(pos);
             if (enemyPos.x != -1)
             {
                 float distToEnemy = Vector2Int.Distance(pos, enemyPos);
-                score -= distToEnemy * 2f; // Closer to enemy = higher score
+                score -= distToEnemy * 2f; 
             }
         }
         else if (goal == AIGoal.FocusMilitary)
@@ -430,7 +416,7 @@ public class AIMicroController
             if (enemyBase.x != -1)
             {
                 float distToEnemy = Vector2Int.Distance(pos, enemyBase);
-                score -= distToEnemy * 10f; // Closer to enemy = higher score
+                score -= distToEnemy * 10f; 
             }
         }
 
@@ -462,13 +448,11 @@ public class AIMicroController
 
         if (unit.data.unitType == Unit.UnitType.Siege)
         {
-            // Siege weapons prefer buildings
             var buildingTarget = targets.FirstOrDefault(t => gameManager.mapManager.mapData.buildings.ContainsKey(t.TargetPos));
             if (buildingTarget.TargetPos != Vector2Int.zero) return buildingTarget;
         }
         else
         {
-            // Other units prioritize weak enemies
             Unit targetEnemy = gameManager.mapManager.mapData.units.GetValueOrDefault(bestTarget.TargetPos);
 
             foreach (var t in targets)
@@ -514,13 +498,11 @@ public class AIMicroController
         int effCavalry = unitCounts.GetValueOrDefault(Unit.UnitType.Cavalry) + queueCounts.GetValueOrDefault(Unit.UnitType.Cavalry);
         int effSiege = unitCounts.GetValueOrDefault(Unit.UnitType.Siege) + queueCounts.GetValueOrDefault(Unit.UnitType.Siege);
 
-        // Base scores (decrease as we have more)
         float soldierScore = 12f - (effSoldiers * 1.0f);
         float archerScore = 10f - (effArchers * 1.0f);
         float cavalryScore = 8f - (effCavalry * 1.0f);
         float siegeScore = 2f - (effSiege * 2.0f);
 
-        // Counter logic
         if (enemyComp.GetValueOrDefault(Unit.UnitType.Archer) > 0)
         {
             soldierScore += enemyComp[Unit.UnitType.Archer] * 2;
@@ -538,7 +520,6 @@ public class AIMicroController
             siegeScore += 15f;
         }
 
-        // Economic factor - rich AI can afford expensive units
         if (myProfile.gold > 400)
         {
             cavalryScore += 5f;
@@ -622,12 +603,12 @@ public class AIMicroController
 
     private Vector2Int GetFormationOffset(Unit unit, Vector2Int baseRally)
     {
-        // 3x3 offset pattern around rally point
+        // 3x3-as rács a rally point körül, minden egységnek egyedi offsettel a szórás érdekében
         int offsetIndex = unit.GetHashCode() % 9;
         int dx = (offsetIndex % 3) - 1;
         int dy = (offsetIndex / 3) - 1;
 
-        // Ranged units stay slightly back
+        // Távolsági egységek hátrébb
         if (unit.data.unitType == Unit.UnitType.Archer || unit.data.unitType == Unit.UnitType.Siege)
         {
             Vector2Int basePos = myProfile.myBuildings[0].position;
@@ -650,7 +631,7 @@ public class AIMicroController
         HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
         Dictionary<Vector2Int, int> distances = new Dictionary<Vector2Int, int>();
 
-        // Start from the target building's neighboring tiles
+        // Épület szomszédságából indulunk, nem magából az épületből, hogy ne kelljen lerakni egy utat az épület és a szomszédos út közé
         foreach (var startTile in target.GetOccupiedTiles())
         {
             foreach (var dir in Pathfinder.Directions)
@@ -660,14 +641,13 @@ public class AIMicroController
 
                 Building b = gameManager.buildingManager.GetBuildingAtTile(neighbor);
 
-                // Check if already connected
+                // Összeköttetés a fővárossal már megvan, nincs szükség útra
                 if (b != null && b.isConnectedToCapital && b.ownerId == playerId &&
                    (b.buildingType == Building.BuildingType.Road || b.buildingType == Building.BuildingType.TownCenter))
                 {
                     return new List<Vector2Int>();
                 }
 
-                // Valid road placement tile
                 if (b == null || (b.buildingType == Building.BuildingType.Road && b.ownerId == playerId))
                 {
                     visited.Add(neighbor);
@@ -678,7 +658,7 @@ public class AIMicroController
             }
         }
 
-        // BFS to find connection to capital
+        // BFS a csatlakozás keresésére, max 10 lépés távolságig, hogy ne rakjunk túl hosszú utat
         while (queue.Count > 0)
         {
             Vector2Int current = queue.Dequeue();
@@ -690,14 +670,12 @@ public class AIMicroController
 
                 Building b = gameManager.buildingManager.GetBuildingAtTile(next);
 
-                // Found connection!
                 if (b != null && b.isConnectedToCapital && b.ownerId == playerId &&
                    (b.buildingType == Building.BuildingType.Road || b.buildingType == Building.BuildingType.TownCenter))
                 {
                     return ReconstructPath(parents, current, target);
                 }
 
-                // Continue BFS
                 if (b == null || (b.buildingType == Building.BuildingType.Road && b.ownerId == playerId))
                 {
                     int newDist = distances[current] + 1;
@@ -840,22 +818,6 @@ public class AIMicroController
 
         return Mathf.Max(totalObserved, 30f);
     }
-
-    //private Dictionary<Unit.UnitType, int> GetObservedEnemyComposition()
-    //{
-    //    var comp = new Dictionary<Unit.UnitType, int> {
-    //        { Unit.UnitType.Soldier, 0 }, { Unit.UnitType.Archer, 0 },
-    //        { Unit.UnitType.Cavalry, 0 }, { Unit.UnitType.Siege, 0 }
-    //    };
-
-    //    // For now, just look at opponent's profile (will be replaced with fog of war)
-    //    var enemy = gameManager.GetPlayerProfile(1);
-    //    foreach (var u in enemy.myUnits)
-    //    {
-    //        comp[u.data.unitType]++;
-    //    }
-    //    return comp;
-    //}
 
     private Dictionary<Unit.UnitType, int> GetObservedEnemyComposition()
     {

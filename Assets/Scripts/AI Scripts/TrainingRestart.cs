@@ -1,4 +1,3 @@
-// TrainingRestart.cs
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -12,7 +11,6 @@ public class TrainingRestart : MonoBehaviour
 
     void Start()
     {
-        // Get reference after initialization
         if (gameInitializer != null && gameInitializer.gameManager != null)
         {
             gameManager = gameInitializer.gameManager;
@@ -25,7 +23,6 @@ public class TrainingRestart : MonoBehaviour
 
         //Debug.Log($"TrainingRestart Update - Turn: {gameManager.turnNumber}");
 
-        // Check if episode should end
         if (ShouldEndEpisode())
         {
             RestartEpisode();
@@ -66,7 +63,7 @@ public class TrainingRestart : MonoBehaviour
             {
                 bool hasTownCenter = player.myBuildings.Any(b =>
                     b.buildingType == Building.BuildingType.TownCenter);
-                // FIX: Ignore roads here as well
+
                 if (!hasTownCenter)
                 {
                     Debug.Log($"Episode ended by ELIMINATION of {player.playerId} at turn {gameManager.turnNumber}");
@@ -88,7 +85,6 @@ public class TrainingRestart : MonoBehaviour
     {
         //Debug.Log($"Episode ended at turn {gameManager.turnNumber}. Restarting...");
 
-        // Simply reload the scene
         var agents = GameObject.FindObjectsByType<AIMacroML>(FindObjectsSortMode.None);
         foreach (var agent in agents)
         {

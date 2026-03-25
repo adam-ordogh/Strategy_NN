@@ -29,7 +29,6 @@ public class AIMacroMLController : IAIController
         this.gameManager = gameManager;
         this.micro = new AIMicroController(PlayerId, gameManager);
 
-        // Find or create ML agent
         FindOrCreateMLAgent();
     }
 
@@ -52,7 +51,6 @@ public class AIMacroMLController : IAIController
             GameObject agentGO = new GameObject($"ML_Agent_Player{PlayerId}");
             agentGO.SetActive(false);
 
-            // Set up BehaviorParameters BEFORE adding the Agent component
             var behaviorParams = agentGO.AddComponent<BehaviorParameters>();
             behaviorParams.BehaviorName = "AIMacroML";
 
@@ -66,15 +64,14 @@ public class AIMacroMLController : IAIController
 
             behaviorParams.BehaviorType = isTraining ? BehaviorType.Default : BehaviorType.InferenceOnly;
 
-            // Now add the Agent
             mlAgent = agentGO.AddComponent<AIMacroML>();
             mlAgent.playerId = PlayerId;
             mlAgent.gameManager = gameManager;
             mlAgent.currentArmyState = currentArmyState;
             mlAgent.owner = this;
-            mlAgent.isTraining = isTraining; // Pass the flag to the agent
+            mlAgent.isTraining = isTraining; 
 
-            agentGO.SetActive(true); // Initialize() fires here, BehaviorParameters already set
+            agentGO.SetActive(true);
         }
     }
 

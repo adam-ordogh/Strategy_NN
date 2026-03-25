@@ -5,22 +5,22 @@ using static MapData;
 [System.Serializable]
 public class GameSaveData
 {
-    // Global State
+    // Globális állapot
     public int turnNumber;
     public int currentPlayerIndex;
     public string saveDate;
 
-    // Map State
+    // Térkép adatok
     public int mapWidth;
     public int mapHeight;
-    public List<TileSaveData> mapTiles; // Flattened 2D array
+    public List<TileSaveData> mapTiles;
 
-    // Entities
+    // Entitások
     public List<PlayerSaveData> players;
     public List<BuildingSaveData> buildings;
     public List<UnitSaveData> units;
 
-    // Production Queues
+    // Gyártási sorok
     public List<ProductionQueueSaveData> productionQueues;
 }
 
@@ -44,7 +44,7 @@ public struct PlayerSaveData
 [System.Serializable]
 public struct BuildingSaveData
 {
-    public string templateName; // Important: The name of the BuildingData asset
+    public string templateName; 
     public Vector2Int position;
     public int ownerId;
     public int currentHp;
@@ -65,7 +65,7 @@ public struct UnitSaveData
 [System.Serializable]
 public struct ProductionQueueSaveData
 {
-    public Vector2Int buildingPosition; // We use the building's position to link the queue back to it!
+    public Vector2Int buildingPosition; 
     public List<ProductionOrderSaveData> orders;
 }
 

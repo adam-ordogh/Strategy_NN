@@ -4,7 +4,6 @@ using static Unit;
 
 public class ProductionManager : MonoBehaviour
 {
-    // Egy egyszerű osztály a gyártási megrendelésekhez
     public class ProductionOrder
     {
         public UnitData template;
@@ -196,7 +195,6 @@ public class ProductionManager : MonoBehaviour
         if (factory.buildingType != Building.BuildingType.Barracks) return false;
         if (!factory.isConstructed) return false;
         return true;
-        // Nem nézzük a spawnt itt, mert lehet, hogy lesz hely mire kész a egység
     }
 
 
@@ -229,13 +227,11 @@ public class ProductionManager : MonoBehaviour
     {
         if (factory == null || unitType == null) return;
 
-        // Ensure the queue list exists for this building
         if (!productionQueues.ContainsKey(factory))
         {
             productionQueues[factory] = new List<ProductionOrder>();
         }
 
-        // Create the order with the saved progress
         ProductionOrder order = new ProductionOrder
         {
             template = unitType,
@@ -244,7 +240,6 @@ public class ProductionManager : MonoBehaviour
 
         productionQueues[factory].Add(order);
 
-        // Crucial: Trigger the event so the UI icons appear immediately
         OnUnitQueued?.Invoke(factory, unitType);
     }
 }

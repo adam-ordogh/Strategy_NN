@@ -1,4 +1,3 @@
-// IAIController.cs
 public interface IAIController
 {
     int PlayerId { get; }

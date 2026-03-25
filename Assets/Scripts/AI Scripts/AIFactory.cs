@@ -1,4 +1,3 @@
-// AIFactory.cs
 using System;
 using System.Collections.Generic;
 using Unity.InferenceEngine;
@@ -22,7 +21,6 @@ public static class AIFactory
                 return new AIMacroDeterministic(playerId);
 
             case AIType.MLBasic:
-                // Pass isTraining to the controller
                 return new AIMacroMLController(playerId, isTraining, model);
 
             default:

@@ -1,33 +1,30 @@
-using System.IO;
+﻿using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor.U2D.Aseprite;
 
 public class SaveManager : MonoBehaviour
 {
-    // CHANGE 1: Reference the Initializer instead of GameManager directly
     public GameInitializer gameInitializer;
     public MinimapController minimapController;
 
     public void SaveGame(string saveFileName)
     {
-        // Safety check
         if (gameInitializer == null || gameInitializer.gameManager == null)
         {
             Debug.LogError("Save Failed: GameInitializer or GameManager is missing!");
             return;
         }
 
-        // Grab the active game manager
         GameManager gameManager = gameInitializer.gameManager;
         GameSaveData data = new GameSaveData();
 
-        // 1. Core Data
+        // Fő adatok
         data.turnNumber = gameManager.turnNumber;
         data.currentPlayerIndex = gameManager.players.FindIndex(p => p.playerId == gameManager.currentPlayerId);
         data.saveDate = System.DateTime.Now.ToString("g");
 
-        // 2. MAP TILES (The Flattening Logic)
+        // Térkép adatok
         data.mapWidth = gameManager.mapManager.mapWidth;
         data.mapHeight = gameManager.mapManager.mapHeight;
         data.mapTiles = new List<TileSaveData>();
@@ -47,7 +44,7 @@ public class SaveManager : MonoBehaviour
             }
         }
 
-        // 3. Players
+        // Játékosok
         data.players = new List<PlayerSaveData>();
         foreach (var p in gameManager.players)
         {
@@ -62,7 +59,7 @@ public class SaveManager : MonoBehaviour
             });
         }
 
-        // 4. Buildings & Units
+        // Épületek és egységek
         data.buildings = new List<BuildingSaveData>();
         foreach (var b in gameManager.mapManager.mapData.buildings.Values)
         {
@@ -90,7 +87,7 @@ public class SaveManager : MonoBehaviour
             });
         }
 
-        // 5. Production Queues
+        // Gyártási sorok
         data.productionQueues = new List<ProductionQueueSaveData>();
         foreach (var building in gameManager.mapManager.mapData.buildings.Values)
         {
@@ -114,14 +111,14 @@ public class SaveManager : MonoBehaviour
             }
         }
 
-        // 6. JSON Serialization
+        // JSON mentés
         string json = JsonUtility.ToJson(data, true);
         string folderPath = Application.persistentDataPath + "/Saves";
         if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 
         File.WriteAllText(Path.Combine(folderPath, saveFileName + ".json"), json);
 
-        // 7. Minimap Snapshot
+        // Minimap mentése
         byte[] imgBytes = minimapController.GetMinimapPngBytes();
         if (imgBytes != null)
         {
@@ -146,7 +143,7 @@ public class SaveManager : MonoBehaviour
 
         Debug.Log("Starting Load Sequence...");
 
-        // 1. CLEAR CURRENT STATE
+        // Jelenlegi állapot törlése
         gm.unitManager.ClearAllUnits();
         gm.buildingManager.ClearAllBuildings();
 
@@ -157,16 +154,31 @@ public class SaveManager : MonoBehaviour
 
         gameInitializer.influenceManager.ClearAllInfluenceData();
 
-        // 2. RESTORE GLOBAL STATE
+        // Globális állapot visszaállítása
         gm.turnNumber = data.turnNumber;
-        // To restore current player index safely:
+
         while (gm.players[gm.players.FindIndex(p => p.playerId == gm.currentPlayerId)].playerId != data.players[data.currentPlayerIndex].playerId)
         {
-            // Cycle the turn silently to align the index, without triggering logic
             gm.GetType().GetField("currentPlayerIndex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(gm, data.currentPlayerIndex);
         }
 
-        // 3. RESTORE PLAYERS
+        gm.mapManager.mapWidth = data.mapWidth;
+        gm.mapManager.mapHeight = data.mapHeight;
+
+        foreach (var tData in data.mapTiles)
+        {
+            gm.mapManager.mapData.SetTileData(tData.x, tData.y, new MapData.TileData
+            {
+                type = tData.type,
+                isPassable = tData.isPassable
+            });
+        }
+
+        gm.mapManager.mapData.InitializeMoveCostMap();
+
+        gameInitializer.mapVisualizer.DrawMap(gm.mapManager.mapData, gm.mapManager.mapWidth, gm.mapManager.mapHeight);
+
+        // Játékosok viszaállítása
         foreach (var pData in data.players)
         {
             var profile = gm.GetPlayerProfile(pData.playerId);
@@ -179,7 +191,7 @@ public class SaveManager : MonoBehaviour
             }
         }
 
-        // 4. RESTORE UNITS
+        // Egységek visszaállítása
         foreach (var uData in data.units)
         {
             UnitData template = gm.unitManager.GetTemplateByName(uData.templateName);
@@ -197,27 +209,23 @@ public class SaveManager : MonoBehaviour
             }
         }
 
-        // 4. RESTORE BUILDINGS
+        // Épületek visszaállítása
         foreach (var bData in data.buildings)
         {
             BuildingData template = gm.buildingManager.GetTemplateByName(bData.templateName);
             if (template != null)
             {
-                // bypass "PlaceBuilding" to avoid resource costs
                 Building b = new Building(template, bData.ownerId, bData.position);
 
-                // Use our new LoadState method to bypass private sets
                 b.LoadState(bData.currentHp, bData.turnsRemaining, bData.assignedWorkers, bData.isConstructed);
 
-                // This registers it in the grid and triggers the visualizer
                 gm.buildingManager.CreateBuilding(b);
             }
         }
 
-        // 5. RESTORE PRODUCTION QUEUES
+        // Gyártási sorok visszaállítása
         foreach (var qData in data.productionQueues)
         {
-            // Find the building we just created at this position
             Building b = gm.buildingManager.GetBuildingAtTile(qData.buildingPosition);
             if (b != null)
             {
@@ -232,13 +240,11 @@ public class SaveManager : MonoBehaviour
             }
         }
 
-        // 7. FINAL REFRESH
+        // Végső frissítések
         gameInitializer.economyManager.RecalculateCapacities(gm.HumanPlayer);
-        //gameInitializer.gameUiController.UpdateUI();
         if (gameInitializer.gameUiController != null)
         {
             gameInitializer.gameUiController.UpdateUI();
-            // If turnLabel is public, set it directly or call a specific refresh
             gameInitializer.gameUiController.turnLabel.text = $"<sprite name=\"turn_icon\"> {gm.turnNumber}";
         }
         minimapController.UpdateMinimap();

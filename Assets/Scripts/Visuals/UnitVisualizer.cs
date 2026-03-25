@@ -10,7 +10,6 @@ public class UnitVisualizer
 {
     GameManager gameManager;
 
-    //private Tilemap unitTilemap;
     private Dictionary<Unit, GameObject> spawnedUnits = new Dictionary<Unit, GameObject>();
     private GameObject unitPrefab;
     private GameObject healthBarPrefab;
@@ -101,7 +100,7 @@ public class UnitVisualizer
     private IEnumerator AnimateMarch(Unit unit, List<Vector2Int> path)
     {
         if (!spawnedUnits.TryGetValue(unit, out GameObject unitGO)) yield break;
-        SpriteRenderer sr = unitGO.GetComponent<SpriteRenderer>(); // Cache the renderer
+        SpriteRenderer sr = unitGO.GetComponent<SpriteRenderer>(); 
 
         for (int i = 1; i < path.Count; i++)
         {
@@ -130,7 +129,7 @@ public class UnitVisualizer
 
     private IEnumerator AnimateDeath(Unit unit)
     {
-        // Add death animation/particles here later!
+        // Esetleg animáció vagy effekt hozzáadás itt, pl. fade out, scale down, particle effect, stb.
         // yield return new WaitForSeconds(0.2f);
 
         RemoveUnit(unit);
@@ -145,7 +144,6 @@ public class UnitVisualizer
         Vector3 worldPos = new Vector3(pos.x + 0.5f, pos.y, 0);
         GameObject instance = Object.Instantiate(unitPrefab, worldPos, Quaternion.identity);
 
-        // ------
         GameObject hpBarInstance = Object.Instantiate(healthBarPrefab, instance.transform);
 
         hpBarInstance.transform.localScale = new Vector3(0.005f, 0.01f, 0.01f); 
@@ -153,8 +151,6 @@ public class UnitVisualizer
 
         HealthBarController hb = hpBarInstance.GetComponent<HealthBarController>();
         if (hb != null) hb.SetupForUnits(unit);
-
-        // ---------------------
 
         SpriteRenderer sr = instance.GetComponent<SpriteRenderer>();
         sr.sprite = unit.data.unitSprite;

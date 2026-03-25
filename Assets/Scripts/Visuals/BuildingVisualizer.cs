@@ -174,8 +174,6 @@ public class BuildingVisualizer
 
     public void RemoveBuilding(Building building)
     {
-        // Clear tiles logic is up to you, usually we don't clear road tiles 
-        // For now, keeping your original logic:
         if (building.data.buildingType != Building.BuildingType.Road)
             SetRoadTiles(building, null);
 

@@ -81,7 +81,7 @@ public class EconomyManager : MonoBehaviour
         //player.gold = Mathf.Clamp(player.gold + report.goldNet, 0, player.maxGold);
         //player.wood = Mathf.Clamp(player.wood + report.woodNet, 0, player.maxWood);
         //player.food = Mathf.Clamp(player.food + report.foodNet, 0, player.maxFood);
-        bool hasGlobalStorage = player.maxGold > 0; // Or check for a TownHall specifically
+        bool hasGlobalStorage = player.maxGold > 0; 
 
         if (hasGlobalStorage)
         {
@@ -91,7 +91,6 @@ public class EconomyManager : MonoBehaviour
         }
         else
         {
-            // No storage buildings? Just add the income without capping it.
             player.gold += report.goldNet;
             player.wood += report.woodNet;
             player.food += report.foodNet;

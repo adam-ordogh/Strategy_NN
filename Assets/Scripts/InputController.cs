@@ -10,10 +10,8 @@ using System.Collections.Generic;
 
 public class InputController : MonoBehaviour
 {
-    // MENU PANEL
     public GameUIController uiController;
 
-    // -----
     public MapData mapData;
     public Camera mainCamera;
     public Tilemap groundTilemap;
@@ -348,7 +346,7 @@ public class InputController : MonoBehaviour
         Vector2Int mousePos = GetGridPositionFromMouse();
         var player = gameManager.GetPlayerProfile(gameManager.currentPlayerId);
 
-        // 1. HOVER (No drag)
+        // Hover
         if (!dragStartPos.HasValue)
         {
             unitVisualizer.ShowHighlight(mousePos, new Color(1f, 0.9f, 0f, 0.4f));
@@ -356,23 +354,20 @@ public class InputController : MonoBehaviour
 
         if (Mouse.current.leftButton.wasPressedThisFrame) dragStartPos = mousePos;
 
-        // 2. PREVIEW (While dragging)
+        // Előnézet
         if (dragStartPos.HasValue)
         {
             previewRoadPath = GetPathBetween(dragStartPos.Value, mousePos);
 
-            // Calculate TOTAL costs correctly
             int totalGold = previewRoadPath.Count * activeBuildingType.goldCost;
             int totalWood = previewRoadPath.Count * activeBuildingType.woodCost;
 
-            // Use your existing CanAfford method from PlayerProfile
             bool canAffordAll = player.CanAfford(totalGold, totalWood, 0);
 
-            // Visual Feedback
             Color pathColor = canAffordAll ? new Color(0.2f, 0.5f, 1f, 0.6f) : new Color(1f, 0f, 0f, 0.6f);
             unitVisualizer.ShowHighlights(previewRoadPath, pathColor);
 
-            // OPTIONAL: Show the cost on the tooltip while dragging
+            // Tooltip
             TooltipController.Instance.Show(
                 "Út építés",
                 $"Költség: {totalGold}  <sprite name=\"gold_resource_icon\"> | {totalWood}  <sprite name=\"wood_resource_icon\">",
@@ -380,18 +375,16 @@ public class InputController : MonoBehaviour
             );
         }
 
-        // 3. PLACEMENT (On Release)
+        // Helyezés
         if (Mouse.current.leftButton.wasReleasedThisFrame && dragStartPos.HasValue)
         {
             int totalGold = previewRoadPath.Count * activeBuildingType.goldCost;
             int totalWood = previewRoadPath.Count * activeBuildingType.woodCost;
 
-            // ONLY build if the whole path is affordable
             if (player.CanAfford(totalGold, totalWood, 0))
             {
                 foreach (var pos in previewRoadPath)
                 {
-                    // We still check CanPlace for things like "Already a building here"
                     if (buildingManager.CanPlaceBuilding(activeBuildingType, pos, player.playerId))
                     {
                         buildingManager.PlaceBuilding(activeBuildingType, pos, player.playerId);
@@ -403,12 +396,11 @@ public class InputController : MonoBehaviour
                 Debug.Log("Cannot afford the full road path.");
             }
 
-            // Clean up
             activeBuildingType = null;
             dragStartPos = null;
             previewRoadPath = null;
             unitVisualizer.ClearHighlights();
-            TooltipController.Instance.gameObject.SetActive(false); // Hide tooltip
+            TooltipController.Instance.gameObject.SetActive(false); 
         }
     }
 

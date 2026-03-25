@@ -186,7 +186,6 @@ public class InfluenceManager : MonoBehaviour
     //}
     public void RemoveBuildingFromReachGrid(Building b)
     {
-        // Safest approach: ensure this building is removed from EVERY tile's list
         for (int x = 0; x < mapData.mapWidth; x++)
         {
             for (int y = 0; y < mapData.mapHeight; y++)

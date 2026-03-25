@@ -97,7 +97,6 @@ public class GameManager
             new Vector2Int(43, 37)
         };
 
-        // Fisher-Yates shuffle - works for any number of positions/players
         for (int i = startPositions.Count - 1; i > 0; i--)
         {
             int j = UnityEngine.Random.Range(0, i + 1);
@@ -143,13 +142,11 @@ public class GameManager
             if (aiControllers.TryGetValue(activePlayer.playerId, out var controller))
             {
                 controller.ExecuteTurn();
-                // The AI controller will call NextTurn() when done
             }
         }
         else
         {
             //Debug.Log("Waiting for Human Player...");
-            // Human player will trigger NextTurn() through UI
         }
     }
 

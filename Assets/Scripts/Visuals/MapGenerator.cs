@@ -5,6 +5,9 @@ public class MapGenerator
 {
     private MapManager mapManager;
 
+    private float offsetX;
+    private float offsetY;
+
     private Vector2Int player1Start => new Vector2Int(5, mapManager.mapHeight - 6);
     private Vector2Int player2Start => new Vector2Int(mapManager.mapWidth - 6, 5);
 
@@ -32,6 +35,14 @@ public class MapGenerator
         mapManager.mapData.InitializeMoveCostMap();
     }
 
+    public void SetSeed(int seed)
+    {
+        Random.InitState(seed);
+
+        offsetX = Random.Range(-100000f, 100000f);
+        offsetY = Random.Range(-100000f, 100000f);
+    }
+
     private void SetData(int x, int y, MapData.TileType type)
     {
         mapManager.mapData.SetTileData(x, y, new MapData.TileData
@@ -48,6 +59,14 @@ public class MapGenerator
         else if (noise < 0.7f) return MapData.TileType.Grass;
         else return MapData.TileType.Mountain;
     }
+    //private MapData.TileType GenerateTileType(int x, int y)
+    //{
+    //    // Add the offsets to the coordinates!
+    //    float noise = Mathf.PerlinNoise((x + offsetX) * 0.1f, (y + offsetY) * 0.15f);
+    //    if (noise < 0.3f) return MapData.TileType.Forest;
+    //    else if (noise < 0.7f) return MapData.TileType.Grass;
+    //    else return MapData.TileType.Mountain;
+    //}
 
     private void ClearArea(Vector2Int center, int radius)
     {

@@ -123,7 +123,6 @@ public class GameUIController : MonoBehaviour
             if (b.buildingType == Building.BuildingType.Farm) totalFoodWorkers += b.assignedWorkers;
         }
 
-        // Housing/Population line
         string housingColor = activePlayer.currentPopulation >= activePlayer.housingCapacity ? "red" : "white";
 
         availablePopLabel.text = $"{activePlayer.availablePopulation} / {activePlayer.currentPopulation} <sprite name=\"population_resource_icon\"> <color={housingColor}>[{activePlayer.housingCapacity}]</color> <sprite name=\"housing_resource_icon\">";
@@ -317,21 +316,16 @@ public class GameUIController : MonoBehaviour
     {
         if (healthBar == null) return;
 
-        // 1. Update the slider math
         healthBar.maxValue = max;
         healthBar.value = current;
 
-        // 2. Calculate the percentage (0.0 to 1.0)
         float healthPercent = (float)current / max;
 
-        // 3. Find the Fill image and change color
-        // healthBar.fillRect is the reference to the actual "bar" part
         if (healthBar.fillRect != null)
         {
             Image fillImage = healthBar.fillRect.GetComponent<Image>();
             if (fillImage != null)
             {
-                // Lerp goes from Red (0%) to Green (100%)
                 fillImage.color = Color.Lerp(Color.red, Color.green, healthPercent);
             }
         }
@@ -417,7 +411,6 @@ public class GameUIController : MonoBehaviour
     {
         bool isOpening = pauseMenuPanel.activeSelf;
 
-        // Flip the state
         pauseMenuPanel.SetActive(!isOpening);
 
         UpdateMenuState();
@@ -432,7 +425,6 @@ public class GameUIController : MonoBehaviour
     public void OpenSaveMenu() => ToggleSaveLoadMenu(SaveLoadUI.UIMode.Save);
     public void OpenLoadMenu() => ToggleSaveLoadMenu(SaveLoadUI.UIMode.Load);
 
-    // Button Event: Open Save Menu
     public void ToggleSaveLoadMenu(SaveLoadUI.UIMode mode)
     {
         bool isOpening = !saveLoadMenuPanel.activeSelf;
@@ -452,21 +444,9 @@ public class GameUIController : MonoBehaviour
         UpdateMenuState();
     }
 
-    // Button Event: Open Load Menu
-    //public void OnLoadMenuClicked()
-    //{
-    //    TogglePauseMenu();
-    //    loadMenuPanel.SetActive(true);
-    //    // Here you would also call a function to refresh the list of existing save files
-
-    //    UpdateMenuState();
-    //}
-
-    // Button Event: Exit to Main Menu
     public void OnExitToMainMenuClicked()
     {
-        // Make sure to add "using UnityEngine.SceneManagement;" at the top of the script
-        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu"); // Replace with your scene name
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenuScene"); 
 
         UpdateMenuState();
     }
@@ -487,10 +467,8 @@ public class GameUIController : MonoBehaviour
 
     private void UpdateMenuState()
     {
-        // If any of your main panels are active, IsAnyMenuOpen is true
         IsAnyMenuOpen = pauseMenuPanel.activeSelf || saveLoadMenuPanel.activeSelf;
 
-        // Optional: Lock the cursor or show it
         //Cursor.visible = IsAnyMenuOpen;
     }
 }
