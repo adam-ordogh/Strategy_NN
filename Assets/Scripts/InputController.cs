@@ -233,13 +233,15 @@ public class InputController : MonoBehaviour
             if (unit.ownerId == gameManager.currentPlayerId)
             {
                 var reachable = unitManager.GetReachableTilesWithCost(unit).Keys;
-                unitVisualizer.ShowHighlights(reachable, new Color(0, 0.5f, 1f, 0.4f));
+                //unitVisualizer.ShowHighlights(reachable, new Color(0, 0.5f, 1f, 0.4f));
+                unitVisualizer.ShowHighlights(reachable, new Color(0, 0.5f, 1f));
 
                 if (unit.canAttack)
                 {
                     var attackCommands = unitManager.GetReachableTargets(unit);
                     var enemyPositions = attackCommands.Select(c => c.TargetPos);
-                    unitVisualizer.ShowHighlights(enemyPositions, new Color(1f, 0, 0, 0.6f));
+                    //unitVisualizer.ShowHighlights(enemyPositions, new Color(1f, 0, 0, 0.6f));
+                    unitVisualizer.ShowHighlights(enemyPositions, new Color(1f, 0, 0));
                 }
             }
             else

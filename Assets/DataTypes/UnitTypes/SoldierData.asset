@@ -26,6 +26,7 @@ MonoBehaviour:
   foodCost: 20
   woodCost: 0
   unitIcon: {fileID: 21300000, guid: c863697e88838a5409946e3c8be169a6, type: 3}
-  unitSprite: {fileID: 21300000, guid: 59bf094fe5647784d959edc6dde9dd15, type: 3}
+  unitSprite: {fileID: 21300000, guid: 89d31460ba2ea9745a81cafda176f90f, type: 3}
+  unitColorTrim: {fileID: 21300000, guid: f12875109d0038143b5ac07f8520a4da, type: 3}
   unitName: Gyalogos
   description: "Lass\xFA k\xF6zelharci egys\xE9g, hat\xE9kony lovass\xE1g ellen"

@@ -173,11 +173,14 @@ public class GameInitializer : MonoBehaviour
         }
         else
         {
-            gameManager.InitializePlayers(); 
+            gameManager.InitializePlayers();
 
-            var aiTypes = new List<AIFactory.AIType> { AIFactory.AIType.MLBasic};
+            AIFactory.AIType selectedAI = LevelLoadBridge.OpponentType;
+            var aiTypes = new List<AIFactory.AIType> { selectedAI };
 
-            gameManager.InitializePlayersWithCustomAI(aiTypes, isTraining: false, trainedAiModel); 
+            Debug.Log($"Selected opponent AI type: {selectedAI}");
+
+            gameManager.InitializePlayersWithCustomAI(aiTypes, isTraining: false, trainedAiModel);
             inputController.enabled = true;
         }
     }
@@ -209,6 +212,7 @@ public class GameInitializer : MonoBehaviour
         inputController.OnSelectionChanged += gameUiController.RefreshSelectionUI;
 
         gameUiController.Subscribe(buildingManager, productionManager);
+        gameManager.OnGameOver += gameUiController.ShowGameOverScreen;
 
         buildingManager.OnBuildingPlaced += (b) => minimapController.UpdateMinimap();
         buildingManager.OnBuildingRemoved += (b) => minimapController.UpdateMinimap();
@@ -262,7 +266,7 @@ public class GameInitializer : MonoBehaviour
 
         // Új játék
         int seedToUse = LevelLoadBridge.MapSeed != 0 ? LevelLoadBridge.MapSeed : UnityEngine.Random.Range(1, 999999);
-        mapGenerator.SetSeed(0);
+        mapGenerator.SetSeed(seedToUse);
 
         
         mapGenerator.Generate();

@@ -30,8 +30,9 @@ public class GameManager
     public int currentPlayerId => players[currentPlayerIndex].playerId;
     public PlayerProfile CurrentPlayer => players[currentPlayerIndex];
 
-    // Use the interface instead of concrete type
     private Dictionary<int, IAIController> aiControllers = new Dictionary<int, IAIController>();
+
+    public event System.Action<bool> OnGameOver;
 
     public GameManager(MapManager mapManager, UnitManager unitManager, BuildingManager buildingManager,
                       ProductionManager productionManager, EconomyManager economyManager,
@@ -94,7 +95,7 @@ public class GameManager
         var startPositions = new List<Vector2Int>
         {
             new Vector2Int(5, 11),
-            new Vector2Int(43, 37)
+            new Vector2Int(42, 36)
         };
 
         for (int i = startPositions.Count - 1; i > 0; i--)
@@ -181,6 +182,10 @@ public class GameManager
                     string winnerType = winningController?.GetAITypeName() ?? "Unknown";
 
                     Debug.Log($"Game Over at turn {turnNumber}! {winnerType} (Player {winner?.playerId}) defeated {loserType} (Player {player.playerId})");
+
+                    bool humanWon = (winner != null && !winner.isAi);
+                    OnGameOver?.Invoke(humanWon);
+
                     return;
                 }
             }

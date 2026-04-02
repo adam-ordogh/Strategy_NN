@@ -29,7 +29,7 @@ public class UniversalTooltip : MonoBehaviour, IPointerEnterHandler, IPointerExi
             if (costLine != "") costLine += "| ";
             costLine += $"<color=#be9b7b>{buildingData.constructionTurns}</color>  <sprite name=\"turn_icon\">";
 
-            TooltipController.Instance.Show(buildingData.buildingType.ToString(), costLine, buildingData.description);
+            TooltipController.Instance.Show(buildingData.buildingName, costLine, buildingData.description);
         }
 
         else if (unitData != null)

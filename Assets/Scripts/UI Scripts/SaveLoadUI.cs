@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.IO;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class SaveLoadUI : MonoBehaviour
 {
@@ -31,6 +32,8 @@ public class SaveLoadUI : MonoBehaviour
 
     [Header("References")]
     public SaveManager saveManager;
+    public bool isMainMenu = false; // Add this toggle
+    public string gameSceneName = "GameScene"; // The scene to load
     private string selectedFileName;
     private GameObject selectedItemObj; 
 
@@ -245,10 +248,33 @@ public class SaveLoadUI : MonoBehaviour
         descriptionText.text = $"<color=green>Játék sikeresen mentve: {fileName}</color>";
     }
 
+    //private void ExecuteLoad(string fileName)
+    //{
+    //    saveManager.LoadGame(fileName);
+    //    Object.FindFirstObjectByType<GameUIController>().CloseAllMenus();
+    //}
     private void ExecuteLoad(string fileName)
     {
-        saveManager.LoadGame(fileName);
-        Object.FindFirstObjectByType<GameUIController>().CloseAllMenus();
+        if (isMainMenu)
+        {
+            // MAIN MENU BEHAVIOR: Set the bridge variable and load the scene
+            LevelLoadBridge.SaveFileToLoad = fileName;
+            SceneManager.LoadScene(gameSceneName);
+        }
+        else
+        {
+            // IN-GAME BEHAVIOR: Load the state directly
+            if (saveManager != null)
+            {
+                saveManager.LoadGame(fileName);
+            }
+
+            var uiController = Object.FindFirstObjectByType<GameUIController>();
+            if (uiController != null)
+            {
+                uiController.CloseAllMenus();
+            }
+        }
     }
 
     public void ConfirmOverwrite()

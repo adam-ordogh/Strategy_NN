@@ -29,6 +29,7 @@ public class UnitData : ScriptableObject
     [Header("Visuals")]
     public Sprite unitIcon;
     public Sprite unitSprite;
+    public Sprite unitColorTrim;
 
     [Header("User Interaction")]
     public string unitName;

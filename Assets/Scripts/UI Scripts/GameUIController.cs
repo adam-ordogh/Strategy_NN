@@ -56,10 +56,24 @@ public class GameUIController : MonoBehaviour
     [Header("Menu Panels")]
     public GameObject pauseMenuPanel;
     public GameObject saveLoadMenuPanel;
+
+    [Header("GameOver Panels")]
+    public GameObject gameOverPanel;
+    public TMPro.TextMeshProUGUI gameOverText;
+
     public SaveLoadUI saveLoadUI;
 
     private bool buildingPanelIsOpen = false;
     public static bool IsAnyMenuOpen { get; private set; }
+
+    private void Start()
+    {
+        if (pauseMenuPanel != null) pauseMenuPanel.SetActive(false);
+        if (saveLoadMenuPanel != null) saveLoadMenuPanel.SetActive(false);
+        if (infoPanel != null) infoPanel.SetActive(false);
+
+        IsAnyMenuOpen = false;
+    }
 
     public void SubscribeToPlayerUpdates(PlayerProfile profile)
     {
@@ -470,5 +484,25 @@ public class GameUIController : MonoBehaviour
         IsAnyMenuOpen = pauseMenuPanel.activeSelf || saveLoadMenuPanel.activeSelf;
 
         //Cursor.visible = IsAnyMenuOpen;
+    }
+
+    public void ShowGameOverScreen(bool isVictory)
+    {
+        // Close any other open panels to keep it clean
+        CloseAllMenus();
+
+        gameOverPanel.SetActive(true);
+        IsAnyMenuOpen = true; // This stops camera movement/input if your InputController respects this flag
+
+        if (isVictory)
+        {
+            gameOverText.text = "GYŐZELEM!";
+            gameOverText.color = Color.green;
+        }
+        else
+        {
+            gameOverText.text = "VERESÉG!";
+            gameOverText.color = Color.red;
+        }
     }
 }

@@ -8,8 +8,9 @@ public class MapGenerator
     private float offsetX;
     private float offsetY;
 
-    private Vector2Int player1Start => new Vector2Int(5, mapManager.mapHeight - 6);
-    private Vector2Int player2Start => new Vector2Int(mapManager.mapWidth - 6, 5);
+    private Vector2Int player1Start => new Vector2Int(5, mapManager.mapHeight - 39);
+
+    private Vector2Int player2Start => new Vector2Int(mapManager.mapWidth - 8, 36);
 
     public MapGenerator(MapManager mapManager)
     {
@@ -29,8 +30,8 @@ public class MapGenerator
             }
         }
 
-        ClearArea(player1Start, 4);
-        ClearArea(player2Start, 4);
+        ClearArea(player1Start, 6);
+        ClearArea(player2Start, 6);
 
         mapManager.mapData.InitializeMoveCostMap();
     }
@@ -54,22 +55,17 @@ public class MapGenerator
 
     private MapData.TileType GenerateTileType(int x, int y)
     {
-        float noise = Mathf.PerlinNoise(x * 0.1f, y * 0.15f);
+        // Add the offsets to the coordinates!
+        float noise = Mathf.PerlinNoise((x + offsetX) * 0.1f, (y + offsetY) * 0.15f);
         if (noise < 0.3f) return MapData.TileType.Forest;
         else if (noise < 0.7f) return MapData.TileType.Grass;
         else return MapData.TileType.Mountain;
     }
-    //private MapData.TileType GenerateTileType(int x, int y)
-    //{
-    //    // Add the offsets to the coordinates!
-    //    float noise = Mathf.PerlinNoise((x + offsetX) * 0.1f, (y + offsetY) * 0.15f);
-    //    if (noise < 0.3f) return MapData.TileType.Forest;
-    //    else if (noise < 0.7f) return MapData.TileType.Grass;
-    //    else return MapData.TileType.Mountain;
-    //}
 
     private void ClearArea(Vector2Int center, int radius)
     {
+        Vector2Int visualCenter = new Vector2Int(center.x + 1, center.y + 1);
+
         for (int x = -radius; x <= radius; x++)
         {
             for (int y = -radius; y <= radius; y++)
@@ -89,6 +85,27 @@ public class MapGenerator
                     isPassable = true
                 });
             }
+        }
+
+        int mountainX = (visualCenter.x < mapManager.mapWidth / 2)
+         ? Mathf.Max(0, visualCenter.x - radius)
+         : Mathf.Min(mapManager.mapWidth - 1, visualCenter.x + radius);
+
+        PlaceGuaranteedTile(new Vector2Int(mountainX, visualCenter.y), MapData.TileType.Mountain);
+
+        // 3. Place Forest (Vertical Edge)
+        int forestY = (visualCenter.y < mapManager.mapHeight / 2)
+            ? Mathf.Max(0, visualCenter.y - radius)
+            : Mathf.Min(mapManager.mapHeight - 1, visualCenter.y + radius);
+
+        PlaceGuaranteedTile(new Vector2Int(visualCenter.x, forestY), MapData.TileType.Forest);
+    }
+
+    private void PlaceGuaranteedTile(Vector2Int pos, MapData.TileType type)
+    {
+        if (pos.x >= 0 && pos.x < mapManager.mapWidth && pos.y >= 0 && pos.y < mapManager.mapHeight)
+        {
+            SetData(pos.x, pos.y, type);
         }
     }
 
