@@ -24,6 +24,13 @@ public class SaveManager : MonoBehaviour
         data.currentPlayerIndex = gameManager.players.FindIndex(p => p.playerId == gameManager.currentPlayerId);
         data.saveDate = System.DateTime.Now.ToString("g");
 
+        // Kamera pozíció
+        if (Camera.main != null)
+        {
+            data.cameraPosX = Camera.main.transform.position.x;
+            data.cameraPosY = Camera.main.transform.position.y;
+        }
+
         // Térkép adatok
         data.mapWidth = gameManager.mapManager.mapWidth;
         data.mapHeight = gameManager.mapManager.mapHeight;
@@ -128,6 +135,7 @@ public class SaveManager : MonoBehaviour
         Debug.Log($"Game saved successfully to: {folderPath}/{saveFileName}.json");
     }
 
+    // ------------- LOAD ---------------
     public void LoadGame(string fileName)
     {
         string path = Path.Combine(Application.persistentDataPath, "Saves", fileName + ".json");
@@ -141,11 +149,32 @@ public class SaveManager : MonoBehaviour
         GameSaveData data = JsonUtility.FromJson<GameSaveData>(json);
         GameManager gm = gameInitializer.gameManager;
 
-        Debug.Log("Starting Load Sequence...");
+        // --- ADD THIS CLEANUP SECTION ---
+        // Clear all visuals before loading new ones
+        gameInitializer.map.ClearAllTiles();
+        gameInitializer.featureMap.ClearAllTiles();
+        gameInitializer.unitMap.ClearAllTiles();
+        gameInitializer.buildingMap.ClearAllTiles();
+
+        // Clear logic lists so we don't have "ghost" units
+        gm.unitManager.ClearAllUnits();
+        gm.buildingManager.ClearAllBuildings();
 
         // Jelenlegi állapot törlése
         gm.unitManager.ClearAllUnits();
         gm.buildingManager.ClearAllBuildings();
+
+        if (gameInitializer.terrainFeaturesContainer != null)
+        {
+            foreach (Transform child in gameInitializer.terrainFeaturesContainer)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+        // --------------------------------
+
+        Debug.Log("Starting Load Sequence...");
+
 
         if(gameInitializer.buildingVisualizer != null)
         {
@@ -248,6 +277,14 @@ public class SaveManager : MonoBehaviour
             gameInitializer.gameUiController.turnLabel.text = $"<sprite name=\"turn_icon\"> {gm.turnNumber}";
         }
         minimapController.UpdateMinimap();
+
+        if (Camera.main != null && (data.cameraPosX != 0 || data.cameraPosY != 0))
+        {
+            Vector3 camPos = Camera.main.transform.position;
+            camPos.x = data.cameraPosX;
+            camPos.y = data.cameraPosY;
+            Camera.main.transform.position = camPos;
+        }
 
         Debug.Log("Game Loaded Successfully!");
     }

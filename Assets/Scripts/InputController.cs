@@ -327,6 +327,12 @@ public class InputController : MonoBehaviour
     {
         activeBuildingType = null;
         unitVisualizer.ClearHighlights();
+
+        dragStartPos = null;
+        if (previewRoadPath != null)
+        {
+            previewRoadPath.Clear();
+        }
     }
 
     private List<Vector2Int> GetPathBetween(Vector2Int start, Vector2Int end)

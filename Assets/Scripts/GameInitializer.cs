@@ -277,6 +277,18 @@ public class GameInitializer : MonoBehaviour
         }
 
         gameManager.InitializeStartingTownCenters();
+
+        if (!isTrainingMode && !turnOffVisualsInTraining && Camera.main != null)
+        {
+            PlayerProfile human = gameManager.HumanPlayer;
+            if (human != null && human.myBuildings.Count > 0)
+            {
+                Building townCenter = human.myBuildings[0];
+                Vector3 newCamPos = new Vector3(townCenter.position.x, townCenter.position.y, Camera.main.transform.position.z);
+                Camera.main.transform.position = newCamPos;
+            }
+        }
+
         gameManager.Start();
     }
 }

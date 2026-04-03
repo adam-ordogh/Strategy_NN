@@ -470,4 +470,14 @@ public class UnitVisualizer
     {
         this.gameManager = gm;
     }
+
+    public void ClearAllVisuals()
+    {
+        foreach (var go in spawnedUnits.Values)
+        {
+            Object.Destroy(go);
+        }
+        spawnedUnits.Clear();
+        ClearHighlights();
+    }
 }

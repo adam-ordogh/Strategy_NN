@@ -10,6 +10,10 @@ public class GameSaveData
     public int currentPlayerIndex;
     public string saveDate;
 
+    // Kamera pozíció
+    public float cameraPosX;
+    public float cameraPosY;
+
     // Térkép adatok
     public int mapWidth;
     public int mapHeight;

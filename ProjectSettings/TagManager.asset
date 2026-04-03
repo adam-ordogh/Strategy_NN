@@ -47,5 +47,8 @@ TagManager:
   - name: WorldObjects
     uniqueID: 1638693551
     locked: 0
+  - name: Overlay
+    uniqueID: 3021104475
+    locked: 0
   m_RenderingLayers:
   - Default

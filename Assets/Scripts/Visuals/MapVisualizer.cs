@@ -23,6 +23,8 @@ public class MapVisualizer
     public void DrawMap(MapData data, int width, int height)
     {
         // Régi spriteokat (fákat) eltüntetni újrarajzolás előtt
+        occupiedTiles.Clear();
+        spawnedFeatures.Clear();
 
         for (int x = 0; x < width; x++)
         {
