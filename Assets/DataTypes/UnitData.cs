@@ -4,7 +4,7 @@ using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
 public enum AttackType { Melee, Slashing, Piercing, Siege}
-public enum ArmorType { Unarmored, Light, Heavy, Structure}
+public enum ArmorType { Unarmored, Light, Heavy, Siege, Structure}
 
 [CreateAssetMenu(fileName = "NewUnitData", menuName = "Game/Unit Data")]
 public class UnitData : ScriptableObject
@@ -30,6 +30,7 @@ public class UnitData : ScriptableObject
     public Sprite unitIcon;
     public Sprite unitSprite;
     public Sprite unitColorTrim;
+    public GameObject attackProjectilePrefab;
 
     [Header("User Interaction")]
     public string unitName;

@@ -20,6 +20,7 @@ public class Unit
 
     public event System.Action<Unit> OnUnitDeath;
     public event System.Action<int, int> OnUnitHealthChanged;
+    public event System.Action<Unit, Unit, bool> OnCombatInitiated;
 
     public Unit(UnitData data, int ownerId, Vector2Int startPos)
     {
@@ -59,6 +60,8 @@ public class Unit
 
         int finalDamage = Mathf.RoundToInt(this.data.attackPower * multiplier);
 
+        OnCombatInitiated?.Invoke(this, target, false);
+
         target.TakeDamage(finalDamage);
         canAttack = false;
 
@@ -76,6 +79,9 @@ public class Unit
                 int returnDamage = Mathf.RoundToInt(this.data.attackPower * returnMultiplier * 0.5f);
 
                 //Debug.Log($"Retaliation! {target.data.unitType} hits back for {returnDamage}.");
+
+                target.OnCombatInitiated?.Invoke(target, this, true);
+
                 this.TakeDamage(returnDamage);
             }
         }

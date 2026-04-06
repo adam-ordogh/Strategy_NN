@@ -6,19 +6,16 @@ public static class CombatMath
     {
         return (attack, armor) switch
         {
-            // Soldiers (Melee) vs Archers (Unarmored)
             (AttackType.Melee, ArmorType.Unarmored) => 1.5f,
-
-            // Soldiers (Melee) vs Cavalry (Light)
             (AttackType.Melee, ArmorType.Light) => 2.0f,
-
-            // Cavalry (Slashing) vs Archers (Unarmored)
             (AttackType.Slashing, ArmorType.Unarmored) => 2.0f,
 
-            // Archers (Piercing) vs Soldiers (Heavy)
-            (AttackType.Piercing, ArmorType.Heavy) => 0.6f,
+            (AttackType.Piercing, ArmorType.Heavy) => 1.5f,
 
-            // Soldier, Archer, Cavalry vs Structures
+            (AttackType.Melee, ArmorType.Siege) => 2.0f,
+            (AttackType.Slashing, ArmorType.Siege) => 2.5f, 
+
+            // ---------------- STRUCTURES ------------------
             (AttackType.Melee, ArmorType.Structure) => 0.5f,
             (AttackType.Piercing, ArmorType.Structure) => 0.1f,
             (AttackType.Slashing, ArmorType.Structure) => 0.2f,

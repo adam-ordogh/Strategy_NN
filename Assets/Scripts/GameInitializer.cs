@@ -16,10 +16,12 @@ public class GameInitializer : MonoBehaviour
 
     private MapGenerator mapGenerator;
 
+    [Header("Controllers")]
     public InputController inputController;
     public GameUIController gameUiController;
     public MinimapController minimapController;
 
+    [Header("Tilemaps")]
     public Tilemap map;
     public Tilemap featureMap;
     public Tilemap influenceMap;
@@ -27,10 +29,12 @@ public class GameInitializer : MonoBehaviour
     public Tilemap unitMap;
     public Tilemap buildingMap;
 
+    [Header("Visuals")]
     public GameObject healthBarPrefab;
     public GameObject workerBarPrefab;
     public GameObject buildingBasePrefab;
     public GameObject unitBasePrefab;
+    //public GameObject projectilePrefab;
 
     public Transform terrainFeaturesContainer;
     public TileRegistry tileRegistry;
@@ -39,6 +43,7 @@ public class GameInitializer : MonoBehaviour
     public BuildingVisualizer buildingVisualizer;
     private InfluenceVisualizer influenceVisualizer;
 
+    [Header("Managers")]
     public MapManager mapManager;
     public BuildingManager buildingManager;
     public UnitManager unitManager;
@@ -200,6 +205,11 @@ public class GameInitializer : MonoBehaviour
             gameUiController.UpdateUI();
         };
 
+        //unitManager.OnUnitAttacked += unitVisualizer.HandleUnitAttacked;
+        //unitManager.OnUnitAttacked += (attacker, target, isRetaliation) => {
+        //    unitVisualizer.HandleEntityAttacked(attacker, target.position, isRetaliation);
+        //};
+        unitManager.OnAttackPerformed += unitVisualizer.HandleEntityAttacked;
         // Épület események
         influenceManager.OnInfluenceChanged += influenceVisualizer.DrawBorders;
         buildingManager.OnBuildingPlaced += buildingVisualizer.ShowBuilding;

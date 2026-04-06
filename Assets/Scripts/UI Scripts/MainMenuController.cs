@@ -32,7 +32,7 @@ public class MainMenuController : MonoBehaviour
     {
         { "Hegyi Átkelő", 1423 },
         { "Erdei Mezők", 9982 },
-        { "Sűrű Rengeteg", 0 },
+        { "Sűrű Rengeteg", 35985 },
         { "Random", -1 } 
     };
 
@@ -99,14 +99,15 @@ public class MainMenuController : MonoBehaviour
 
         string selectedName = mapSeedDropdown.options[mapSeedDropdown.value].text;
 
-        if (presetSeeds.ContainsKey(selectedName))
-        {
-            int seed = presetSeeds[selectedName];
+        //if (presetSeeds.ContainsKey(selectedName))
+        //{
+        //    int seed = presetSeeds[selectedName];
 
-            if (seed == -1) seed = Random.Range(0, 100000);
+        //    if (seed == -1) seed = Random.Range(0, 100000);
 
-            LevelLoadBridge.MapSeed = seed;
-        }
+        //    LevelLoadBridge.MapSeed = seed;
+        //}
+        LevelLoadBridge.MapSeed = currentPreviewSeed;
 
         if (opponentDropdown != null)
         {

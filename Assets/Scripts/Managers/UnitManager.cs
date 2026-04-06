@@ -13,6 +13,7 @@ public class UnitManager : MonoBehaviour
     public event Action<Unit, Vector2Int> OnUnitCreated;
     public event Action<Unit, List<Vector2Int>> OnUnitMoved;
     public event Action<Unit> OnUnitDestroyed;
+    public event Action<Unit, Vector2Int, bool> OnAttackPerformed;
 
     public System.Func<Vector2Int, bool> IsTileBlockedByBuilding;
 
@@ -49,6 +50,8 @@ public class UnitManager : MonoBehaviour
     public void CreateUnit(Unit unit)
     {
         unit.OnUnitDeath += HandleUnitDeath;
+        //unit.OnCombatInitiated += (attacker, target, isRetaliation) => OnUnitAttacked?.Invoke(attacker, target, isRetaliation);
+        unit.OnCombatInitiated += (attacker, target, isRetaliation) => OnAttackPerformed?.Invoke(attacker, target.position, isRetaliation);
         mapData.units[unit.position] = unit;
 
         PlayerProfile owner = gameManager.GetPlayerProfile(unit.ownerId);
@@ -63,6 +66,8 @@ public class UnitManager : MonoBehaviour
     public void DestroyUnit(Unit unit)
     {
         unit.OnUnitDeath -= HandleUnitDeath;
+        //unit.OnCombatInitiated -= (attacker, target, isRetaliation) => OnUnitAttacked?.Invoke(attacker, target, isRetaliation);
+        unit.OnCombatInitiated -= (attacker, target, isRetaliation) => OnAttackPerformed?.Invoke(attacker, target.position, isRetaliation);
         mapData.units.Remove(unit.position);
         PlayerProfile owner = gameManager.GetPlayerProfile(unit.ownerId);
         if (owner != null)
@@ -351,6 +356,7 @@ public class UnitManager : MonoBehaviour
             if (attacker.ownerId != targetUnit.ownerId)
             {
                 attacker.DealDamageToUnit(targetUnit);
+                //OnAttackPerformed?.Invoke(attacker, targetPos, false);
             }
         }
         // Ha a célpont nem egység, akkor lehet épület
@@ -368,6 +374,7 @@ public class UnitManager : MonoBehaviour
                     attacker.DealDamageToBuilding(targetBuilding);
 
                     FindFirstObjectByType<BuildingManager>().CheckBuildingHealth(targetBuilding);
+                    OnAttackPerformed?.Invoke(attacker, targetPos, false);
                 }
             }
         }

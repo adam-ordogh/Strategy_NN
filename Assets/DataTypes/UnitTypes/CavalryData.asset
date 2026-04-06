@@ -16,7 +16,7 @@ MonoBehaviour:
   attackType: 1
   armorType: 1
   maxHealth: 130
-  attackPower: 15
+  attackPower: 35
   attackRange: 1
   movementRange: 6
   trainingTime: 3
@@ -28,6 +28,7 @@ MonoBehaviour:
   unitIcon: {fileID: 21300000, guid: b03138d64139b6d499b9620eb7e2d3b4, type: 3}
   unitSprite: {fileID: 21300000, guid: c42e4170dd5abd6478f67a9406af7b59, type: 3}
   unitColorTrim: {fileID: 21300000, guid: f12875109d0038143b5ac07f8520a4da, type: 3}
+  attackProjectilePrefab: {fileID: 0}
   unitName: Lovas
   description: "Gyors mozg\xE1s\xFA k\xF6zelharci egys\xE9g, kifejezetten j\xF3 \xEDjj\xE1szok
     ellen"
