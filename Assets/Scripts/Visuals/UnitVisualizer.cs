@@ -13,7 +13,6 @@ public class UnitVisualizer
     private Dictionary<Unit, GameObject> spawnedUnits = new Dictionary<Unit, GameObject>();
     private GameObject unitPrefab;
     private GameObject healthBarPrefab;
-    //private GameObject projectilePrefab;
 
     private Tilemap highlightTilemap;
     private TileBase highlightTile;
@@ -34,7 +33,6 @@ public class UnitVisualizer
         this.highlightTilemap = highlightTilemap;
         this.highlightTile = highlightTile;
         this.healthBarPrefab = healthBarPrefab;
-        //this.projectilePrefab = projectilePrefab;
     }
 
     public void SetAnimationRunner(VisualsManager runner)
@@ -97,17 +95,10 @@ public class UnitVisualizer
         EnqueueAnimation(AnimateDeath(unit));
     }
 
-    //public void HandleUnitAttacked(Unit attacker, Unit target, bool isRetaliation)
-    //{
-    //    if (runner == null) return;
-
-    //    EnqueueAnimation(AnimateAttack(attacker, target, isRetaliation));
-    //}
     public void HandleEntityAttacked(Unit attacker, Vector2Int targetGridPos, bool isRetaliation)
     {
         if (runner == null) return;
 
-        // Convert the grid position to world position, matching your ShowUnitAt logic
         Vector3 targetWorldPos = new Vector3(targetGridPos.x + 0.5f, targetGridPos.y, 0);
 
         targetWorldPos.y += 0.5f;
@@ -180,7 +171,6 @@ public class UnitVisualizer
     {
         Vector3 startPos = attackerGO.transform.position + new Vector3(0, 0.5f, 0);
 
-        //GameObject projectile = Object.Instantiate(prefab, attackerGO.transform.position, Quaternion.identity);
         GameObject projectile = Object.Instantiate(prefab, startPos, Quaternion.identity);
 
         SpriteRenderer sr = projectile.GetComponent<SpriteRenderer>();
@@ -190,7 +180,6 @@ public class UnitVisualizer
             sr.sortingOrder = 100;
         }
 
-        //Vector3 startPos = attackerGO.transform.position;
         float distance = Vector3.Distance(startPos, targetPos);
         if (distance <= 0.01f) distance = 1f;
 
@@ -213,7 +202,6 @@ public class UnitVisualizer
             if (dir != Vector3.zero)
             {
                 float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-                //projectile.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
                 projectile.transform.rotation = Quaternion.AngleAxis(angle + 180f, Vector3.forward);
             }
 
@@ -222,37 +210,10 @@ public class UnitVisualizer
 
         Object.Destroy(projectile);
     }
-
-    //private IEnumerator RunMeleeBumpAnimation(GameObject attackerGO, GameObject targetGO)
-    //{
-    //    Vector3 startPos = attackerGO.transform.position;
-    //    Vector3 targetPos = targetGO.transform.position;
-    //    Vector3 peakPos = Vector3.Lerp(startPos, targetPos, 0.4f);
-
-    //    float elapsed = 0;
-    //    float duration = 0.15f;
-
-    //    while (elapsed < duration)
-    //    {
-    //        attackerGO.transform.position = Vector3.Lerp(startPos, peakPos, elapsed / duration);
-    //        elapsed += Time.deltaTime;
-    //        yield return null;
-    //    }
-
-    //    elapsed = 0;
-    //    while (elapsed < duration)
-    //    {
-    //        attackerGO.transform.position = Vector3.Lerp(peakPos, startPos, elapsed / duration);
-    //        elapsed += Time.deltaTime;
-    //        yield return null;
-    //    }
-
-    //    attackerGO.transform.position = startPos;
-    //}
+    
     private IEnumerator RunMeleeBumpAnimation(GameObject attackerGO, Vector3 targetPos)
     {
         Vector3 startPos = attackerGO.transform.position;
-        // Lunge 40% of the way toward the target position
         Vector3 peakPos = Vector3.Lerp(startPos, targetPos, 0.4f);
 
         float elapsed = 0;
@@ -298,7 +259,6 @@ public class UnitVisualizer
         HealthBarController hb = hpBarInstance.GetComponent<HealthBarController>();
         if (hb != null) hb.SetupForUnits(unit);
 
-        // --- NEW TRIM LOGIC ---
         Transform mainSpriteTrans = instance.transform.Find("MainSprite");
         Transform trimTrans = instance.transform.Find("ColorTrim");
 
@@ -307,21 +267,18 @@ public class UnitVisualizer
             SpriteRenderer baseSr = mainSpriteTrans.GetComponent<SpriteRenderer>();
             SpriteRenderer trimSr = trimTrans.GetComponent<SpriteRenderer>();
 
-            // Setup Base Sprite (Icon/Token Base)
             baseSr.sprite = unit.data.unitSprite;
             baseSr.color = Color.white;
             baseSr.sortingLayerName = "WorldObjects";
-            //RenderSorter.Sort(baseSr, worldPos.y);
             RenderSorter.Sort(baseSr, worldPos.y - 0.01f);
 
-            // Setup Color Trim
             if (unit.data.unitColorTrim != null)
             {
                 trimSr.enabled = true;
                 trimSr.sprite = unit.data.unitColorTrim;
                 trimSr.color = GetPlayerColor(unit.ownerId);
                 trimSr.sortingLayerName = "WorldObjects";
-                trimSr.sortingOrder = baseSr.sortingOrder - 1; // Always render on top of the base
+                trimSr.sortingOrder = baseSr.sortingOrder - 1;
             }
             else
             {
@@ -330,7 +287,6 @@ public class UnitVisualizer
         }
         else
         {
-            // Fallback just in case the prefab hasn't been updated yet
             SpriteRenderer sr = instance.GetComponent<SpriteRenderer>();
             if (sr != null)
             {
@@ -340,7 +296,6 @@ public class UnitVisualizer
                 RenderSorter.Sort(sr, worldPos.y);
             }
         }
-        // ----------------------
 
         spawnedUnits[unit] = instance;
     }

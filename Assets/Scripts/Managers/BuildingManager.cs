@@ -3,7 +3,7 @@ using System.Diagnostics;
 using UnityEngine;
 using static MapData;
 using static Unit;
-using static UnityEditor.PlayerSettings;
+//using static UnityEditor.PlayerSettings;
 
 public class BuildingManager : MonoBehaviour
 {
@@ -230,13 +230,11 @@ public class BuildingManager : MonoBehaviour
 
     private bool CheckEnvironmentalRequirements(BuildingData template, Vector2Int pos)
     {
-        // 1. Mines must be next to a Mountain
         if (template.buildingType == Building.BuildingType.Mine)
         {
             return HasAdjacentTileType(pos, TileType.Mountain);
         }
 
-        // 2. Lumberyards must be next to a Forest
         if (template.buildingType == Building.BuildingType.Woodcutter)
         {
             return HasAdjacentTileType(pos, TileType.Forest);

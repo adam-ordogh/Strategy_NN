@@ -1,7 +1,4 @@
-using Microsoft.Unity.VisualStudio.Editor;
 using UnityEngine;
-using UnityEngine.Tilemaps;
-using UnityEngine.UI;
 
 public enum AttackType { Melee, Slashing, Piercing, Siege}
 public enum ArmorType { Unarmored, Light, Heavy, Siege, Structure}

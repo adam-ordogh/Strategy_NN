@@ -58,7 +58,7 @@ public class GameManager
 
     public void InitializePlayers()
     {
-        // Player 1 - Human
+        // Player 1 - Ember
         var p1 = new PlayerProfile(playerId: 5, isAi: false, playerColor: GetPlayerColor(2),
                                    starterGold: 200, starterWood: 200, starterFood: 50);
         players.Add(p1);

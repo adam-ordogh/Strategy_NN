@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor.U2D.Aseprite;
+//using UnityEditor.U2D.Aseprite;
 
 public class SaveManager : MonoBehaviour
 {
@@ -149,14 +149,11 @@ public class SaveManager : MonoBehaviour
         GameSaveData data = JsonUtility.FromJson<GameSaveData>(json);
         GameManager gm = gameInitializer.gameManager;
 
-        // --- ADD THIS CLEANUP SECTION ---
-        // Clear all visuals before loading new ones
         gameInitializer.map.ClearAllTiles();
         gameInitializer.featureMap.ClearAllTiles();
         gameInitializer.unitMap.ClearAllTiles();
         gameInitializer.buildingMap.ClearAllTiles();
 
-        // Clear logic lists so we don't have "ghost" units
         gm.unitManager.ClearAllUnits();
         gm.buildingManager.ClearAllBuildings();
 

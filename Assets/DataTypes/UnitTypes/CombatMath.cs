@@ -15,7 +15,7 @@ public static class CombatMath
             (AttackType.Melee, ArmorType.Siege) => 2.0f,
             (AttackType.Slashing, ArmorType.Siege) => 2.5f, 
 
-            // ---------------- STRUCTURES ------------------
+            // ---------------- ÉPÜLETEK ------------------
             (AttackType.Melee, ArmorType.Structure) => 0.5f,
             (AttackType.Piercing, ArmorType.Structure) => 0.1f,
             (AttackType.Slashing, ArmorType.Structure) => 0.2f,

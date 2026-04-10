@@ -488,11 +488,10 @@ public class GameUIController : MonoBehaviour
 
     public void ShowGameOverScreen(bool isVictory)
     {
-        // Close any other open panels to keep it clean
         CloseAllMenus();
 
         gameOverPanel.SetActive(true);
-        IsAnyMenuOpen = true; // This stops camera movement/input if your InputController respects this flag
+        IsAnyMenuOpen = true; 
 
         if (isVictory)
         {

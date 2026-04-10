@@ -164,26 +164,6 @@ public class InfluenceManager : MonoBehaviour
         }
     }
 
-    //public void RemoveBuildingFromReachGrid(Building b)
-    //{
-    //    int r = b.data.influenceRadius;
-    //    // Bounding box
-    //    int startX = Mathf.Max(0, b.position.x - r);
-    //    int endX = Mathf.Min(mapData.mapWidth - 1, b.position.x + b.data.size.x + r);
-    //    int startY = Mathf.Max(0, b.position.y - r);
-    //    int endY = Mathf.Min(mapData.mapHeight - 1, b.position.y + b.data.size.y + r);
-
-    //    for (int x = startX; x <= endX; x++)
-    //    {
-    //        for (int y = startY; y <= endY; y++)
-    //        {
-    //            buildingReachGrid[x, y].Remove(b);
-    //        }
-    //    }
-
-    //    RecalculateAllInfluences(); 
-    //    OnInfluenceChanged?.Invoke(mapData); 
-    //}
     public void RemoveBuildingFromReachGrid(Building b)
     {
         for (int x = 0; x < mapData.mapWidth; x++)

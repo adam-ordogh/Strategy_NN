@@ -30,6 +30,6 @@ MonoBehaviour:
   buildingColorTrim: {fileID: 21300000, guid: 23af81fafb8160749a3b99017b45e275, type: 3}
   constructionSprite: {fileID: -8306583155516149243, guid: b46974bf0cb5ecb4e9fcad78e196cb9f, type: 3}
   isSelectable: 1
-  buildingName: "\u0150rszem"
+  buildingName: "El\u0151\xF6rs"
   description: "Hat\xE1rok terjeszt\xE9s\xE9re szolg\xE1l, <color=#00FFFF>6</color>
     sugar\xFA befoly\xE1st biztos\xEDt"

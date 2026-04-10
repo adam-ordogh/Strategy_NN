@@ -4,8 +4,8 @@ using UnityEngine.Tilemaps;
 using UnityEngine.InputSystem;
 using System.Linq;
 using UnityEngine.EventSystems;
-using UnityEditor.U2D.Aseprite;
-using static UnityEditor.PlayerSettings;
+//using UnityEditor.U2D.Aseprite;
+//using static UnityEditor.PlayerSettings;
 using System.Collections.Generic;
 
 public class InputController : MonoBehaviour
@@ -198,7 +198,6 @@ public class InputController : MonoBehaviour
 
     private void PerformMoveAndAttack(Unit attacker, Vector2Int targetPos)
     {
-        // GetBestAttackPosition most már kezeli az épületeket is
         Vector2Int? attackTile = unitManager.GetBestAttackPosition(attacker, targetPos);
 
         if (attackTile.HasValue)

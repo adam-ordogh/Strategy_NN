@@ -21,7 +21,6 @@ public class AIMicroController
         myProfile = gameManager.GetPlayerProfile(playerId);
     }
 
-    // ==================== MAIN EXECUTION METHODS ====================
 
     public void ExecuteEconomyMicro()
     {
@@ -236,7 +235,6 @@ public class AIMicroController
                 continue;
             }
 
-            // Move towards goal
             Vector2Int targetGoal = (armyState == MilitaryState.Attacking) ? enemyBase : rallyPoint;
             Vector2Int idealGoal = GetFormationOffset(unit, targetGoal);
             Vector2Int? reachableGoal = FindBestReachableTile(unit, idealGoal);

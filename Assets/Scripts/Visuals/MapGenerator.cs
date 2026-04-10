@@ -55,7 +55,6 @@ public class MapGenerator
 
     private MapData.TileType GenerateTileType(int x, int y)
     {
-        // Add the offsets to the coordinates!
         float noise = Mathf.PerlinNoise((x + offsetX) * 0.1f, (y + offsetY) * 0.15f);
         if (noise < 0.3f) return MapData.TileType.Forest;
         else if (noise < 0.7f) return MapData.TileType.Grass;
@@ -93,7 +92,6 @@ public class MapGenerator
 
         PlaceGuaranteedTile(new Vector2Int(mountainX, visualCenter.y), MapData.TileType.Mountain);
 
-        // 3. Place Forest (Vertical Edge)
         int forestY = (visualCenter.y < mapManager.mapHeight / 2)
             ? Mathf.Max(0, visualCenter.y - radius)
             : Mathf.Min(mapManager.mapHeight - 1, visualCenter.y + radius);

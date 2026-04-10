@@ -35,19 +35,6 @@ public class TrainingRestart : MonoBehaviour
         //{
         //    foreach (var player in gameManager.players)
         //    {
-        //        if (player.myBuildings.Count == 0)
-        //        {
-        //            Debug.Log($"Episode ended by ELIMINATION of {player.playerId} at turn {gameManager.turnNumber}");
-        //            return true;
-        //        }
-        //    }
-        //}
-
-        //if (gameManager.turnNumber > 5)
-        //{
-        //    foreach (var player in gameManager.players)
-        //    {
-        //        // FIX: Ignore roads here as well
         //        if (player.myBuildings.Count(b => b.buildingType != Building.BuildingType.Road) == 0)
         //        {
         //            Debug.Log($"Episode ended by ELIMINATION of {player.playerId} at turn {gameManager.turnNumber}");

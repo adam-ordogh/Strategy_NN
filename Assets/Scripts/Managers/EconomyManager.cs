@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 using static MapData;
-using UnityEditor.U2D.Aseprite;
+//using UnityEditor.U2D.Aseprite;
 
 public enum ResourceType { Food, Wood, Gold }
 public struct IncomeReport
@@ -78,9 +78,6 @@ public class EconomyManager : MonoBehaviour
             // Ha a populáció csökken, ellenőrizzük a dolgozókat és egységeket, esetleg meghalhatnak?
         }
 
-        //player.gold = Mathf.Clamp(player.gold + report.goldNet, 0, player.maxGold);
-        //player.wood = Mathf.Clamp(player.wood + report.woodNet, 0, player.maxWood);
-        //player.food = Mathf.Clamp(player.food + report.foodNet, 0, player.maxFood);
         bool hasGlobalStorage = player.maxGold > 0; 
 
         if (hasGlobalStorage)

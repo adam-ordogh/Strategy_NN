@@ -32,8 +32,8 @@ public class SaveLoadUI : MonoBehaviour
 
     [Header("References")]
     public SaveManager saveManager;
-    public bool isMainMenu = false; // Add this toggle
-    public string gameSceneName = "GameScene"; // The scene to load
+    public bool isMainMenu = false;
+    public string gameSceneName = "GameScene"; 
     private string selectedFileName;
     private GameObject selectedItemObj; 
 
@@ -257,13 +257,11 @@ public class SaveLoadUI : MonoBehaviour
     {
         if (isMainMenu)
         {
-            // MAIN MENU BEHAVIOR: Set the bridge variable and load the scene
             LevelLoadBridge.SaveFileToLoad = fileName;
             SceneManager.LoadScene(gameSceneName);
         }
         else
         {
-            // IN-GAME BEHAVIOR: Load the state directly
             if (saveManager != null)
             {
                 saveManager.LoadGame(fileName);
