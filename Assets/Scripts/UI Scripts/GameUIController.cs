@@ -186,6 +186,9 @@ public class GameUIController : MonoBehaviour
 
         buildingPanelOpened.SetActive(false);
         buildingPanelClosed.SetActive(true);
+
+        if (TooltipController.Instance != null)
+            TooltipController.Instance.Hide();
     }
 
     public void SelectBuildingToBuild(BuildingData buildingData)

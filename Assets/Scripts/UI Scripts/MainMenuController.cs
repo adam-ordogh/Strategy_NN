@@ -13,6 +13,7 @@ public class MainMenuController : MonoBehaviour
     public GameObject menuPanel;
     public GameObject newGamePanel;
     public GameObject loadGamePanel;
+    public GameObject howToPlayPanel;
     public GameObject settingsPanel;
 
     public SaveLoadUI saveLoadUI;
@@ -33,6 +34,7 @@ public class MainMenuController : MonoBehaviour
         { "Hegyi Átkelő", 1423 },
         { "Erdei Mezők", 9982 },
         { "Sűrű Rengeteg", 35985 },
+        { "Stuck Test", 39519 },
         { "Random", -1 } 
     };
 
@@ -123,6 +125,14 @@ public class MainMenuController : MonoBehaviour
         }
 
         SceneManager.LoadScene(gameSceneName);
+    }
+
+    // --- HOW TO PLAY ---
+    public void ToggleHowToPlayPanel()
+    {
+        bool isOpening = !howToPlayPanel.activeSelf;
+        howToPlayPanel.SetActive(isOpening);
+        menuPanel.SetActive(!isOpening);
     }
 
     // --- SETTINGS ---

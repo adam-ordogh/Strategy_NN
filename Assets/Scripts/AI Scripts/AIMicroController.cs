@@ -109,6 +109,20 @@ public class AIMicroController
         RebalanceWorkers();
         AssignIdleWorkers();
 
+        if (myProfile.availablePopulation < 2 && ShouldBuildHouse())
+        {
+            BuildingData houseTemplate = GetBuildingTemplate(Building.BuildingType.House);
+            if (houseTemplate != null && myProfile.CanAfford(houseTemplate.goldCost, houseTemplate.woodCost, 0))
+            {
+                Vector2Int? spot = FindBestPlacementTile(houseTemplate, AIGoal.FocusMilitary);
+                if (spot.HasValue)
+                {
+                    gameManager.buildingManager.PlaceBuilding(houseTemplate, spot.Value, playerId);
+                    // return; // Ezt a sort ha bekapcsolod, akkor itt megáll a kör, különben megy tovább.
+                }
+            }
+        }
+
         int desiredBarracks = Mathf.Max(2, myProfile.currentPopulation / 20);
 
         if (CountBuildings(Building.BuildingType.Barracks) < desiredBarracks)
@@ -426,7 +440,7 @@ public class AIMicroController
         BuildingData template = GetBuildingTemplate(type);
         if (template == null) return false;
 
-        if (!myProfile.CanAfford(template.goldCost, template.woodCost, 0)) return false;
+        if (!myProfile.CanAfford(template.goldCost, template.woodCost, 0))  return false; 
 
         Vector2Int? bestSpot = FindBestPlacementTile(template, AIGoal.FocusEconomy);
         if (bestSpot.HasValue)
@@ -496,7 +510,7 @@ public class AIMicroController
         int effCavalry = unitCounts.GetValueOrDefault(Unit.UnitType.Cavalry) + queueCounts.GetValueOrDefault(Unit.UnitType.Cavalry);
         int effSiege = unitCounts.GetValueOrDefault(Unit.UnitType.Siege) + queueCounts.GetValueOrDefault(Unit.UnitType.Siege);
 
-        float soldierScore = 12f - (effSoldiers * 1.0f);
+        float soldierScore = 10f - (effSoldiers * 1.0f);
         float archerScore = 10f - (effArchers * 1.0f);
         float cavalryScore = 8f - (effCavalry * 1.0f);
         float siegeScore = 2f - (effSiege * 2.0f);

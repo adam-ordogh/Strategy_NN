@@ -32,8 +32,6 @@ public class AIMacroMLController : IAIController
         FindOrCreateMLAgent();
     }
 
-
-
     private void FindOrCreateMLAgent()
     {
         var agents = GameObject.FindObjectsByType<AIMacroML>(FindObjectsSortMode.None);

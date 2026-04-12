@@ -211,11 +211,16 @@ public class SaveLoadUI : MonoBehaviour
         }
         else 
         {
-            if (string.IsNullOrEmpty(selectedFileName)) return;
-
-            OpenConfirmation($"Biztosan beolvassa a mentést? A nem mentett haladás elveszik.", () => {
+            if (isMainMenu)
+            {
                 ExecuteLoad(selectedFileName);
-            });
+            }
+            else
+            {
+                OpenConfirmation($"Biztosan beolvassa a mentést? A nem mentett haladás elveszik.", () => {
+                    ExecuteLoad(selectedFileName);
+                });
+            }
         }
     }
 

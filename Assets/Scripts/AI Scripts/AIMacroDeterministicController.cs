@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,7 +18,10 @@ public class AIMacroDeterministic : IAIController
     private PlayerProfile myProfile;
     private AIMicroController micro;
     public MilitaryState currentArmyState = MilitaryState.Gathering;
-   
+
+    private int stuckCounter = 0;
+    private AIGoal lastGoal = AIGoal.FocusEconomy;
+
     public AIMacroDeterministic(int playerId)
     {
         PlayerId = playerId;
@@ -59,13 +62,33 @@ public class AIMacroDeterministic : IAIController
 
         //Debug.Log($"[AI {PlayerId}] Desire Scores - Economy: {economyScore}, Military: {militaryScore}, Expansion: {expansionScore}");
 
+        AIGoal chosenGoal;
         if (expansionScore >= economyScore && expansionScore >= militaryScore)
-            return AIGoal.FocusExpansion;
+            chosenGoal = AIGoal.FocusExpansion;
+        else if (militaryScore >= economyScore)
+            chosenGoal = AIGoal.FocusMilitary;
+        else
+            chosenGoal = AIGoal.FocusEconomy;
 
-        if (militaryScore >= economyScore)
-            return AIGoal.FocusMilitary;
+        if (chosenGoal == lastGoal && chosenGoal == AIGoal.FocusEconomy)
+        {
+            stuckCounter++;
+            if (stuckCounter >= 3)
+            {
+                if (militaryScore > expansionScore)
+                    chosenGoal = AIGoal.FocusMilitary;
+                else
+                    chosenGoal = AIGoal.FocusExpansion;
+                stuckCounter = 0;
+            }
+        }
+        else
+        {
+            stuckCounter = 0;
+        }
+        lastGoal = chosenGoal;
 
-        return AIGoal.FocusEconomy;
+        return chosenGoal;
     }
 
     private void ExecuteMicroActions(AIGoal goal)
@@ -90,7 +113,7 @@ public class AIMacroDeterministic : IAIController
         micro.HandleUnitMicro(currentArmyState, ref currentArmyState);
     }
 
-    // ==================== DESIRE CALCULATIONS ====================
+    // --------------------- DESIRE CALCULATIONS ---------------------
 
     private float CalculateEconomyDesire(IncomeReport income)
     {
@@ -113,6 +136,11 @@ public class AIMacroDeterministic : IAIController
             score += 40;
         }
 
+        if (myProfile.gold > 140 && myProfile.wood > 140)
+        {
+            score -= 60; 
+        }
+
         return score;
     }
 
@@ -121,6 +149,12 @@ public class AIMacroDeterministic : IAIController
         float score = 20;
         float myStrength = micro.CalculateMilitaryStrength();
         float observedEnemyStrength = micro.GetObservedEnemyStrength();
+
+        bool hasBarracks = myProfile.myBuildings.Any(b => b.buildingType == Building.BuildingType.Barracks);
+        if (hasBarracks && myStrength == 0)
+        {
+            score += 60; 
+        }
 
         if (myStrength < observedEnemyStrength * 1.2f)
         {
@@ -134,8 +168,8 @@ public class AIMacroDeterministic : IAIController
             score += 30;
         }
 
-        if (myProfile.gold > 150) score += 20;
-        if (myProfile.gold > 300) score += 30;
+        if (myProfile.gold > 70) score += 20;
+        if (myProfile.gold > 150) score += 30;
 
         return score;
     }
@@ -143,10 +177,17 @@ public class AIMacroDeterministic : IAIController
     private float CalculateExpansionDesire()
     {
         float score = 0;
-        score += (myProfile.gold + myProfile.wood) / 20f;
 
+        int buildingCount = myProfile.myBuildings.Count(b => b.buildingType != Building.BuildingType.Road);
+
+        if (buildingCount > 15) score += 20;
+        if (buildingCount > 20) score += 40; 
         if (micro.CalculateMilitaryStrength() > 100) score += 20;
-        if (!micro.CanPlaceIndustrialBuilding()) score += 100;
+
+        if (myProfile.myBuildings.Any(b => b.buildingType == Building.BuildingType.Outpost && !b.isConstructed))
+        {
+            score = 0;
+        }
 
         return score;
     }
