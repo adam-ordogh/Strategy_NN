@@ -7,6 +7,9 @@ A turn-based strategy game developed in Unity, featuring a hierarchical AI oppon
 - PPO agent for macro-level decision making
 - Rule-based system for micro-level execution
 - Custom turn-based strategy environment
+- Procedural level generation using Perlin noise with seed-based randomness for reproducible maps
+- A\* pathfinding for unit movement and navigation
+- BFS (Breadth-First Search) for checking building connections to the town center via roads
 
 ## Technologies
 - **Unity 6000.2.4f1 (Unity 6)**
