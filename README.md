@@ -47,6 +47,11 @@ The trained model is included in the project (in the `results/` folder). To re-t
 
 The trained model files (.onnx) are saved in the results/ directory.
 
+## Project structure ##
+
+- Assets/Scripts/ - game logic and AI integration
+- Assets/confing/ - trainer configuration for PPO
+- results/ - trained models
 
 ## Author
 Ádám Ördögh – MSc thesis project at Selye János University, Komárno, Slovakia
